@@ -11,6 +11,10 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <unistd.h>  /* UNIX standard function definitions */
+#include <fcntl.h>   /* File control definitions */
+#include <errno.h>   /* Error number definitions */
+#include <termios.h> /* POSIX terminal control definitions */
 #include "../inc/FrameBuffer.h"
 
 struct fb_fix_screeninfo finfo;
@@ -49,4 +53,5 @@ void Fill_Buffer(unsigned char r, unsigned char g, unsigned char b)
 			//usleep(1000);
 			}
 		}
+	close(fb_fd);
 }

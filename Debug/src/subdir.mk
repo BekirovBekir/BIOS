@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/ComPort.c \
+../src/Display.c \
 ../src/FrameBuffer.c \
 ../src/GPIO.c \
 ../src/TS.c \
@@ -12,6 +13,7 @@ C_SRCS += \
 
 OBJS += \
 ./src/ComPort.o \
+./src/Display.o \
 ./src/FrameBuffer.o \
 ./src/GPIO.o \
 ./src/TS.o \
@@ -19,6 +21,7 @@ OBJS += \
 
 C_DEPS += \
 ./src/ComPort.d \
+./src/Display.d \
 ./src/FrameBuffer.d \
 ./src/GPIO.d \
 ./src/TS.d \

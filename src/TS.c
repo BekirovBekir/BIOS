@@ -5,8 +5,28 @@
  *      Author: bekir
  */
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <error.h>
+#include <err.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <time.h>
+#include <pthread.h>
+#include <assert.h>
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <linux/i2c.h>
+
 #include "../inc/i2c.h"
 #include "../inc/TS.h"
+#include "../inc/ComPort.h"
+#include "../inc/FrameBuffer.h"
+#include "../inc/Display.h"
 
 #define DEBUG 1
 
@@ -15,6 +35,9 @@
 #else
 	#define DBG(x)
 #endif
+
+extern int fd;
+extern Menu* active_menu;
 
 // Function scanning TS and return struct with key parameters
 ilitek_key_info Scan_TS_Key(void)
@@ -66,14 +89,27 @@ void FSM_TS (ilitek_key_info* key)
 					_key.x=key->x;
 					_key.y=key->y;
 					//DBG(printf("fsm - 0\n"));
-					usleep (30000);
-
 				}
 			break;
 			case 1:
 					if (((_key.status==key->status) && (_key.key_num==key->key_num)))
 					{
 						DBG(printf("key_pressed: %i\n", key->key_num));
+						/*char buf[50];
+						char cnt_byte;
+						memset(buf, 0, 50);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[0;0Hkey_pressed: %i\n", key->key_num);
+						write(fd, buf, cnt_byte);*/
+							if (key->key_num==4)
+							{
+								active_menu=active_menu->UP;
+								active_menu->menudisplay();
+							}
+							if (key->key_num==3)
+							{
+								active_menu=active_menu->DOWN;
+								active_menu->menudisplay();
+							}
 						fsm=2;
 					}
 					else
