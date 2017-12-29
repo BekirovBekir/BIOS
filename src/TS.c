@@ -36,7 +36,7 @@
 	#define DBG(x)
 #endif
 
-extern int fd;
+extern int fd_fb;
 extern Menu* active_menu;
 
 // Function scanning TS and return struct with key parameters
@@ -99,7 +99,7 @@ void FSM_TS (ilitek_key_info* key)
 						char cnt_byte;
 						memset(buf, 0, 50);
 						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[0;0Hkey_pressed: %i\n", key->key_num);
-						write(fd, buf, cnt_byte);*/
+						write(fd_fb, buf, cnt_byte);*/
 							if (key->key_num==4)
 							{
 								active_menu=active_menu->UP;

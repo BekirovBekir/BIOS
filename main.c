@@ -33,7 +33,7 @@ pthread_t fsm_ts_thread;	//thread for timer
 int id_fsm_ts_thread=1;
 
 int timer_tick=0;
-int fd;
+int fd_fb;
 
 void* fsm_ts_thread_func(void* thread_data)
 {
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 	//ilitek_key_info ts_key={0,0,0,0};
 
 	Open_i2c("/dev/i2c-2", 0x41); //	open ILITEK TS
-	fd = open("/dev/tty0", O_RDWR);
+	fd_fb = open("/dev/tty0", O_RDWR); // open fb
 	Fill_Buffer(0x00, 0x00, 0x00);
 	MenuInit();
 
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 	usleep(300000);
 	}*/
 	Close_i2c(); //	close ILITEK TS
-	close(fd);
+	close(fd_fb); // close fb
 	return EXIT_SUCCESS;
 
 }
