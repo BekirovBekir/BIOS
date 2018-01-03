@@ -25,6 +25,7 @@
 
 #include "../inc/Display.h"
 #include "../inc/FrameBuffer.h"
+#include "../inc/eeprom.h"
 
 Menu PreAsm;
 Menu PostAsm;
@@ -40,6 +41,10 @@ void PreAsmDisp (void)
 {
 	char buf[50];
 	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;41H \n\n");
@@ -115,6 +120,22 @@ void GIDisp (void)
 
 void GIAct (void)
 {
+	char buf[100];
+	char cnt_byte;
+
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[31;46m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[19;30HRestore of the system will be started after reboot\n\x1b[20;36Reboot...\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	Write_EEPROM("1");	// write eeprom 1, after reboot restore process will be srart
+	usleep(1000000);
+	//system("reboot");
 
 }
 
@@ -148,6 +169,10 @@ void ExitDisp (void)
 	char cnt_byte;
 
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[21;41H \n\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
@@ -166,7 +191,7 @@ void ExitAct (void)
 void MenuInit (void)
 {
 	PreAsm.DOWN=&PostAsm;
-	PreAsm.UP=&PreAsm;
+	PreAsm.UP=&Exit;
 	PreAsm.ENTER=NULL;
 	PreAsm.menudisplay=&PreAsmDisp;
 	PreAsm.menuaction=&PreAsmAct;
@@ -189,7 +214,7 @@ void MenuInit (void)
 	ShipMode.menudisplay=&ShipModeDisp;
 	ShipMode.menuaction=&ShipModeAct;
 
-	Exit.DOWN=&Exit;
+	Exit.DOWN=&PreAsm;
 	Exit.UP=&ShipMode;
 	Exit.ENTER=NULL;
 	Exit.menudisplay=&ExitDisp;
