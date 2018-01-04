@@ -127,15 +127,20 @@ void GIAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[31;46m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 100);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[19;30HRestore of the system will be started after reboot\n\x1b[20;36Reboot...\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30HRestore of the system will be started after reboot\n");
 	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[19;49HReboot...\n");
+	write(fd_fb, buf, cnt_byte);
+
 	memset(buf, 0, 100);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
 	Write_EEPROM("1");	// write eeprom 1, after reboot restore process will be srart
-	usleep(1000000);
-	//system("reboot");
+	sleep(2);
+
+	system("reboot");
 
 }
 
@@ -160,6 +165,24 @@ void ShipModeDisp (void)
 
 void ShipModeAct (void)
 {
+	char buf[100];
+	char cnt_byte;
+
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[31;46m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;44HShip mode active");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[19;47HPower off...");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+	sleep(2);
+
+	system("i2cset -y -f 2 0x68 0x19 0x534D w");	// ship mode
 
 }
 
@@ -185,7 +208,23 @@ void ExitDisp (void)
 
 void ExitAct (void)
 {
+	char buf[100];
+	char cnt_byte;
 
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[31;46m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[18;47HBoot OS...");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	Write_EEPROM("2");	// write eeprom 1, after reboot restore process will be srart
+	sleep(2);
+
+	system("reboot");
 }
 
 void MenuInit (void)
