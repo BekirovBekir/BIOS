@@ -20,6 +20,7 @@
 #include "./inc/TS.h"
 #include "./inc/FrameBuffer.h"
 #include "./inc/Display.h"
+#include "./inc/eeprom.h"
 
 #define DEBUG 1
 
@@ -42,6 +43,12 @@ static ilitek_key_info key={0,0,0,0};
 	{
 		key=Scan_TS_Key();
 		FSM_TS(&key);
+		timer_tick++;
+			if (timer_tick>=5500)
+			{
+				pthread_exit(0);
+				Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
+			}
 		usleep(30000);
 	}
 }
@@ -66,8 +73,9 @@ int main(int argc, char* argv[])
 		}
 
 
-	while (getchar()!='q');
-	pthread_cancel(fsm_ts_thread);
+	//while (getchar()!='q');
+
+	//pthread_cancel(fsm_ts_thread);
 	pthread_join(fsm_ts_thread, NULL);
 
 	/*while (1)
@@ -77,6 +85,7 @@ int main(int argc, char* argv[])
 	}*/
 	Close_i2c(); //	close ILITEK TS
 	close(fd_fb); // close fb
+	system("reboot");
 	return EXIT_SUCCESS;
 
 }

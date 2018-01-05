@@ -127,7 +127,7 @@ void GIAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[31;46m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 100);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30HRestore of the system will be started after reboot\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30HRestore of the system will be start after reboot\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 100);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[19;49HReboot...\n");
@@ -140,7 +140,8 @@ void GIAct (void)
 	Write_EEPROM("1");	// write eeprom 1, after reboot restore process will be srart
 	sleep(2);
 
-	system("reboot");
+	//system("reboot");
+	pthread_exit(0);
 
 }
 
@@ -180,6 +181,8 @@ void ShipModeAct (void)
 	memset(buf, 0, 100);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
 	sleep(2);
 
 	system("i2cset -y -f 2 0x68 0x19 0x534D w");	// ship mode
@@ -221,10 +224,11 @@ void ExitAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	Write_EEPROM("2");	// write eeprom 1, after reboot restore process will be srart
+	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
 	sleep(2);
 
-	system("reboot");
+	//system("reboot");
+	pthread_exit(0);
 }
 
 void MenuInit (void)

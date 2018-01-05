@@ -37,6 +37,7 @@
 #endif
 
 extern Menu* active_menu;
+extern int timer_tick;
 
 // Function scanning TS and return struct with key parameters
 ilitek_key_info Scan_TS_Key(void)
@@ -113,6 +114,7 @@ void FSM_TS (ilitek_key_info* key)
 							{
 								active_menu->menuaction();
 							}
+						timer_tick=0;
 						fsm=2;
 					}
 					else
