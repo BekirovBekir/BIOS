@@ -8,6 +8,7 @@ C_SRCS += \
 ../src/Display.c \
 ../src/FrameBuffer.c \
 ../src/GPIO.c \
+../src/PreAsm.c \
 ../src/TS.c \
 ../src/eeprom.c \
 ../src/i2c.c 
@@ -17,6 +18,7 @@ OBJS += \
 ./src/Display.o \
 ./src/FrameBuffer.o \
 ./src/GPIO.o \
+./src/PreAsm.o \
 ./src/TS.o \
 ./src/eeprom.o \
 ./src/i2c.o 
@@ -26,6 +28,7 @@ C_DEPS += \
 ./src/Display.d \
 ./src/FrameBuffer.d \
 ./src/GPIO.d \
+./src/PreAsm.d \
 ./src/TS.d \
 ./src/eeprom.d \
 ./src/i2c.d 

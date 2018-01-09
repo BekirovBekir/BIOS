@@ -24,13 +24,17 @@ void PostAsmDisp (void);
 void GIDisp (void);
 void ShipModeDisp (void);
 void ExitDisp (void);
+//void PreAsmTestDisp(void);
 
 void PreAsmAct (void);
 void PostAsmAct (void);
 void GIAct (void);
 void ShipModeAct (void);
 void ExitAct (void);
+//void PreAsmTestAct(void);
 
 void MenuInit (void);
+
+void* preasm_thread_func(void* thread_data);
 
 #endif /* INC_DISPLAY_H_ */

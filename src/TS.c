@@ -112,6 +112,7 @@ void FSM_TS (ilitek_key_info* key)
 							}
 							if (key->key_num==2)
 							{
+								active_menu=active_menu->ENTER;
 								active_menu->menuaction();
 							}
 						timer_tick=0;

@@ -33,6 +33,9 @@
 pthread_t fsm_ts_thread;	//thread for timer
 int id_fsm_ts_thread=1;
 
+pthread_t preasm_thread;	//preasm test thread
+int id_preasm_thread=1;
+
 int timer_tick=0;
 int fd_fb;
 
@@ -46,7 +49,7 @@ static ilitek_key_info key={0,0,0,0};
 		timer_tick++;
 			if (timer_tick>=5500)
 			{
-				pthread_exit(0);
+				//pthread_exit(0);
 				Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
 			}
 		usleep(30000);
@@ -73,9 +76,13 @@ int main(int argc, char* argv[])
 		}
 
 
-	//while (getchar()!='q');
+	//pthread_cancel(preasm_thread);
+	//pthread_join(preasm_thread, NULL);
+		while (getchar()!='q');
 
-	//pthread_cancel(fsm_ts_thread);
+
+
+	pthread_cancel(fsm_ts_thread);
 	pthread_join(fsm_ts_thread, NULL);
 
 	/*while (1)
@@ -85,7 +92,7 @@ int main(int argc, char* argv[])
 	}*/
 	Close_i2c(); //	close ILITEK TS
 	close(fd_fb); // close fb
-	system("reboot");
+	//system("reboot");
 	return EXIT_SUCCESS;
 
 }
