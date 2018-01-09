@@ -503,16 +503,17 @@ int FuncAccelerometer_Calibration(int Do)
 		fscanf (fp, "%i%i%i", &CalibX, &CalibY, &CalibZ);
 
 		printf("Device already calibrate! Calibrate values: x = %i; y = %i; z = %i\n", CalibX, CalibY, CalibZ);
-		printf("Press 'y' to calibrate or 'n' to exit: ");
+		/*printf("Press 'y' to calibrate or 'n' to exit: ");
 		do{
 			ch = getchar();
 		}while(ch !='y'&& ch !='n');
 
 		if(ch == 'n'){
 			return 0;
-		}
+		}*/
 		AlreadyCalibrFlag = 1;
 		fclose(fp);
+		return 0;
 	}
 
 

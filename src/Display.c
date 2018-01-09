@@ -352,7 +352,28 @@ void* preasm_thread_func(void* thread_data)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "PreAsm test working!\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[0;0H*********************************************************************************************************");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[1;0H*\x1b[2;0H*\x1b[3;0H*\x1b[4;0H*\x1b[5;0H*\x1b[6;0H*\x1b[7;0H*\x1b[8;0H*\x1b[9;0H*\x1b[1;0H*\x1b[10;0H*\x1b[11;0H*\x1b[12;0H*\x1b[13;0H*\x1b[14;0H*\x1b[15;0H*\x1b[16;0H*\x1b[17;0H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[18;0H*\x1b[19;0H*\x1b[20;0H*\x1b[21;0H*\x1b[22;0H*\x1b[23;0H*\x1b[24;0H*\x1b[25;0H*\x1b[26;0H*\x1b[27;0H*\x1b[28;0H*\x1b[29;0H*\x1b[30;0H*\x1b[31;0H*\x1b[32;0H*\x1b[33;0H*\x1b[34;0H*\x1b[35;0H*\x1b[36;0H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[1;106H*\x1b[2;106H*\x1b[3;106H*\x1b[4;106H*\x1b[5;106H*\x1b[6;106H*\x1b[7;106H*\x1b[8;106H*\x1b[9;106H*\x1b[1;106H*\x1b[10;106H*\x1b[11;106H*\x1b[12;106H*\x1b[13;106H*\x1b[14;106H*\x1b[15;106H*\x1b[16;106H*\x1b[17;106H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[18;106H*\x1b[19;106H*\x1b[20;106H*\x1b[21;106H*\x1b[22;106H*\x1b[23;106H*\x1b[24;106H*\x1b[25;106H*\x1b[26;106H*\x1b[27;106H*\x1b[28;106H*\x1b[29;106H*\x1b[30;106H*\x1b[31;106H*\x1b[32;106H*\x1b[33;106H*\x1b[34;106H*\x1b[35;106H*\x1b[36;106H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[36;0H*********************************************************************************************************");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[4;0H*********************************************************************************************************");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[2;38H===== Pre-Assembly Test =====\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 
 		for (;;)
@@ -362,54 +383,58 @@ void* preasm_thread_func(void* thread_data)
 				if (TestMMC(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "eMMC TEST: OK \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "eMMC TEST: Fail \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CeMMC TEST:\x1b[31m Fail \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncSPI_32MBit_NOR_Flash(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "SPI_32Mbit_NOR TEST: OK \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[32m OK \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "SPI_32Mbit_NOR TEST: Fail \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[31m Fail \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncEEPROM(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "EEPROM TEST: OK \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "EEPROM TEST: Fail \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[31m Fail \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncAccelerometer_Calibration(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "Accelerometer TEST: OK \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[32m OK \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "Accelerometer TEST: Fail \n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[31m Fail \x1b[0m\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+			write(fd_fb, buf, cnt_byte);
 			state_test=1;
 			}
 		usleep(1000000);
