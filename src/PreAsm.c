@@ -1025,7 +1025,7 @@ int FuncBarometer_Functionality(int Do)
 		pressure = atof( dataBuffer );
 		pressure *= 0.25;
 		pressure /= 100;
-		printf( "Pressure hPa value = %i \n", (int)pressure );
+		printf( "Pressure hPa value = %i \n", (int)pressure);
 
 	close( fileTemp );
 	close( filePressure );

@@ -34,6 +34,7 @@ Menu GI;
 Menu ShipMode;
 Menu Exit;
 //Menu PreAsmTest;
+Menu* active_menu;
 
 extern int CX;
 extern int CY;
@@ -48,8 +49,6 @@ extern int id_preasm_thread;
 
 pthread_mutex_t mutex;
 unsigned char thread_flag=0;
-
-Menu* active_menu;
 
 void PreAsmDisp (void)
 {
@@ -475,7 +474,7 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncAmbient_Light_Sensor_Functionality(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[32m OK\x1b[0m - Light sensor value %s\n", LightDataBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[32m OK\x1b[0m - Illumination is %s\n", LightDataBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else

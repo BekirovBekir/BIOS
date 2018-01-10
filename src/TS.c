@@ -39,6 +39,8 @@
 extern Menu* active_menu;
 extern int timer_tick;
 
+unsigned char pre_asm_active=0;
+
 // Function scanning TS and return struct with key parameters
 ilitek_key_info Scan_TS_Key(void)
 {
@@ -100,12 +102,12 @@ void FSM_TS (ilitek_key_info* key)
 						memset(buf, 0, 50);
 						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[0;0Hkey_pressed: %i\n", key->key_num);
 						write(fd_fb, buf, cnt_byte);*/
-							if (key->key_num==4)
+							if ((key->key_num==4)&&(pre_asm_active==0))
 							{
 								active_menu=active_menu->UP;
 								active_menu->menudisplay();
 							}
-							if (key->key_num==3)
+							if ((key->key_num==3)&&(pre_asm_active==0))
 							{
 								active_menu=active_menu->DOWN;
 								active_menu->menudisplay();
@@ -113,6 +115,7 @@ void FSM_TS (ilitek_key_info* key)
 							if (key->key_num==2)
 							{
 								active_menu=active_menu->ENTER;
+								pre_asm_active^=(1<<0);
 								active_menu->menuaction();
 							}
 						timer_tick=0;
