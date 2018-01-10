@@ -26,6 +26,15 @@
 
 #include "../inc/PreAsm.h"
 #include "../inc/eeprom.h"
+#include "../inc/i2c.h"
+
+
+int CX=0;
+int CY=0;
+int CZ=0;
+char LightDataBuffer[100]={0};
+float temperature = 0;
+float pressure = 0;
 
 int TestMMC(int Do)
 {
@@ -487,7 +496,7 @@ int FuncAccelerometer_Calibration(int Do)
 	int CalibX=0,CalibY=0,CalibZ=0, i=0;
 
 	int FounFileFlag = 0, AlreadyCalibrFlag=0;
-	char userAnsw = ' ', ch=' ';
+	//char userAnsw = ' ', ch=' ';
 	FILE *fp;
 
 
@@ -501,7 +510,7 @@ int FuncAccelerometer_Calibration(int Do)
 	}
 	else{
 		fscanf (fp, "%i%i%i", &CalibX, &CalibY, &CalibZ);
-
+		CX=CalibX; CY=CalibY; CZ=CalibZ;
 		printf("Device already calibrate! Calibrate values: x = %i; y = %i; z = %i\n", CalibX, CalibY, CalibZ);
 		/*printf("Press 'y' to calibrate or 'n' to exit: ");
 		do{
@@ -651,13 +660,13 @@ int FuncAccelerometer_Calibration(int Do)
 		CalibX=(ValueX*(-1))/2;
 		CalibY=(ValueY*(-1))/2;
 		CalibZ=(1024-ValueZ)/2;
-
+		CX=CalibX; CY=CalibY; CY=CalibZ;
 		printf("CalibX = %i \n", CalibX );
 		printf("CalibY = %i \n", CalibY );
 		printf("CalibZ = %i \n", CalibZ );
 
 		//printf("To end the test press, press 'y' - when test OK or 'n' - when test failed  \n\n");
-		printf("Press 'y' - to write calibrates or other key to repeat: ");
+		//printf("Press 'y' - to write calibrates or other key to repeat: ");
 		//userAnsw = getchar();
 
 		//usleep(1000000);
@@ -720,3 +729,306 @@ int FuncAccelerometer_Calibration(int Do)
 
 	return 0;
 };
+
+int FuncConfirm_Battery_Charger_Communication(int Do)
+{
+	//Confirm detection and communication with battery charger
+	FILE * hiddenConsole;
+	#define ANSWER_L 1024
+	char Answer[ANSWER_L] ="";
+	int lastchar;
+
+	const char* ChipInfo = "0x0001";
+
+	if(!Do) return -1;
+
+	hiddenConsole = popen("lsmod | grep ltc4015_charger", "r"); //lsmod | grep pfuze100_regulator
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+	if(lastchar){
+		hiddenConsole = popen("rmmod ltc4015_charger", "r"); //rmmod pfuze100_regulator
+		lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+		Answer[lastchar] = '\0';
+		pclose(hiddenConsole);
+		printf("hiddenConsole answer: \n%s", Answer);
+	}
+	hiddenConsole = popen("i2cget -y 2 0x68 0x4A w", "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+
+	if(strncmp(Answer, ChipInfo,6) == 0){
+		return 0;
+	}
+	else{
+		return -1;
+	};
+	return 0;
+};
+
+int FuncConfirm_PMIC_Communication(int Do)
+{
+	//Validate that PMIC is present and responsive via I2C
+	FILE * hiddenConsole;
+	char Answer[ANSWER_L] ="";
+	int lastchar;
+
+	const char* ChipInfo = "0x10";
+
+	if(!Do) return -1;
+
+
+
+	hiddenConsole = popen("lsmod | grep pfuze100_regulator", "r"); //lsmod | grep pfuze100_regulator
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+	if(lastchar){
+		hiddenConsole = popen("rmmod pfuze100_regulator", "r"); //rmmod pfuze100_regulator
+		lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+		Answer[lastchar] = '\0';
+		pclose(hiddenConsole);
+		printf("hiddenConsole answer: \n%s", Answer);
+	}
+	hiddenConsole = popen("i2cget -y 2 0x08 0x00 b", "r"); //i2cget -y 2 0x08 0x00 b
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+
+	if(strncmp(Answer, ChipInfo,4) == 0){
+		return 0;
+	}
+	else{
+		return -1;
+	};
+
+	//modprobe pfuze100_regulator
+};
+
+int FuncEMMY_163_Connectivity_Check(int Do)
+{
+	//Confirm EMMY module is responsive
+	//Validate Wi-Fi antenna by detecting and printing available Wifi Networks
+
+	FILE * hiddenConsole;
+	char Answer[ANSWER_L], userAnsw;
+	int lastchar;
+	int result = 0;
+
+
+	if(!Do) return -1;
+
+	hiddenConsole = popen("lsmod | grep sd8xxx", "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+	if(lastchar == 0){
+		printf("\n Kernel module 'sd8xxx' not loaded!!! Load module and try again\n");
+		return -1;
+	}
+	hiddenConsole = popen("lsmod | grep mlan", "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+	if(lastchar == 0){
+		printf("\n Kernel module 'mlan' not loaded!!! Load module and try again\n");
+		return -1;
+	}
+	//print networks
+	printf("\n\nScanning WiFi networks... Wait 10 sec...\n\n");
+	hiddenConsole = popen("iw dev mlan0 scan | grep SSID", "r");
+
+	sleep(10);
+
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("\nFound networks: \n%s", Answer);
+
+	printf("\nDo you see networks? (y/n): ");
+	do
+	{
+		userAnsw = getchar();
+	} while (userAnsw != 'y' && userAnsw != 'n' );
+
+	if(userAnsw == 'y'){
+		result = 1;//return testOk;
+		printf("\nWiFi \033[1;32;40mOk\033[1;0m\n");
+	}
+
+	if(userAnsw == 'n'){
+		result = 0;//return testFailed;
+		printf("\nWiFi \033[1;31;40mFailed\033[1;0m\n");
+	}
+
+	//Validate Bluetooth Antenna by detecting and printing available Bluetooth devices to pair
+
+	hiddenConsole = popen("lsmod | grep bt8xxx", "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+	if(lastchar == 0){
+		printf("\n Kernel module 'bt8xxx' not loaded!!! Load module and try again");
+		return -1;
+	}
+	hiddenConsole = popen("./bt_scan.sh", "r");
+	printf("\n\nScanning bluetooth devices networks... Wait 10 sec...\n\n");
+	sleep(10);
+
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("\nFound bluetooth devices: \n%s", Answer);
+	printf("\nDo you see bluetooth devices? (y/n): ");
+	do
+	{
+		userAnsw = getchar();
+	} while (userAnsw != 'y' && userAnsw != 'n' );
+	if(userAnsw == 'y'){
+		result += 1;//return testOk;
+		printf("\nBT \033[1;32;40mOk\033[1;0m\n");
+	}
+
+	if(userAnsw == 'n'){
+		result = 0;//return testFailed;
+		printf("\nBT \033[1;31;40mFailed\033[1;0m\n");
+	}
+
+	if(result == 2){
+		return 0;
+	}
+	else{
+		return -1;
+	}
+
+}
+
+int FuncAmbient_Light_Sensor_Functionality(int Do)
+{
+	//Provide live printed results of light sensor brightness detection (user can hit enter to exit)
+	char F=0;
+	const char *devName[3] = {"/sys/bus/iio/devices/iio:device0/in_illuminance_raw","/sys/bus/iio/devices/iio:device1/in_illuminance_raw","/sys/bus/iio/devices/iio:device2/in_illuminance_raw"};
+	int file, i_t=0;
+
+	if(!Do) return -1;
+
+	for(int i=0; i<=2; i++){
+		printf("Open: %s\n", devName[i]);
+		file = open( devName[i], O_RDONLY );
+		if(file == -1){
+			printf("%s - not found\n", devName[i]);
+		}
+		else{
+			F=1;
+			i_t= i;
+			break;
+		}
+	}
+
+	if(F==0)
+	{
+		printf( "ERROR: Unable to open device file! \n" );
+		return -1;
+	}
+	printf("Open OK\n");
+
+		memset(LightDataBuffer, 0, sizeof( LightDataBuffer ) );
+		file = open(devName[i_t], O_RDONLY);
+		read( file, LightDataBuffer, sizeof(LightDataBuffer) );
+		close(file);
+		printf("Light sensor value = %s \n", LightDataBuffer );
+
+	close(file);
+	printf("Close OK\n");
+
+	return 0;
+}
+
+int FuncBarometer_Functionality(int Do)
+{
+	//Provide live printed results of pressure readings and temperature readings (user can hit enter to exit)
+	char F=0;
+	char dataBuffer[100];
+	const char *pressureRead[3] = {"/sys/bus/iio/devices/iio:device0/in_pressure_raw","/sys/bus/iio/devices/iio:device1/in_pressure_raw","/sys/bus/iio/devices/iio:device2/in_pressure_raw"};
+	const char *tempRead[3] =     {"/sys/bus/iio/devices/iio:device0/in_temp_raw","/sys/bus/iio/devices/iio:device1/in_temp_raw","/sys/bus/iio/devices/iio:device2/in_temp_raw"};
+	int fileTemp,filePressure, i_t=0, i_p=0;
+
+	if(!Do) return -1;
+
+	for(int i=0; i<=2; i++){
+		printf("Open: %s\n", tempRead[i]);
+		fileTemp = open( tempRead[i], O_RDONLY );
+		if(fileTemp == -1){
+			printf("%s - not found\n", tempRead[i]);
+		}
+		else{
+			F=1;
+			i_t= i;
+			break;//continue;
+		}
+	}
+
+	if(F==0)
+	{
+		printf( "ERROR: Unable to open device file! \n" );
+		return -1;
+	}
+	printf("Open OK\n");
+
+	F=0;
+	for(int i=0; i<=2; i++){
+		printf("Open: %s\n", pressureRead[i]);
+		filePressure = open( pressureRead[i], O_RDONLY );
+		if(filePressure == -1){
+			printf("%s - not found\n", pressureRead[i]);
+		}
+		else{
+			F=1;
+			i_p = i;
+			break;
+		}
+	}
+
+	if(F==0)
+	{
+		printf( "ERROR: Unable to open device file! \n" );
+		return -1;
+	}
+	printf("Open OK\n");
+
+	// Temperature data reading
+		memset( dataBuffer, 0, sizeof( dataBuffer ) );
+		fileTemp = open( tempRead[i_t], O_RDONLY );
+		read( fileTemp, dataBuffer, sizeof(dataBuffer) );
+		close( fileTemp );
+
+		temperature = atof( dataBuffer );
+		temperature *= 0.0625;
+
+		printf( "Temperature Celsius value = %f \n", temperature );
+		// 100us delay for sensor
+		usleep(100000);
+
+	// Pressure data reading
+		memset( dataBuffer, 0, sizeof( dataBuffer ) );
+		filePressure = open( pressureRead[i_p], O_RDONLY );//O_RDWR
+		read( filePressure, dataBuffer, sizeof( dataBuffer) );
+		close( filePressure );
+		pressure = atof( dataBuffer );
+		pressure *= 0.25;
+		pressure /= 100;
+		printf( "Pressure hPa value = %i \n", (int)pressure );
+
+	close( fileTemp );
+	close( filePressure );
+
+	return 0;
+}

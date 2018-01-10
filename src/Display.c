@@ -35,10 +35,19 @@ Menu ShipMode;
 Menu Exit;
 //Menu PreAsmTest;
 
-extern int fd_fb;
+extern int CX;
+extern int CY;
+extern int CZ;
+extern char LightDataBuffer[100];
+extern float temperature;
+extern float pressure;
 
+extern int fd_fb;
 extern pthread_t preasm_thread;	//preasm test thread
 extern int id_preasm_thread;
+
+pthread_mutex_t mutex;
+unsigned char thread_flag=0;
 
 Menu* active_menu;
 
@@ -92,12 +101,16 @@ void PreAsmAct (void)
 	}
 	else
 	{
-		trhread_state=-1;
-		printf("\nPreasm thread stop\n");
-		pthread_cancel(preasm_thread);
-		pthread_join(preasm_thread, NULL);
-		MenuInit();
-
+		pthread_mutex_lock(&mutex);
+			if (thread_flag==1)
+			{
+				trhread_state=-1;
+				printf("\nPreasm thread stop\n");
+				//pthread_cancel(preasm_thread);
+				pthread_join(preasm_thread, NULL);
+				MenuInit();
+			}
+		pthread_mutex_unlock(&mutex);
 	}
 }
 
@@ -343,8 +356,9 @@ void* preasm_thread_func(void* thread_data)
 {
 	char buf[200];
 	char cnt_byte;
-	unsigned char state_test=0;
+	//unsigned char state_test=0;
 
+	thread_flag=0;
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
@@ -376,14 +390,14 @@ void* preasm_thread_func(void* thread_data)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[31m\x1b[2;38H===== Pre-Assembly Test =====\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 
-		for (;;)
-		{
-			if (state_test==0)
-			{
+		//for (;;)
+		//{
+			//if (state_test==0)
+			//{
 				if (TestMMC(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK\x1b[0m - Output and input buffer are equal\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
@@ -409,7 +423,7 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncEEPROM(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK\x1b[0m - Output and input buffer are equal\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
@@ -422,7 +436,7 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncAccelerometer_Calibration(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[32m OK \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[32m OK\x1b[0m - Calibrate values: x = %i; y = %i; z = %i\n\n", CX, CY, CZ);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
@@ -432,13 +446,72 @@ void* preasm_thread_func(void* thread_data)
 					write(fd_fb, buf, cnt_byte);
 				}
 
+				if (FuncConfirm_Battery_Charger_Communication(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCharger LTC4015 TEST:\x1b[32m OK\x1b[0m - LTC4015's telemetry system is valid\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCharger ltc4015 TEST:\x1b[31m Fail \x1b[0m\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				if (FuncConfirm_PMIC_Communication(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPMIC TEST:\x1b[32m OK\x1b[0m - PMIC ID is valid\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPMIC TEST:\x1b[31m Fail \x1b[0m\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				if (FuncAmbient_Light_Sensor_Functionality(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[32m OK\x1b[0m - Light sensor value %s\n", LightDataBuffer);
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[31m Fail \x1b[0m\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				if (FuncBarometer_Functionality(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[32m OK\x1b[0m - Pressure value is %.2f Temperature is %.2f\n\n", pressure, temperature);
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[31m Fail \x1b[0m\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;32H\x1b[31mPUSH THE ENTER BUTTON TO EXIT IN BIOS MENU\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 			write(fd_fb, buf, cnt_byte);
-			state_test=1;
-			}
-		usleep(1000000);
-		}
+			//state_test=1;
+			pthread_mutex_lock(&mutex);
+			thread_flag=1;
+			pthread_mutex_unlock(&mutex);
+			pthread_exit(0);
+			//}
+		//usleep(1000000);
+		//}
 }
 
 

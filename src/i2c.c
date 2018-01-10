@@ -39,9 +39,18 @@ int Write_i2c(char addr, unsigned char* buf, int len)
 {
      struct i2c_rdwr_ioctl_data msg_rdwr;
      struct i2c_msg i2cmsg;
-     char buf_local[1];
+     //char buf_local[1];
+     char* buf_local = (char*) malloc(len);
+     int i;
 
      buf_local[0] = addr;
+     if (buf!=NULL)
+     {
+     	 for (i=1; i<len; i++)
+     	 {
+     		buf_local[i]=buf[i];
+     	 }
+     }
 
      msg_rdwr.msgs = &i2cmsg;
      msg_rdwr.nmsgs = 1;
@@ -55,6 +64,7 @@ int Write_i2c(char addr, unsigned char* buf, int len)
 			perror("\nError write to I2C");
 			return -1;
 		}
+	free(buf_local);
 
     return 0;
 
