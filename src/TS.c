@@ -37,6 +37,7 @@
 #endif
 
 extern Menu* active_menu;
+extern Menu PostAsm;
 extern int timer_tick;
 
 unsigned char pre_asm_active=0;
@@ -115,7 +116,10 @@ void FSM_TS (ilitek_key_info* key)
 							if (key->key_num==2)
 							{
 								active_menu=active_menu->ENTER;
-								pre_asm_active^=(1<<0);
+									if (active_menu!=&PostAsm) // dummy for Post_asm test menu
+									{
+									pre_asm_active^=(1<<0);
+									}
 								active_menu->menuaction();
 							}
 						timer_tick=0;
