@@ -42,6 +42,8 @@ extern int CZ;
 extern char LightDataBuffer[100];
 extern float temperature;
 extern float pressure;
+extern char EmmyWiFiBuffer[1024];
+extern char EmmyBTBuffer[1024];
 
 extern int fd_fb;
 extern pthread_t preasm_thread;	//preasm test thread
@@ -179,8 +181,8 @@ void GIAct (void)
 	Write_EEPROM("1");	// write eeprom 1, after reboot restore process will be srart
 	sleep(2);
 
-	system("reboot");
-	//pthread_exit(0);
+	//system("reboot");
+	pthread_exit(0);
 
 }
 
@@ -266,8 +268,8 @@ void ExitAct (void)
 	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
 	sleep(2);
 
-	system("reboot");
-	//pthread_exit(0);
+	//system("reboot");
+	pthread_exit(0);
 }
 
 void PreAsmTestDisp(void)
@@ -494,6 +496,22 @@ void* preasm_thread_func(void* thread_data)
 				{
 					memset(buf, 0, 200);
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[31m Fail \x1b[0m\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEMMY TEST:\x1b[33m Please wait!\x1b[0m");
+				write(fd_fb, buf, cnt_byte);
+				if (FuncEMMY_163_Connectivity_Check(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[32m OK\x1b[0m - %s, %s     \n\n", EmmyWiFiBuffer, EmmyBTBuffer);
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[31m Fail \x1b[0m - %s, %s     \n\n", EmmyWiFiBuffer, EmmyBTBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 

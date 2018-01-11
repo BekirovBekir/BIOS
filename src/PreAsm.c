@@ -27,6 +27,7 @@
 #include "../inc/PreAsm.h"
 #include "../inc/eeprom.h"
 #include "../inc/i2c.h"
+#include "../inc/ComPort.h"
 
 
 int CX=0;
@@ -35,6 +36,8 @@ int CZ=0;
 char LightDataBuffer[100]={0};
 float temperature = 0;
 float pressure = 0;
+char EmmyWiFiBuffer[1024]={0};
+char EmmyBTBuffer[1024]={0};
 
 int TestMMC(int Do)
 {
@@ -816,12 +819,19 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	//Validate Wi-Fi antenna by detecting and printing available Wifi Networks
 
 	FILE * hiddenConsole;
-	char Answer[ANSWER_L], userAnsw;
+	char Answer[ANSWER_L];
 	int lastchar;
 	int result = 0;
 
 
 	if(!Do) return -1;
+
+	hiddenConsole = popen("./wifi_on.sh", "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+
+	sleep(10);
 
 	hiddenConsole = popen("lsmod | grep sd8xxx", "r");
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -839,7 +849,8 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	printf("hiddenConsole answer: \n%s", Answer);
 	if(lastchar == 0){
 		printf("\n Kernel module 'mlan' not loaded!!! Load module and try again\n");
-		return -1;
+		sprintf (EmmyWiFiBuffer, "Module 'mlan' not loaded");
+		result=-1;
 	}
 	//print networks
 	printf("\n\nScanning WiFi networks... Wait 10 sec...\n\n");
@@ -852,20 +863,17 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	pclose(hiddenConsole);
 	printf("\nFound networks: \n%s", Answer);
 
-	printf("\nDo you see networks? (y/n): ");
-	do
+	if (strstr(Answer, "SSID")!=NULL)
 	{
-		userAnsw = getchar();
-	} while (userAnsw != 'y' && userAnsw != 'n' );
-
-	if(userAnsw == 'y'){
-		result = 1;//return testOk;
-		printf("\nWiFi \033[1;32;40mOk\033[1;0m\n");
+		sprintf (EmmyWiFiBuffer, "Wi-Fi networks are available");
+		printf("\nWiFi Ok\n");
+		result=0;
 	}
-
-	if(userAnsw == 'n'){
-		result = 0;//return testFailed;
-		printf("\nWiFi \033[1;31;40mFailed\033[1;0m\n");
+	else
+	{
+		sprintf (EmmyWiFiBuffer, "Wi-Fi networks aren't available");
+		printf("\nWiFi Failed\n");
+		result=0;
 	}
 
 	//Validate Bluetooth Antenna by detecting and printing available Bluetooth devices to pair
@@ -877,7 +885,8 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	printf("hiddenConsole answer: \n%s", Answer);
 	if(lastchar == 0){
 		printf("\n Kernel module 'bt8xxx' not loaded!!! Load module and try again");
-		return -1;
+		sprintf (EmmyBTBuffer, "Module 'bt8xxx' not loaded");
+		result=-1;
 	}
 	hiddenConsole = popen("./bt_scan.sh", "r");
 	printf("\n\nScanning bluetooth devices networks... Wait 10 sec...\n\n");
@@ -886,23 +895,23 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
 	Answer[lastchar] = '\0';
 	pclose(hiddenConsole);
-	printf("\nFound bluetooth devices: \n%s", Answer);
-	printf("\nDo you see bluetooth devices? (y/n): ");
-	do
+
+	if (strstr(Answer, ":")!=NULL)
 	{
-		userAnsw = getchar();
-	} while (userAnsw != 'y' && userAnsw != 'n' );
-	if(userAnsw == 'y'){
-		result += 1;//return testOk;
-		printf("\nBT \033[1;32;40mOk\033[1;0m\n");
+		sprintf (EmmyBTBuffer, "BT devices are available");
+		printf("\nBT Ok\n");
+		result=0;
+	}
+	else
+	{
+		sprintf (EmmyBTBuffer, "BT devices aren't available");
+		printf("\nBT Failed\n");
+		result=0;
 	}
 
-	if(userAnsw == 'n'){
-		result = 0;//return testFailed;
-		printf("\nBT \033[1;31;40mFailed\033[1;0m\n");
-	}
+	printf("\nFound bluetooth devices: \n%s", Answer);
 
-	if(result == 2){
+	if(result == 0){
 		return 0;
 	}
 	else{
@@ -1031,4 +1040,285 @@ int FuncBarometer_Functionality(int Do)
 	close( filePressure );
 
 	return 0;
+}
+
+int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
+{
+	//Test sending power on to device on UART port
+	//Test sending power on to device on USB port
+	//Test toggling GPIO signal for RF antenna selection for UART modem versus USB modem
+
+	#define BUFF_SIZE 100
+	FILE *hiddenConsole;
+	char Answer[ANSWER_L] ="";
+	int lastchar, SaraErr=0, LaraErr=0;
+	char dataBuffer[BUFF_SIZE], chS=' ',chL=' ';
+	//----------------------Power test modem via UART-------------------------------------------
+	printf( "LARA power-on\n" );
+
+	//set LARA power on
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio50/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	usleep(500000);//sleep(1);
+
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 0 > /sys/class/gpio/gpio52/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	usleep(100000);//sleep(1);
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio52/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	usleep(200000);//sleep(1);
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 0 > /sys/class/gpio/gpio52/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+
+
+	usleep(3000000);
+	//ttymxc1
+	printf( "Send 'ATE0' to LARA\n" );
+
+	if(Init_LARA_SARA("/dev/ttymxc1", 115200) == 1){
+		printf( "ERROR init LARA! \n" );
+		LaraErr = 1;//return testFailed;
+	}
+	else{
+		printf( "LARA answer 'OK' \n" );
+	}
+
+	//----------------------Power test modem via USB------------------------------------------
+	usleep(1000000);
+	//set SARA power on
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio49/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+
+	//TODO: проверить появился ли порт ttyACM0
+	usleep(12000000);//sleep(12);
+	printf( "Send 'ATE0' to SARA\n" );
+
+	if(Init_LARA_SARA("/dev/ttyACM0", 115200) == 1){
+		printf( "ERROR init SARA! \n" );
+		SaraErr=1;//return testFailed;
+	}
+	else{
+		printf( "SARA answer 'OK' \n" );
+	}
+	if(SaraErr || LaraErr){
+		return -1;
+	}
+
+	//toggle antenna to LARA
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio48/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf( "\nThe antenna is connected to LARA\nCheck it and press 'y' when OK or 'n' when failed\n" );
+	do{
+		chL = getchar();
+	}while(chL !='y'&& chL !='n');
+
+	sleep(1);
+
+	//toggle antenna to SARA
+	memset(dataBuffer, 0, sizeof( dataBuffer ));
+	sprintf(dataBuffer, "echo 0 > /sys/class/gpio/gpio48/value");
+	hiddenConsole = popen(dataBuffer, "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf( "\nThe antenna is connected to SARA\nCheck it and press 'y' when OK or 'n' when failed\n" );
+	do{
+		chS = getchar();
+	}while(chS !='y'&& chS !='n');
+
+	sleep(1);
+	if((chL == 'y')&&(chS == 'y')){
+		return 0;
+	}
+	else{
+		return -1;
+	}
+
+	//return testOk;
+}
+
+int Init_LARA_SARA(char* port_name, int port_speed){
+	char buf_tx[1000]={0};
+	char buf_rx[1000]={0};
+	int cnt_byte;
+	//static
+	int port_id;
+
+	port_id=OpenPort(port_name);
+	SetPort(port_id, port_speed);
+	usleep(1000000);
+
+	ClosePort(port_id);
+	usleep(500000);
+
+
+	///----***----***---***---***---***---***---***---***--
+	port_id=OpenPort(port_name);
+	printf( "Port ID: %i\n", port_id);
+	SetPort(port_id, port_speed);
+
+	sleep(5);
+
+	cnt_byte=sprintf(buf_tx, "ATE0\r");	 // echo off
+	puts (buf_tx);
+	WritePort(port_id, (unsigned char*)buf_tx, cnt_byte);
+	usleep(500000);
+	cnt_byte=ReadPort(port_id, (unsigned char*)buf_rx, sizeof(buf_rx));
+	puts(buf_rx);
+	if (strstr(buf_rx, "OK")==NULL) //SARA-U201-03B-00 //LARA-R204-02B-00
+	{
+		perror("\r\nError while reading\r\n");
+		return -1;
+	}
+
+	memset(buf_tx, 0, 1000);
+	memset(buf_rx, 0, 1000);
+	return 0;
+
+}
+
+void power_init(void)
+{
+	int fd;
+	int n,m;
+	char buf[20] = {0};
+
+	fd = open("/sys/class/gpio/export", O_WRONLY);
+	if(fd < 0)
+	{
+		printf("Error while opening - %d\n", fd);
+		return;
+	}
+
+	n = snprintf(buf, sizeof(buf), "63");
+	m = write(fd, buf, n);
+	if(m != n)
+	{
+		printf("Error, not writing\n");
+		return;
+	}
+
+	m = close(fd);
+	if (m != 0)
+	{
+		printf("Error while closing\n");
+		return;
+	}
+}
+
+
+void power_set_direction(void)
+{
+	int fd;
+	int n,m;
+	char buf[20] = {0};
+
+
+	fd = open("/sys/class/gpio/gpio63/direction", O_WRONLY);
+	if(fd < 0)
+	{
+		printf("Error while opening - %d\n", fd);
+		return;
+	}
+
+	n = snprintf(buf, sizeof(buf), "out");
+	m = write(fd, buf, n);
+	if(m != n)
+	{
+		printf("Error, not writing\n");
+		return;
+	}
+
+	m = close(fd);
+	if (m != 0)
+	{
+		printf("Error while closing\n");
+		return;
+	}
+}
+
+
+void power_set_on(void)
+{
+	int fd;
+	int n,m;
+	char buf[20] = {0};
+
+
+	fd = open("/sys/class/gpio/gpio63/value", O_WRONLY);
+	if(fd < 0)
+	{
+		printf("Error while opening - %d\n", fd);
+		return;
+	}
+
+	n = snprintf(buf, sizeof(buf), "1");
+	m = write(fd, buf, n);
+	if(m != n)
+	{
+		printf("Error, not writing\n");
+		return;
+	}
+
+	m = close(fd);
+	if (m != 0)
+	{
+		printf("Error while closing\n");
+		return;
+	}
+}
+
+
+void power_set_off(void)
+{
+	int fd;
+	int n,m;
+	char buf[20] = {0};
+
+
+	fd = open("/sys/class/gpio/gpio63/value", O_WRONLY);
+	if(fd < 0)
+	{
+		printf("Error while opening - %d\n", fd);
+		return;
+	}
+
+	n = snprintf(buf, sizeof(buf), "0");
+	m = write(fd, buf, n);
+	if(m != n)
+	{
+		printf("Error, not writing\n");
+		return;
+	}
+
+	m = close(fd);
+	if (m != 0)
+	{
+		printf("Error while closing\n");
+		return;
+	}
 }

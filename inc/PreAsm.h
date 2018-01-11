@@ -17,6 +17,12 @@ int FuncBarometer_Functionality(int Do);
 int FuncAmbient_Light_Sensor_Functionality(int Do);
 int FuncEMMY_163_Connectivity_Check(int Do);
 int FuncConfirm_PMIC_Communication(int Do);
+void power_init(void);
+void power_set_direction(void);
+void power_set_on(void);
+void power_set_off(void);
+int Init_LARA_SARA(char* port_name, int port_speed);
+int FuncCell_Module_Testing_Power_Antenna_Permission(int Do);
 
 
 #endif /* INC_PREASM_H_ */
