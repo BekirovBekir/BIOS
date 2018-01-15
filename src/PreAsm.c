@@ -1045,42 +1045,25 @@ int FuncBarometer_Functionality(int Do)
 	return 0;
 }
 
-int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
+int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 {
 	//Test sending power on to device on UART port
 	//Test sending power on to device on USB port
 	//Test toggling GPIO signal for RF antenna selection for UART modem versus USB modem
 
 	#define BUFF_SIZE 100
-	FILE *hiddenConsole;
-	char Answer[ANSWER_L] ="";
-	int lastchar, SaraErr=0, LaraErr=0;
-	char dataBuffer[BUFF_SIZE];
+	int LaraErr=0;
 
 		//setup GPIO
-	printf( "Setup GPIO for LARA and SARA \n" );
+	printf( "Setup GPIO for LARA \n" );
 
-		if (Init_GPIO("48", "out")!=1)
-		{
-			sprintf(SaraBuffer, "Error export pins");
-			sprintf(LaraBuffer, "Error export pins");
-			return -1;
-		}
-		if (Init_GPIO("49", "out")!=1)
-		{
-			sprintf(SaraBuffer, "Error export pins");
-			sprintf(LaraBuffer, "Error export pins");
-			return -1;
-		}
 		if (Init_GPIO("50", "out")!=1)
 		{
-			sprintf(SaraBuffer, "Error export pins");
 			sprintf(LaraBuffer, "Error export pins");
 			return -1;
 		}
 		if (Init_GPIO("52", "out")!=1)
 		{
-			sprintf(SaraBuffer, "Error export pins");
 			sprintf(LaraBuffer, "Error export pins");
 			return -1;
 		}
@@ -1090,7 +1073,6 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 
 		if (Write_GPIO("50", "1")!=1)
 		{
-			sprintf(SaraBuffer, "Error write pin 50");
 			sprintf(LaraBuffer, "Error write pin 50");
 			return -1;
 		}
@@ -1098,7 +1080,6 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 
 	if (Write_GPIO("52", "0")!=1)
 	{
-		sprintf(SaraBuffer, "Error write pin 52");
 		sprintf(LaraBuffer, "Error write pin 52");
 		return -1;
 	}
@@ -1106,7 +1087,6 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 
 	if (Write_GPIO("52", "1")!=1)
 	{
-		sprintf(SaraBuffer, "Error write pin 52");
 		sprintf(LaraBuffer, "Error write pin 52");
 		return -1;
 	}
@@ -1114,7 +1094,6 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 
 	if (Write_GPIO("52", "0")!=1)
 	{
-		sprintf(SaraBuffer, "Error write pin 52");
 		sprintf(LaraBuffer, "Error write pin 52");
 		return -1;
 	}
@@ -1129,6 +1108,49 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 	else{
 		printf( "LARA answer 'OK' \n" );
 	}
+	if(LaraErr){
+		return -1;
+	}
+
+	printf( "Unexport GPIO for LARA \n" );
+
+		if (DeInit_GPIO("50")!=1)
+		{
+			sprintf(LaraBuffer, "Error unexport pin 50");
+			return -1;
+		}
+		if (DeInit_GPIO("52")!=1)
+		{
+			sprintf(LaraBuffer, "Error unexport pin 52");
+			return -1;
+		}
+
+	sprintf(LaraBuffer, "LARA module recieve AT-command");
+	return 0;
+}
+
+int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
+{
+	//Test sending power on to device on UART port
+	//Test sending power on to device on USB port
+	//Test toggling GPIO signal for RF antenna selection for UART modem versus USB modem
+
+	#define BUFF_SIZE 100
+	int SaraErr=0;
+
+		//setup GPIO
+	printf( "Setup GPIO for SARA \n" );
+
+		if (Init_GPIO("48", "out")!=1)
+		{
+			sprintf(SaraBuffer, "Error export pins");
+			return -1;
+		}
+		if (Init_GPIO("49", "out")!=1)
+		{
+			sprintf(SaraBuffer, "Error export pins");
+			return -1;
+		}
 
 	//----------------------Power test modem via USB------------------------------------------
 	usleep(1000000);
@@ -1136,7 +1158,6 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 	if (Write_GPIO("49", "1")!=1)
 	{
 		sprintf(SaraBuffer, "Error write pin 49");
-		sprintf(LaraBuffer, "Error write pin 49");
 		return -1;
 	}
 	//TODO: проверить появился ли порт ttyACM0
@@ -1150,14 +1171,13 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 	else{
 		printf( "SARA answer 'OK' \n" );
 	}
-	if(SaraErr || LaraErr){
+	if(SaraErr){
 		return -1;
 	}
 
 	if (Write_GPIO("48", "1")!=1)
 	{
 		sprintf(SaraBuffer, "Error write pin 48");
-		sprintf(LaraBuffer, "Error write pin 48");
 		return -1;
 	}
 
@@ -1166,39 +1186,23 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 	if (Write_GPIO("48", "0")!=1)
 	{
 		sprintf(SaraBuffer, "Error write pin 48");
-		sprintf(LaraBuffer, "Error write pin 48");
 		return -1;
 	}
 
-	printf( "Unexport GPIO for LARA and SARA \n" );
+	printf( "Unexport GPIO for SARA \n" );
 
 		if (DeInit_GPIO("48")!=1)
 		{
 			sprintf(SaraBuffer, "Error unexport pin 48");
-			sprintf(LaraBuffer, "Error unexport pin 48");
 			return -1;
 		}
 		if (DeInit_GPIO("49")!=1)
 		{
 			sprintf(SaraBuffer, "Error unexport pin 49");
-			sprintf(LaraBuffer, "Error unexport pin 49");
-			return -1;
-		}
-		if (DeInit_GPIO("50")!=1)
-		{
-			sprintf(SaraBuffer, "Error unexport pin 50");
-			sprintf(LaraBuffer, "Error unexport pin 50");
-			return -1;
-		}
-		if (DeInit_GPIO("52")!=1)
-		{
-			sprintf(SaraBuffer, "Error unexport pin 52");
-			sprintf(LaraBuffer, "Error unexport pin 52");
 			return -1;
 		}
 
-	sprintf(SaraBuffer, "Sara module recieve AT-command");
-	sprintf(LaraBuffer, "Lara module recieve AT-command");
+	sprintf(SaraBuffer, "SARA module recieve AT-command");
 	return 0;
 }
 

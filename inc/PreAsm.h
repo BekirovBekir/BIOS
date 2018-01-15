@@ -22,7 +22,8 @@ void power_set_direction(void);
 void power_set_on(void);
 void power_set_off(void);
 int Init_LARA_SARA(char* port_name, int port_speed);
-int FuncCell_Module_Testing_Power_Antenna_Permission(int Do);
+int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do);
+int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do);
 
 
 #endif /* INC_PREASM_H_ */
