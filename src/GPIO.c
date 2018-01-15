@@ -61,6 +61,29 @@ int Init_GPIO(const char* pin_name,  char* pin_mode)
 	return 1;
 }
 
+int DeInit_GPIO(const char* pin_name)
+{
+	int fd;
+	int cnt_byte;
+	char buf[GPIO_BUF_SIZE]={0};
+
+	//memset(buf, 0, BUT_BUF_SIZE);
+
+	fd=open("/sys/class/gpio/unexport", O_WRONLY);
+		if (fd<0)
+		{
+			snprintf(buf, sizeof(buf), "\r\nError while opening GPIO-%s", pin_name);
+			perror(buf);
+			return -1;
+		}
+	memset(buf, 0, GPIO_BUF_SIZE);
+	cnt_byte=snprintf(buf, sizeof(buf), "%s", pin_name);
+	write(fd, buf, cnt_byte);
+	close(fd);
+
+	return 1;
+}
+
 int Read_GPIO(const char* pin_name)
 {
 	int fd;

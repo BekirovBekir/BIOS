@@ -21,6 +21,7 @@
 #define GPIO_BUF_SIZE 100
 
 int Init_GPIO(const char* pin_name, char* pin_mode);
+int DeInit_GPIO(const char* pin_name);
 int Read_GPIO(const char* pin_name);
 int Write_GPIO(char* pin_name, char* pin_state);
 int Set_PWM_LED (int pwm);

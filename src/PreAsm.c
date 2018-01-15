@@ -28,6 +28,7 @@
 #include "../inc/eeprom.h"
 #include "../inc/i2c.h"
 #include "../inc/ComPort.h"
+#include "../inc/GPIO.h"
 
 
 int CX=0;
@@ -38,6 +39,8 @@ float temperature = 0;
 float pressure = 0;
 char EmmyWiFiBuffer[1024]={0};
 char EmmyBTBuffer[1024]={0};
+char SaraBuffer[1024]={0};
+char LaraBuffer[1024]={0};
 
 int TestMMC(int Do)
 {
@@ -826,7 +829,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 	if(!Do) return -1;
 
-	hiddenConsole = popen("./wifi_on.sh", "r");
+	hiddenConsole = popen("/root/wifi_on.sh", "r");
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
 	Answer[lastchar] = '\0';
 	pclose(hiddenConsole);
@@ -888,7 +891,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		sprintf (EmmyBTBuffer, "Module 'bt8xxx' not loaded");
 		result=-1;
 	}
-	hiddenConsole = popen("./bt_scan.sh", "r");
+	hiddenConsole = popen("/root/bt_scan.sh", "r");
 	printf("\n\nScanning bluetooth devices networks... Wait 10 sec...\n\n");
 	sleep(10);
 
@@ -1052,41 +1055,69 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 	FILE *hiddenConsole;
 	char Answer[ANSWER_L] ="";
 	int lastchar, SaraErr=0, LaraErr=0;
-	char dataBuffer[BUFF_SIZE], chS=' ',chL=' ';
+	char dataBuffer[BUFF_SIZE];
+
+		//setup GPIO
+	printf( "Setup GPIO for LARA and SARA \n" );
+
+		if (Init_GPIO("48", "out")!=1)
+		{
+			sprintf(SaraBuffer, "Error export pins");
+			sprintf(LaraBuffer, "Error export pins");
+			return -1;
+		}
+		if (Init_GPIO("49", "out")!=1)
+		{
+			sprintf(SaraBuffer, "Error export pins");
+			sprintf(LaraBuffer, "Error export pins");
+			return -1;
+		}
+		if (Init_GPIO("50", "out")!=1)
+		{
+			sprintf(SaraBuffer, "Error export pins");
+			sprintf(LaraBuffer, "Error export pins");
+			return -1;
+		}
+		if (Init_GPIO("52", "out")!=1)
+		{
+			sprintf(SaraBuffer, "Error export pins");
+			sprintf(LaraBuffer, "Error export pins");
+			return -1;
+		}
+
 	//----------------------Power test modem via UART-------------------------------------------
 	printf( "LARA power-on\n" );
 
-	//set LARA power on
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio50/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
+		if (Write_GPIO("50", "1")!=1)
+		{
+			sprintf(SaraBuffer, "Error write pin 50");
+			sprintf(LaraBuffer, "Error write pin 50");
+			return -1;
+		}
 	usleep(500000);//sleep(1);
 
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 0 > /sys/class/gpio/gpio52/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
+	if (Write_GPIO("52", "0")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 52");
+		sprintf(LaraBuffer, "Error write pin 52");
+		return -1;
+	}
 	usleep(100000);//sleep(1);
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio52/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
+
+	if (Write_GPIO("52", "1")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 52");
+		sprintf(LaraBuffer, "Error write pin 52");
+		return -1;
+	}
 	usleep(200000);//sleep(1);
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 0 > /sys/class/gpio/gpio52/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
 
-
+	if (Write_GPIO("52", "0")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 52");
+		sprintf(LaraBuffer, "Error write pin 52");
+		return -1;
+	}
 	usleep(3000000);
 	//ttymxc1
 	printf( "Send 'ATE0' to LARA\n" );
@@ -1101,14 +1132,13 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 
 	//----------------------Power test modem via USB------------------------------------------
 	usleep(1000000);
-	//set SARA power on
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio49/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
 
+	if (Write_GPIO("49", "1")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 49");
+		sprintf(LaraBuffer, "Error write pin 49");
+		return -1;
+	}
 	//TODO: проверить появился ли порт ttyACM0
 	usleep(12000000);//sleep(12);
 	printf( "Send 'ATE0' to SARA\n" );
@@ -1124,41 +1154,52 @@ int FuncCell_Module_Testing_Power_Antenna_Permission(int Do)
 		return -1;
 	}
 
-	//toggle antenna to LARA
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 1 > /sys/class/gpio/gpio48/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
-	printf( "\nThe antenna is connected to LARA\nCheck it and press 'y' when OK or 'n' when failed\n" );
-	do{
-		chL = getchar();
-	}while(chL !='y'&& chL !='n');
-
-	sleep(1);
-
-	//toggle antenna to SARA
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "echo 0 > /sys/class/gpio/gpio48/value");
-	hiddenConsole = popen(dataBuffer, "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
-	printf( "\nThe antenna is connected to SARA\nCheck it and press 'y' when OK or 'n' when failed\n" );
-	do{
-		chS = getchar();
-	}while(chS !='y'&& chS !='n');
-
-	sleep(1);
-	if((chL == 'y')&&(chS == 'y')){
-		return 0;
-	}
-	else{
+	if (Write_GPIO("48", "1")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 48");
+		sprintf(LaraBuffer, "Error write pin 48");
 		return -1;
 	}
 
-	//return testOk;
+	sleep(1);
+
+	if (Write_GPIO("48", "0")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 48");
+		sprintf(LaraBuffer, "Error write pin 48");
+		return -1;
+	}
+
+	printf( "Unexport GPIO for LARA and SARA \n" );
+
+		if (DeInit_GPIO("48")!=1)
+		{
+			sprintf(SaraBuffer, "Error unexport pin 48");
+			sprintf(LaraBuffer, "Error unexport pin 48");
+			return -1;
+		}
+		if (DeInit_GPIO("49")!=1)
+		{
+			sprintf(SaraBuffer, "Error unexport pin 49");
+			sprintf(LaraBuffer, "Error unexport pin 49");
+			return -1;
+		}
+		if (DeInit_GPIO("50")!=1)
+		{
+			sprintf(SaraBuffer, "Error unexport pin 50");
+			sprintf(LaraBuffer, "Error unexport pin 50");
+			return -1;
+		}
+		if (DeInit_GPIO("52")!=1)
+		{
+			sprintf(SaraBuffer, "Error unexport pin 52");
+			sprintf(LaraBuffer, "Error unexport pin 52");
+			return -1;
+		}
+
+	sprintf(SaraBuffer, "Sara module recieve AT-command");
+	sprintf(LaraBuffer, "Lara module recieve AT-command");
+	return 0;
 }
 
 int Init_LARA_SARA(char* port_name, int port_speed){

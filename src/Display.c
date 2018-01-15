@@ -44,6 +44,8 @@ extern float temperature;
 extern float pressure;
 extern char EmmyWiFiBuffer[1024];
 extern char EmmyBTBuffer[1024];
+extern char SaraBuffer[1024];
+extern char LaraBuffer[1024];
 
 extern int fd_fb;
 extern pthread_t preasm_thread;	//preasm test thread
@@ -512,6 +514,22 @@ void* preasm_thread_func(void* thread_data)
 				{
 					memset(buf, 0, 200);
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[31m Fail \x1b[0m - %s, %s     \n\n", EmmyWiFiBuffer, EmmyBTBuffer);
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSARA and LARA TEST:\x1b[33m Please wait!\x1b[0m");
+				write(fd_fb, buf, cnt_byte);
+				if (FuncCell_Module_Testing_Power_Antenna_Permission(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[32DSARA and LARA TEST:\x1b[32m OK\x1b[0m - %s, %s     \n\n", SaraBuffer, LaraBuffer);
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[32DSARA and LARA TEST:\x1b[31m Fail \x1b[0m - %s, %s     \n\n", SaraBuffer, LaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 
