@@ -834,7 +834,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	Answer[lastchar] = '\0';
 	pclose(hiddenConsole);
 
-	sleep(10);
+	sleep(5);
 
 	hiddenConsole = popen("lsmod | grep sd8xxx", "r");
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -866,9 +866,17 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	pclose(hiddenConsole);
 	printf("\nFound networks: \n%s", Answer);
 
-	if (strstr(Answer, "SSID")!=NULL)
+	char* ptr_1;
+	char* ptr_2;
+	int cnt=0;
+	ptr_1=strstr(Answer, "SSID");
+	memset(EmmyWiFiBuffer, 0, 1024);
+	if (ptr_1!=NULL)
 	{
-		sprintf (EmmyWiFiBuffer, "Wi-Fi networks are available");
+		ptr_2=strstr(ptr_1, "\n");
+		cnt=ptr_2-ptr_1;
+		strncpy(EmmyWiFiBuffer, ptr_1, cnt);
+		//sprintf (EmmyWiFiBuffer, "Wi-Fi networks are available");
 		printf("\nWiFi Ok\n");
 		result=0;
 	}
@@ -899,20 +907,29 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	Answer[lastchar] = '\0';
 	pclose(hiddenConsole);
 
-	if (strstr(Answer, ":")!=NULL)
-	{
-		sprintf (EmmyBTBuffer, "BT devices are available");
-		printf("\nBT Ok\n");
-		result=0;
-	}
-	else
-	{
-		sprintf (EmmyBTBuffer, "BT devices aren't available");
-		printf("\nBT Failed\n");
-		result=0;
-	}
+	char* ptr_3;
+	ptr_3=strstr(Answer, ":");
+	memset(EmmyBTBuffer, 0, 1024);
+		if (ptr_3!=NULL)
+		{
+			//sprintf (EmmyBTBuffer, "BT devices are available");
+			strcat(EmmyBTBuffer, "MAC: ");
+			strncpy((EmmyBTBuffer+5), (ptr_3-2), 11);
+			printf("\nBT Ok\n");
+			result=0;
+		}
+		else
+		{
+			sprintf (EmmyBTBuffer, "BT devices aren't available");
+			printf("\nBT Failed\n");
+			result=0;
+		}
 
 	printf("\nFound bluetooth devices: \n%s", Answer);
+
+	system("echo 0 > /sys/class/gpio/gpio8/value");
+	sleep(2);
+	system("echo 8 > /sys/class/gpio/unexport");
 
 	if(result == 0){
 		return 0;
