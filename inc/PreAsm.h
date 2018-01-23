@@ -8,6 +8,8 @@
 #ifndef INC_PREASM_H_
 #define INC_PREASM_H_
 
+#include "FrameBuffer.h"
+
 int TestMMC(int Do);
 int FuncSPI_32MBit_NOR_Flash(int Do);
 int FuncEEPROM(int Do);
@@ -24,6 +26,7 @@ void power_set_off(void);
 int Init_LARA_SARA(char* port_name, int port_speed);
 int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do);
 int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do);
+int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2);
 
 
 #endif /* INC_PREASM_H_ */

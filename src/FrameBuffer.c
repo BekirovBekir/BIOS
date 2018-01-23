@@ -6,10 +6,13 @@
  */
 
 #include <linux/fb.h>
+#include <linux/videodev2.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>  /* UNIX standard function definitions */
 #include <fcntl.h>   /* File control definitions */
@@ -54,4 +57,26 @@ void Fill_Buffer(unsigned char r, unsigned char g, unsigned char b)
 			}
 		}
 	close(fb_fd);
+}
+
+int Read_Cam_Param(char* path, CAMPARAM* param_ptr)
+{
+
+	struct v4l2_frmsizeenum  frminfo;
+	struct v4l2_fmtdesc fmtinfo;
+
+	int fb_fd = open("/dev/video0",O_RDONLY);
+		if (fb_fd<0) return -1;
+
+	ioctl(fb_fd, VIDIOC_ENUM_FRAMESIZES, &frminfo);
+	ioctl(fb_fd, VIDIOC_ENUM_FMT, &fmtinfo);
+
+	memset(param_ptr->description, 0, 33);
+	strncpy(param_ptr->description, fmtinfo.description, 32);
+	param_ptr->widht=frminfo.discrete.width;
+	param_ptr->height=frminfo.discrete.height;
+	param_ptr->pixel_format=frminfo.pixel_format;
+
+	close(fb_fd);
+	return 0;
 }

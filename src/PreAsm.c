@@ -29,6 +29,7 @@
 #include "../inc/i2c.h"
 #include "../inc/ComPort.h"
 #include "../inc/GPIO.h"
+#include "../inc/FrameBuffer.h"
 
 
 int CX=0;
@@ -41,6 +42,7 @@ char EmmyWiFiBuffer[1024]={0};
 char EmmyBTBuffer[1024]={0};
 char SaraBuffer[1024]={0};
 char LaraBuffer[1024]={0};
+unsigned char wifi_first_start_flag=0;
 
 int TestMMC(int Do)
 {
@@ -227,6 +229,7 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 	//Performs checksum validation on all memory parts to ensure memory is free of corruption or defect. This includes testing
 	char buffer_out[BUFFER_SIZE];
 	char buffer_in[BUFFER_SIZE];
+	char buffer_save[BUFFER_SIZE];
 	int fd;
 	int i;
 
@@ -234,6 +237,31 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 
 	memset(buffer_in, 0, BUFFER_SIZE);
 	memset(buffer_out, 0, BUFFER_SIZE);
+	memset(buffer_save, 0, BUFFER_SIZE);
+
+	printf("Open SPI NOR...");
+	fd = open("/dev/mtdblock0", O_RDWR);
+	if(fd < 0 )
+	{
+		printf("Error: %d\n", fd);
+		return -1;
+	}
+	printf("ok\n");
+
+	i=read(fd, buffer_save, 100);
+		if(i != 100)
+		{
+			printf("Read only %d bytes instead %d", i, 100);
+		}
+
+	printf("Close SPI NOR...");
+	i = close(fd);
+		if(i != 0 )
+		{
+			printf("Error: %d\n",i);
+			return -1;
+		}
+	printf("ok\n\n");
 
 	printf("Generate output buffer...\n");
 	srand(time(NULL));
@@ -329,6 +357,24 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 	printf("\n\n");
 
 	printf("Close SPI NOR...");
+	close(fd);
+	printf("ok\n\n");
+
+	printf("Open SPI NOR...");
+	fd = open("/dev/mtdblock0", O_RDWR);
+	if(fd < 0)
+	{
+		printf("Error: %d\n", fd);
+		return -1;
+	}
+	printf("ok\n");
+
+	i = write(fd, buffer_save, BUFFER_SIZE);
+		if(i != BUFFER_SIZE)
+		{
+			printf("Write only %d bytes instead %d", i, 100);
+		}
+
 	close(fd);
 	printf("ok\n\n");
 
@@ -786,8 +832,6 @@ int FuncConfirm_PMIC_Communication(int Do)
 
 	if(!Do) return -1;
 
-
-
 	hiddenConsole = popen("lsmod | grep pfuze100_regulator", "r"); //lsmod | grep pfuze100_regulator
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
 	Answer[lastchar] = '\0';
@@ -829,12 +873,15 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 	if(!Do) return -1;
 
-	hiddenConsole = popen("/root/wifi_on.sh", "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
-
-	sleep(5);
+		if (wifi_first_start_flag!=1)
+		{
+			hiddenConsole = popen("/root/wifi_on.sh", "r");
+			lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+			Answer[lastchar] = '\0';
+			pclose(hiddenConsole);
+			wifi_first_start_flag=1;
+			sleep(5);
+		}
 
 	hiddenConsole = popen("lsmod | grep sd8xxx", "r");
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -899,10 +946,10 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		sprintf (EmmyBTBuffer, "Module 'bt8xxx' not loaded");
 		result=-1;
 	}
+
 	hiddenConsole = popen("/root/bt_scan.sh", "r");
 	printf("\n\nScanning bluetooth devices networks... Wait 10 sec...\n\n");
 	sleep(10);
-
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
 	Answer[lastchar] = '\0';
 	pclose(hiddenConsole);
@@ -926,10 +973,6 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		}
 
 	printf("\nFound bluetooth devices: \n%s", Answer);
-
-	system("echo 0 > /sys/class/gpio/gpio8/value");
-	sleep(2);
-	system("echo 8 > /sys/class/gpio/unexport");
 
 	if(result == 0){
 		return 0;
@@ -1221,6 +1264,21 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	sprintf(SaraBuffer, "SARA module recieve AT-command");
 	return 0;
+}
+
+int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2)
+{
+	int state1=-1;
+	int state2=-1;
+
+	printf("Read camera parameters...\n");
+
+	state1=(Read_Cam_Param("/dev/video0", camptr1) ? 0 : -1);
+
+	state2=(Read_Cam_Param("/dev/video1", camptr2) ? 0 : -1);
+
+	if ((state1==0)&&(state2==0)) return 0;
+	else return -1;
 }
 
 int Init_LARA_SARA(char* port_name, int port_speed){

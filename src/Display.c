@@ -548,6 +548,21 @@ void* preasm_thread_func(void* thread_data)
 					write(fd_fb, buf, cnt_byte);
 				}
 
+				CAMPARAM cam1;
+				CAMPARAM cam2;
+				if (Cameras_Test(1, &cam1, &cam2)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCAM's TEST:\x1b[32m OK\x1b[0m - CAM1 res: %i x %i; pixel: %i \n\n", cam1.widht, cam1.height, cam1.pixel_format);
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCAM's TEST:\x1b[31m Fail \x1b[0m - CAM1 res: %i x %i; pixel: %i \n\n", cam1.widht, cam1.height, cam1.pixel_format);
+					write(fd_fb, buf, cnt_byte);
+				}
+
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;32H\x1b[31mPUSH THE ENTER BUTTON TO EXIT IN BIOS MENU\x1b[0m");
 			write(fd_fb, buf, cnt_byte);
