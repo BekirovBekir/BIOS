@@ -1,3 +1,4 @@
-src/FrameBuffer.o: ../src/FrameBuffer.c ../src/../inc/FrameBuffer.h
+src/FrameBuffer.o: ../src/FrameBuffer.c \
+ /home/bekir/Eclipse\ Project/BIOS/inc/FrameBuffer.h
 
-../src/../inc/FrameBuffer.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/FrameBuffer.h:

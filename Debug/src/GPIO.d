@@ -1,3 +1,3 @@
-src/GPIO.o: ../src/GPIO.c ../src/../inc/GPIO.h
+src/GPIO.o: ../src/GPIO.c /home/bekir/Eclipse\ Project/BIOS/inc/GPIO.h
 
-../src/../inc/GPIO.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/GPIO.h:

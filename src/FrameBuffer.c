@@ -18,10 +18,21 @@
 #include <fcntl.h>   /* File control definitions */
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions */
-#include "../inc/FrameBuffer.h"
+#include "FrameBuffer.h"
+
+#define DEBUG 1
+
+#if (DEBUG > 0)
+	#define DBG(x)	(x)
+#else
+	#define DBG(x)
+#endif
 
 struct fb_fix_screeninfo finfo;
 struct fb_var_screeninfo vinfo;
+
+struct v4l2_frmsizeenum  frminfo;
+struct v4l2_fmtdesc fmtinfo;
 
 unsigned long pixel_color(unsigned char r, unsigned char g, unsigned char b, struct fb_var_screeninfo *vinfo)
 {
@@ -61,22 +72,27 @@ void Fill_Buffer(unsigned char r, unsigned char g, unsigned char b)
 
 int Read_Cam_Param(char* path, CAMPARAM* param_ptr)
 {
+	int video_fd = open(path, O_RDONLY);
+		if (video_fd<0) return -1;
 
-	struct v4l2_frmsizeenum  frminfo;
-	struct v4l2_fmtdesc fmtinfo;
-
-	int fb_fd = open("/dev/video0",O_RDONLY);
-		if (fb_fd<0) return -1;
-
-	ioctl(fb_fd, VIDIOC_ENUM_FRAMESIZES, &frminfo);
-	ioctl(fb_fd, VIDIOC_ENUM_FMT, &fmtinfo);
-
+		if ((ioctl(video_fd, VIDIOC_ENUM_FRAMESIZES, &frminfo))<0)
+		{
+			DBG(printf("\nFailed read CAM ioctl\n"));
+			close(video_fd);
+			return -1;
+		}
+		if (ioctl(video_fd, VIDIOC_ENUM_FMT, &fmtinfo)<0)
+		{
+			DBG(printf("Fail CAM2"));
+			close(video_fd);
+			return -1;
+		}
+	close(video_fd);
+	sleep(1);
 	memset(param_ptr->description, 0, 33);
-	strncpy(param_ptr->description, fmtinfo.description, 32);
+	strncpy((char*)param_ptr->description, (char*)fmtinfo.description, 32);
 	param_ptr->widht=frminfo.discrete.width;
 	param_ptr->height=frminfo.discrete.height;
 	param_ptr->pixel_format=frminfo.pixel_format;
-
-	close(fb_fd);
 	return 0;
 }

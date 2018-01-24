@@ -1,3 +1,4 @@
-src/ComPort.o: ../src/ComPort.c ../src/../inc/ComPort.h
+src/ComPort.o: ../src/ComPort.c \
+ /home/bekir/Eclipse\ Project/BIOS/inc/ComPort.h
 
-../src/../inc/ComPort.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/ComPort.h:

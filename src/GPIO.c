@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include "../inc/GPIO.h"
+#include "GPIO.h"
 
 
 int Init_GPIO(const char* pin_name,  char* pin_mode)

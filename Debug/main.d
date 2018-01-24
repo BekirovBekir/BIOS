@@ -1,12 +1,15 @@
-main.o: ../main.c .././inc/i2c.h .././inc/TS.h .././inc/FrameBuffer.h \
- .././inc/Display.h .././inc/eeprom.h
+main.o: ../main.c /home/bekir/Eclipse\ Project/BIOS/inc/i2c.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/TS.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/FrameBuffer.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/Display.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/eeprom.h
 
-.././inc/i2c.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/i2c.h:
 
-.././inc/TS.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/TS.h:
 
-.././inc/FrameBuffer.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/FrameBuffer.h:
 
-.././inc/Display.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/Display.h:
 
-.././inc/eeprom.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/eeprom.h:

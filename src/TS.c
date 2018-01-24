@@ -22,11 +22,11 @@
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
 
-#include "../inc/i2c.h"
-#include "../inc/TS.h"
-#include "../inc/ComPort.h"
-#include "../inc/FrameBuffer.h"
-#include "../inc/Display.h"
+#include "i2c.h"
+#include "TS.h"
+#include "ComPort.h"
+#include "FrameBuffer.h"
+#include "Display.h"
 
 #define DEBUG 1
 

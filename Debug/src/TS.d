@@ -1,13 +1,15 @@
-src/TS.o: ../src/TS.c ../src/../inc/i2c.h ../src/../inc/TS.h \
- ../src/../inc/ComPort.h ../src/../inc/FrameBuffer.h \
- ../src/../inc/Display.h
+src/TS.o: ../src/TS.c /home/bekir/Eclipse\ Project/BIOS/inc/i2c.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/TS.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/ComPort.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/FrameBuffer.h \
+ /home/bekir/Eclipse\ Project/BIOS/inc/Display.h
 
-../src/../inc/i2c.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/i2c.h:
 
-../src/../inc/TS.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/TS.h:
 
-../src/../inc/ComPort.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/ComPort.h:
 
-../src/../inc/FrameBuffer.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/FrameBuffer.h:
 
-../src/../inc/Display.h:
+/home/bekir/Eclipse\ Project/BIOS/inc/Display.h:

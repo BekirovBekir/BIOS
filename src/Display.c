@@ -550,16 +550,21 @@ void* preasm_thread_func(void* thread_data)
 
 				CAMPARAM cam1;
 				CAMPARAM cam2;
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCAM's TEST:\x1b[33m Please wait!\x1b[0m");
+				write(fd_fb, buf, cnt_byte);
 				if (Cameras_Test(1, &cam1, &cam2)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCAM's TEST:\x1b[32m OK\x1b[0m - CAM1 res: %i x %i; pixel: %i \n\n", cam1.widht, cam1.height, cam1.pixel_format);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[32m OK\x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n\n", cam1.description, cam1.widht, cam1.height,
+									 cam2.description, cam2.widht, cam2.height);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCAM's TEST:\x1b[31m Fail \x1b[0m - CAM1 res: %i x %i; pixel: %i \n\n", cam1.widht, cam1.height, cam1.pixel_format);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[31m Fail \x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n\n", cam1.description, cam1.widht, cam1.height,
+									 cam2.description, cam2.widht, cam2.height);
 					write(fd_fb, buf, cnt_byte);
 				}
 

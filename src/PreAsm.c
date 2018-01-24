@@ -24,12 +24,12 @@
 #include <linux/i2c.h>
 
 
-#include "../inc/PreAsm.h"
-#include "../inc/eeprom.h"
-#include "../inc/i2c.h"
-#include "../inc/ComPort.h"
-#include "../inc/GPIO.h"
-#include "../inc/FrameBuffer.h"
+#include "PreAsm.h"
+#include "eeprom.h"
+#include "i2c.h"
+#include "ComPort.h"
+#include "GPIO.h"
+#include "FrameBuffer.h"
 
 
 int CX=0;
@@ -1272,10 +1272,10 @@ int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2)
 	int state2=-1;
 
 	printf("Read camera parameters...\n");
-
-	state1=(Read_Cam_Param("/dev/video0", camptr1) ? 0 : -1);
-
-	state2=(Read_Cam_Param("/dev/video1", camptr2) ? 0 : -1);
+	sleep(1);
+	state1=(Read_Cam_Param("/dev/video0", camptr1) ? -1 : 0);
+	state2=(Read_Cam_Param("/dev/video1", camptr2) ? -1 : 0);
+	//printf("%s, %i, %i, %i", camptr1->description, camptr1->height, camptr1->widht, camptr1->pixel_format);
 
 	if ((state1==0)&&(state2==0)) return 0;
 	else return -1;

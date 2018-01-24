@@ -16,11 +16,11 @@
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
 
-#include "./inc/i2c.h"
-#include "./inc/TS.h"
-#include "./inc/FrameBuffer.h"
-#include "./inc/Display.h"
-#include "./inc/eeprom.h"
+#include "i2c.h"
+#include "TS.h"
+#include "FrameBuffer.h"
+#include "Display.h"
+#include "eeprom.h"
 
 #define DEBUG 1
 

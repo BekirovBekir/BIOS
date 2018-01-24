@@ -7,7 +7,7 @@
  *      Author: bekir
  */
 
-#include "../inc/i2c.h"
+#include "i2c.h"
 
 static unsigned char dev_adr;
 static int file_desc;
