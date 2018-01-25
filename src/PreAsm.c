@@ -42,6 +42,7 @@ char EmmyWiFiBuffer[1024]={0};
 char EmmyBTBuffer[1024]={0};
 char SaraBuffer[1024]={0};
 char LaraBuffer[1024]={0};
+char AudioCodecBuffer[1024]={0};
 unsigned char wifi_first_start_flag=0;
 
 int TestMMC(int Do)
@@ -1114,6 +1115,8 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	#define BUFF_SIZE 100
 	int LaraErr=0;
 
+	if(!Do) return -1;
+
 		//setup GPIO
 	printf( "Setup GPIO for LARA \n" );
 
@@ -1198,6 +1201,8 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	#define BUFF_SIZE 100
 	int SaraErr=0;
 
+	if(!Do) return -1;
+
 		//setup GPIO
 	printf( "Setup GPIO for SARA \n" );
 
@@ -1271,15 +1276,119 @@ int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2)
 	int state1=-1;
 	int state2=-1;
 
+	if(!Do) return -1;
+
 	printf("Read camera parameters...\n");
 	sleep(1);
 	state1=(Read_Cam_Param("/dev/video0", camptr1) ? -1 : 0);
 	state2=(Read_Cam_Param("/dev/video1", camptr2) ? -1 : 0);
-	//printf("%s, %i, %i, %i", camptr1->description, camptr1->height, camptr1->widht, camptr1->pixel_format);
 
 	if ((state1==0)&&(state2==0)) return 0;
 	else return -1;
 }
+
+int Audio_Codec_Test(int Do)
+{
+	FILE * hiddenConsole;
+	char Answer[ANSWER_L];
+	int lastchar;
+	int result = 0;
+
+	if(!Do) return -1;
+
+	hiddenConsole = popen("cat /sys/class/i2c-dev/i2c-1/device/1-0038/uevent", "r");
+	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+	Answer[lastchar] = '\0';
+	pclose(hiddenConsole);
+	printf("hiddenConsole answer: \n%s", Answer);
+	if(lastchar == 0)
+	{
+		printf("\n");
+		sprintf (AudioCodecBuffer, "Audio codec not detected!");
+		result=-1;
+	}
+	else
+	{
+		char* ptr1=NULL;
+		char* ptr2=NULL;
+		ptr1=strstr(Answer, "DRIVER");
+			if (ptr1!=NULL)
+			{
+				ptr2=strchr(Answer, '\n');
+				strncpy(AudioCodecBuffer, ptr1, (ptr2-ptr1));
+			}
+		ptr1=strstr(Answer, "OF_NAME");
+			if (ptr1!=NULL)
+			{
+				ptr2=strchr(ptr1, '\n');
+				strcat(AudioCodecBuffer, " ");
+				strncat(AudioCodecBuffer, ptr1, (ptr2-ptr1));
+			}
+	printf("Audio codec: %s \n", AudioCodecBuffer);
+	result=0;
+	}
+return result;
+}
+
+int NEO_Test(int Do)
+{
+	int fd;
+	int cnt_byte=0;
+	char buf_rx[200]={0};
+
+		if(!Do) return -1;
+
+		if (Init_GPIO("63", "out")!=1)
+		{
+			printf("Error export pins 63\n");
+			return -1;
+		}
+		else
+		{
+			if (Write_GPIO("63", "1")!=1) return -1;
+		}
+		sleep(1);
+
+	fd=OpenPort("/dev/ttymxc2");
+		if (fd<0)
+		{
+			printf("Error while open port\n");
+			return -1;
+		}
+	SetPort(fd, 9600);
+	sleep(1);
+	cnt_byte=ReadPort(fd, (unsigned char*)buf_rx, sizeof(buf_rx));
+		if (cnt_byte>0)
+		{
+			if (strstr(buf_rx, "$")!=NULL)
+			{
+				close(fd);
+				Write_GPIO("63", "0");
+				DeInit_GPIO("63");
+				return 0;
+			}
+			else
+			{
+				close(fd);
+				Write_GPIO("63", "0");
+				DeInit_GPIO("63");
+				return -1;
+			}
+		}
+		else
+		{
+			close(fd);
+			Write_GPIO("63", "0");
+			DeInit_GPIO("63");
+			return -1;
+		}
+
+close(fd);
+Write_GPIO("63", "0");
+DeInit_GPIO("63");
+return -1;
+}
+
 
 int Init_LARA_SARA(char* port_name, int port_speed){
 	char buf_tx[1000]={0};

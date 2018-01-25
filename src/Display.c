@@ -46,6 +46,7 @@ extern char EmmyWiFiBuffer[1024];
 extern char EmmyBTBuffer[1024];
 extern char SaraBuffer[1024];
 extern char LaraBuffer[1024];
+extern char AudioCodecBuffer[1024];
 
 extern int fd_fb;
 extern pthread_t preasm_thread;	//preasm test thread
@@ -400,7 +401,7 @@ void* preasm_thread_func(void* thread_data)
 				if (TestMMC(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK\x1b[0m - Output and input buffer are equal\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
@@ -413,7 +414,7 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncSPI_32MBit_NOR_Flash(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[32m OK \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
@@ -426,7 +427,7 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncEEPROM(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK\x1b[0m - Output and input buffer are equal\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
@@ -548,8 +549,8 @@ void* preasm_thread_func(void* thread_data)
 					write(fd_fb, buf, cnt_byte);
 				}
 
-				CAMPARAM cam1;
-				CAMPARAM cam2;
+				CAMPARAM cam1={0};
+				CAMPARAM cam2={0};
 				memset(buf, 0, 200);
 				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCAM's TEST:\x1b[33m Please wait!\x1b[0m");
 				write(fd_fb, buf, cnt_byte);
@@ -567,6 +568,33 @@ void* preasm_thread_func(void* thread_data)
 									 cam2.description, cam2.widht, cam2.height);
 					write(fd_fb, buf, cnt_byte);
 				}
+
+				if (Audio_Codec_Test(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - %s\n\n", AudioCodecBuffer);
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio codec TEST:\x1b[31m Fail \x1b[0m - %s\n\n", AudioCodecBuffer);
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				if (NEO_Test(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[32m OK\x1b[0m - NMEA received\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[31m Fail \x1b[0m - NMEA not received\n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;32H\x1b[31mPUSH THE ENTER BUTTON TO EXIT IN BIOS MENU\x1b[0m");
