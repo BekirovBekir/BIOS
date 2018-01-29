@@ -41,6 +41,7 @@ extern Menu PostAsm;
 extern int timer_tick;
 
 unsigned char pre_asm_active=0;
+unsigned char flag_for_pre_asm=0;
 
 // Function scanning TS and return struct with key parameters
 ilitek_key_info Scan_TS_Key(void)
@@ -103,22 +104,25 @@ void FSM_TS (ilitek_key_info* key)
 						memset(buf, 0, 50);
 						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[0;0Hkey_pressed: %i\n", key->key_num);
 						write(fd_fb, buf, cnt_byte);*/
-							if ((key->key_num==4)&&(pre_asm_active==0))
+							if ((key->key_num==4) && (pre_asm_active==0))
 							{
 								active_menu=active_menu->UP;
 								active_menu->menudisplay();
 							}
-							if ((key->key_num==3)&&(pre_asm_active==0))
+							if ((key->key_num==3) && (pre_asm_active==0))
 							{
 								active_menu=active_menu->DOWN;
 								active_menu->menudisplay();
 							}
-							if (key->key_num==2)
+							if ((key->key_num==2) && (flag_for_pre_asm==0))
 							{
 								active_menu=active_menu->ENTER;
 									if (active_menu!=&PostAsm) // dummy for Post_asm test menu
 									{
-									pre_asm_active^=(1<<0);
+											pre_asm_active^=(1<<0);
+											flag_for_pre_asm=(pre_asm_active ? 1 : 0);
+											//if (pre_asm_active) flag_for_pre_asm=1;
+											//else flag_for_pre_asm=0;
 									}
 								active_menu->menuaction();
 							}

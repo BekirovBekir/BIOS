@@ -25,6 +25,7 @@ void GIDisp (void);
 void ShipModeDisp (void);
 void ExitDisp (void);
 //void PreAsmTestDisp(void);
+void DownloadDisp (void);
 
 void PreAsmAct (void);
 void PostAsmAct (void);
@@ -32,6 +33,7 @@ void GIAct (void);
 void ShipModeAct (void);
 void ExitAct (void);
 //void PreAsmTestAct(void);
+void DownloadAct (void);
 
 void MenuInit (void);
 

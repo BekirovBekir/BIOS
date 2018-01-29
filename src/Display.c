@@ -23,18 +23,21 @@
 #include <linux/i2c.h>
 
 
-#include "../inc/Display.h"
-#include "../inc/FrameBuffer.h"
-#include "../inc/eeprom.h"
-#include "../inc/PreAsm.h"
+#include "Display.h"
+#include "FrameBuffer.h"
+#include "eeprom.h"
+#include "PreAsm.h"
 
 Menu PreAsm;
 Menu PostAsm;
 Menu GI;
 Menu ShipMode;
 Menu Exit;
+Menu Download;
 //Menu PreAsmTest;
 Menu* active_menu;
+
+extern unsigned char flag_for_pre_asm;
 
 extern int CX;
 extern int CY;
@@ -61,7 +64,7 @@ void PreAsmDisp (void)
 	char cnt_byte;
 
 	memset(buf, 0, 50);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23;41H \n\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;41H \n\n"); //23
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
@@ -80,8 +83,13 @@ void PreAsmDisp (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C4. Power Down to Shipping Mode\n\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C5. Exit - Boot OS\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C5. Exit - Boot OS\n\n");
 	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C6. Enter Into Download Mode OS\n");
+	write(fd_fb, buf, cnt_byte);
+
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -239,15 +247,17 @@ void ExitDisp (void)
 	char cnt_byte;
 
 	memset(buf, 0, 50);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;41H \n\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[21;41H \n\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[21;41H \n\n");
-	write(fd_fb, buf, cnt_byte);
-	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[40C>\n\n");
 	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -275,6 +285,52 @@ void ExitAct (void)
 	pthread_exit(0);
 }
 
+void DownloadDisp (void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[40C>\n\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void DownloadAct (void)
+{
+	char buf[100];
+	char cnt_byte;
+
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[31;40m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[18;32HFirmware flashing will start after reboot...");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 100);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
+	sleep(2);
+
+	//system("reboot");
+	pthread_exit(0);
+}
+
 void PreAsmTestDisp(void)
 {
 
@@ -288,7 +344,7 @@ void PreAsmTestAct(void)
 void MenuInit (void)
 {
 	PreAsm.DOWN=&PostAsm;
-	PreAsm.UP=&Exit;
+	PreAsm.UP=&Download;
 	PreAsm.ENTER=&PreAsm;
 	PreAsm.menudisplay=&PreAsmDisp;
 	PreAsm.menuaction=&PreAsmAct;
@@ -311,7 +367,7 @@ void MenuInit (void)
 	ShipMode.menudisplay=&ShipModeDisp;
 	ShipMode.menuaction=&ShipModeAct;
 
-	Exit.DOWN=&PreAsm;
+	Exit.DOWN=&Download;
 	Exit.UP=&ShipMode;
 	Exit.ENTER=&Exit;
 	Exit.menudisplay=&ExitDisp;
@@ -322,6 +378,12 @@ void MenuInit (void)
 	//PreAsmTest.ENTER=&PreAsm;
 	//PreAsmTest.menuaction=&PreAsmTestDisp;
 	//PreAsmTest.menuaction=&PreAsmTestAct;
+
+	Download.DOWN=&PreAsm;
+	Download.UP=&Exit;
+	Download.ENTER=&Download;
+	Download.menudisplay=&DownloadDisp;
+	Download.menuaction=&DownloadAct;
 
 	char buf[200];
 	char cnt_byte;
@@ -605,6 +667,7 @@ void* preasm_thread_func(void* thread_data)
 			//state_test=1;
 			pthread_mutex_lock(&mutex);
 			thread_flag=1;
+			flag_for_pre_asm=0; //
 			pthread_mutex_unlock(&mutex);
 			pthread_exit(0);
 			//}
