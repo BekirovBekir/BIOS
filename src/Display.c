@@ -311,7 +311,7 @@ void DownloadDisp (void)
 
 void DownloadAct (void)
 {
-	char buf[100];
+	/*char buf[100];
 	char cnt_byte;
 
 	memset(buf, 0, 100);
@@ -324,11 +324,11 @@ void DownloadAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
+	Write_EEPROM("3");	// write eeprom 3, after reboot android will be srart flashing
 	sleep(2);
 
 	//system("reboot");
-	pthread_exit(0);
+	pthread_exit(0);*/
 }
 
 void PreAsmTestDisp(void)
@@ -406,13 +406,13 @@ void MenuInit (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[13;22H***************************************************************\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;22H*\x1b[12;22H*\x1b[13;22H*\x1b[21;22H*\x1b[14;22H*\x1b[15;22H*\x1b[16;22H*\x1b[17;22H*\x1b[18;22H*\x1b[19;22H*\x1b[20;22H*\x1b[21;22H*\x1b[22;22H*\x1b[23;22H*\x1b[24;22H*\x1b[25;22H*");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;22H*\x1b[12;22H*\x1b[13;22H*\x1b[21;22H*\x1b[14;22H*\x1b[15;22H*\x1b[16;22H*\x1b[17;22H*\x1b[18;22H*\x1b[19;22H*\x1b[20;22H*\x1b[21;22H*\x1b[22;22H*\x1b[23;22H*\x1b[24;22H*\x1b[25;22H*\x1b[26;22H*");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;84H*\x1b[12;84H*\x1b[13;84H*\x1b[14;84H*\x1b[15;84H*\x1b[16;84H*\x1b[17;84H*\x1b[18;84H*\x1b[19;84H*\x1b[20;84H*\x1b[21;84H*\x1b[22;84H*\x1b[23;84H*\x1b[24;84H*\x1b[25;84H*");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;84H*\x1b[12;84H*\x1b[13;84H*\x1b[14;84H*\x1b[15;84H*\x1b[16;84H*\x1b[17;84H*\x1b[18;84H*\x1b[19;84H*\x1b[20;84H*\x1b[21;84H*\x1b[22;84H*\x1b[23;84H*\x1b[24;84H*\x1b[25;84H*\x1b[26;84H*");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[26;22H***************************************************************\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[27;22H***************************************************************\n");
 	write(fd_fb, buf, cnt_byte);
 	active_menu=&PreAsm;
 	active_menu->menudisplay();
@@ -581,33 +581,33 @@ void* preasm_thread_func(void* thread_data)
 				}
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSARA TEST:\x1b[33m Please wait!\x1b[0m");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSARA-U201 TEST:\x1b[33m Please wait!\x1b[0m");
 				write(fd_fb, buf, cnt_byte);
 				if (FuncSARA_Module_Testing_Power_Antenna_Permission(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DSARA TEST:\x1b[32m OK\x1b[0m - %s         \n\n", SaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28DSARA-U201 TEST:\x1b[32m OK\x1b[0m - %s         \n\n", SaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DSARA TEST:\x1b[31m Fail \x1b[0m - %s        \n\n", SaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28DSARA-U201 TEST:\x1b[31m Fail \x1b[0m - %s        \n\n", SaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLARA TEST:\x1b[33m Please wait!\x1b[0m");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSARA-R410M TEST:\x1b[33m Please wait!\x1b[0m");
 				write(fd_fb, buf, cnt_byte);
 				if (FuncLARA_Module_Testing_Power_Antenna_Permission(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DLARA TEST:\x1b[32m OK\x1b[0m - %s         \n\n", LaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29DSARA-R410M TEST:\x1b[32m OK\x1b[0m - %s         \n\n", LaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DLARA TEST:\x1b[31m Fail \x1b[0m - %s        \n\n", LaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29DSARA-R410M TEST:\x1b[31m Fail \x1b[0m - %s        \n\n", LaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 

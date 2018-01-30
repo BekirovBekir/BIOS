@@ -1114,11 +1114,12 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	#define BUFF_SIZE 100
 	int LaraErr=0;
+	memset(LaraBuffer, 0, sizeof(LaraBuffer));
 
 	if(!Do) return -1;
 
 		//setup GPIO
-	printf( "Setup GPIO for LARA \n" );
+	printf( "Setup GPIO for SARA-R410M \n" );
 
 		if (Init_GPIO("50", "out")!=1)
 		{
@@ -1132,7 +1133,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		}
 
 	//----------------------Power test modem via UART-------------------------------------------
-	printf( "LARA power-on\n" );
+	printf( "SARA-R410M power-on\n" );
 
 		if (Write_GPIO("50", "1")!=1)
 		{
@@ -1162,10 +1163,11 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	}
 	usleep(3000000);
 	//ttymxc1
-	printf( "Send 'ATE0' to LARA\n" );
+	printf( "Send 'ATE0' to SARA-R410M\n" );
 
-	if(Init_LARA_SARA("/dev/ttymxc1", 115200) == 1){
-		printf( "ERROR init LARA! \n" );
+	if(Init_LARA_SARA("/dev/ttymxc1", 115200) == -1){
+		printf( "ERROR init SARA-R410M! \n" );
+		sprintf(LaraBuffer, "ERROR init SARA-R410M");
 		LaraErr = 1;//return testFailed;
 	}
 	else{
@@ -1175,7 +1177,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		return -1;
 	}
 
-	printf( "Unexport GPIO for LARA \n" );
+	printf( "Unexport GPIO for SARA-R410M \n" );
 
 		if (DeInit_GPIO("50")!=1)
 		{
@@ -1188,7 +1190,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 			return -1;
 		}
 
-	sprintf(LaraBuffer, "LARA module recieve AT-command");
+	sprintf(LaraBuffer, "SARA-R410M module received ATE0 command");
 	return 0;
 }
 
@@ -1200,11 +1202,13 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	#define BUFF_SIZE 100
 	int SaraErr=0;
+	memset(SaraBuffer, 0, sizeof(SaraBuffer));
+
 
 	if(!Do) return -1;
 
 		//setup GPIO
-	printf( "Setup GPIO for SARA \n" );
+	printf( "Setup GPIO for SARA-U201 \n" );
 
 		if (Init_GPIO("48", "out")!=1)
 		{
@@ -1227,10 +1231,11 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	}
 	//TODO: проверить появился ли порт ttyACM0
 	usleep(12000000);//sleep(12);
-	printf( "Send 'ATE0' to SARA\n" );
+	printf( "Send 'ATE0' to SARA-U201\n" );
 
-	if(Init_LARA_SARA("/dev/ttyACM0", 115200) == 1){
-		printf( "ERROR init SARA! \n" );
+	if(Init_LARA_SARA("/dev/ttyACM0", 115200) == -1){
+		printf( "ERROR init SARA-U201! \n" );
+		sprintf(SaraBuffer, "ERROR init SARA-U201");
 		SaraErr=1;//return testFailed;
 	}
 	else{
@@ -1254,7 +1259,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 		return -1;
 	}
 
-	printf( "Unexport GPIO for SARA \n" );
+	printf( "Unexport GPIO for SARA-U201 \n" );
 
 		if (DeInit_GPIO("48")!=1)
 		{
@@ -1267,7 +1272,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 			return -1;
 		}
 
-	sprintf(SaraBuffer, "SARA module recieve AT-command");
+	sprintf(SaraBuffer, "SARA-U201 module received ATE0 command");
 	return 0;
 }
 
@@ -1293,6 +1298,7 @@ int Audio_Codec_Test(int Do)
 	char Answer[ANSWER_L];
 	int lastchar;
 	int result = 0;
+	memset(AudioCodecBuffer, 0, sizeof(AudioCodecBuffer));
 
 	if(!Do) return -1;
 
@@ -1421,11 +1427,13 @@ int Init_LARA_SARA(char* port_name, int port_speed){
 	if (strstr(buf_rx, "OK")==NULL) //SARA-U201-03B-00 //LARA-R204-02B-00
 	{
 		perror("\r\nError while reading\r\n");
+		ClosePort(port_id);
 		return -1;
 	}
 
 	memset(buf_tx, 0, 1000);
 	memset(buf_rx, 0, 1000);
+	ClosePort(port_id);
 	return 0;
 
 }
