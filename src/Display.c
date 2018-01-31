@@ -311,7 +311,7 @@ void DownloadDisp (void)
 
 void DownloadAct (void)
 {
-	/*char buf[100];
+	char buf[100];
 	char cnt_byte;
 
 	memset(buf, 0, 100);
@@ -328,7 +328,7 @@ void DownloadAct (void)
 	sleep(2);
 
 	//system("reboot");
-	pthread_exit(0);*/
+	pthread_exit(0);
 }
 
 void PreAsmTestDisp(void)
