@@ -30,6 +30,7 @@
 #include "ComPort.h"
 #include "GPIO.h"
 #include "FrameBuffer.h"
+#include "AudioCodec.h"
 
 
 int CX=0;

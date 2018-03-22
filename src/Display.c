@@ -189,6 +189,8 @@ void GIAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	system("mke2fs /dev/mmcblk1p6"); // format CACHE partition
+	sleep(1);
 	Write_EEPROM("1");	// write eeprom 1, after reboot restore process will be srart
 	sleep(2);
 

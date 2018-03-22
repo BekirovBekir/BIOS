@@ -83,7 +83,7 @@ int Read_Cam_Param(char* path, CAMPARAM* param_ptr)
 		}
 		if (ioctl(video_fd, VIDIOC_ENUM_FMT, &fmtinfo)<0)
 		{
-			DBG(printf("Fail CAM2"));
+			DBG(printf("\nFailed read CAM ioctl\n"));
 			close(video_fd);
 			return -1;
 		}

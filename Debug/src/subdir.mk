@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../src/AudioCodec.c \
 ../src/ComPort.c \
 ../src/Display.c \
 ../src/FrameBuffer.c \
@@ -14,6 +15,7 @@ C_SRCS += \
 ../src/i2c.c 
 
 OBJS += \
+./src/AudioCodec.o \
 ./src/ComPort.o \
 ./src/Display.o \
 ./src/FrameBuffer.o \
@@ -24,6 +26,7 @@ OBJS += \
 ./src/i2c.o 
 
 C_DEPS += \
+./src/AudioCodec.d \
 ./src/ComPort.d \
 ./src/Display.d \
 ./src/FrameBuffer.d \
