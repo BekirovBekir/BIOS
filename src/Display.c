@@ -465,78 +465,78 @@ void* preasm_thread_func(void* thread_data)
 				if (TestMMC(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CeMMC TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CeMMC TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncSPI_32MBit_NOR_Flash(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncEEPROM(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEEPROM TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncAccelerometer_Calibration(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[32m OK\x1b[0m - Calibrate values: x = %i; y = %i; z = %i\n\n", CX, CY, CZ);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[32m OK\x1b[0m - Calibrate values: x = %i; y = %i; z = %i\n", CX, CY, CZ);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncConfirm_Battery_Charger_Communication(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCharger LTC4015 TEST:\x1b[32m OK\x1b[0m - LTC4015's telemetry system is valid\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCharger LTC4015 TEST:\x1b[32m OK\x1b[0m - LTC4015's telemetry system is valid\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCharger ltc4015 TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCharger ltc4015 TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncConfirm_PMIC_Communication(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPMIC TEST:\x1b[32m OK\x1b[0m - PMIC ID is valid\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPMIC TEST:\x1b[32m OK\x1b[0m - PMIC ID is valid\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPMIC TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPMIC TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
@@ -549,20 +549,20 @@ void* preasm_thread_func(void* thread_data)
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (FuncBarometer_Functionality(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[32m OK\x1b[0m - Pressure value is %.2f Temperature is %.2f\n\n", pressure, temperature);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[32m OK\x1b[0m - Pressure value is %.2f Temperature is %.2f\n", pressure, temperature);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[31m Fail \x1b[0m\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPressure Sensor TEST:\x1b[31m Fail \x1b[0m\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
@@ -572,13 +572,13 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncEMMY_163_Connectivity_Check(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[32m OK\x1b[0m - %s, %s     \n\n", EmmyWiFiBuffer, EmmyBTBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[32m OK\x1b[0m - %s, %s     \n", EmmyWiFiBuffer, EmmyBTBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[31m Fail \x1b[0m - %s, %s     \n\n", EmmyWiFiBuffer, EmmyBTBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23DEMMY TEST:\x1b[31m Fail \x1b[0m - %s, %s     \n", EmmyWiFiBuffer, EmmyBTBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 
@@ -588,13 +588,13 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncSARA_Module_Testing_Power_Antenna_Permission(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28DSARA-U201 TEST:\x1b[32m OK\x1b[0m - %s         \n\n", SaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28DSARA-U201 TEST:\x1b[32m OK\x1b[0m - %s         \n", SaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28DSARA-U201 TEST:\x1b[31m Fail \x1b[0m - %s        \n\n", SaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28DSARA-U201 TEST:\x1b[31m Fail \x1b[0m - %s        \n", SaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				memset(buf, 0, 200);
@@ -603,13 +603,13 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncLARA_Module_Testing_Power_Antenna_Permission(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29DSARA-R410M TEST:\x1b[32m OK\x1b[0m - %s         \n\n", LaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29DSARA-R410M TEST:\x1b[32m OK\x1b[0m - %s         \n", LaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29DSARA-R410M TEST:\x1b[31m Fail \x1b[0m - %s        \n\n", LaraBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29DSARA-R410M TEST:\x1b[31m Fail \x1b[0m - %s        \n", LaraBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 
@@ -621,14 +621,14 @@ void* preasm_thread_func(void* thread_data)
 				if (Cameras_Test(1, &cam1, &cam2)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[32m OK\x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n\n", cam1.description, cam1.widht, cam1.height,
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[32m OK\x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n", cam1.description, cam1.widht, cam1.height,
 									 cam2.description, cam2.widht, cam2.height);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[31m Fail \x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n\n", cam1.description, cam1.widht, cam1.height,
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[31m Fail \x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n", cam1.description, cam1.widht, cam1.height,
 									 cam2.description, cam2.widht, cam2.height);
 					write(fd_fb, buf, cnt_byte);
 				}
@@ -636,26 +636,42 @@ void* preasm_thread_func(void* thread_data)
 				if (Audio_Codec_Test(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - %s\n\n", AudioCodecBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - %s\n", AudioCodecBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio codec TEST:\x1b[31m Fail \x1b[0m - %s\n\n", AudioCodecBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio codec TEST:\x1b[31m Fail \x1b[0m - %s\n", AudioCodecBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 
 				if (NEO_Test(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[32m OK\x1b[0m - NMEA received\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[32m OK\x1b[0m - NMEA received\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[31m Fail \x1b[0m - NMEA not received\n\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[31m Fail \x1b[0m - NMEA not received\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSerial number TEST:\x1b[33m Please enter SN!\x1b[0m");
+				write(fd_fb, buf, cnt_byte);
+				if (FuncSN_Burn_In(1)==0)
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37DSerial number TEST:\x1b[32m OK\x1b[0m - Serial number wrote\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+				else
+				{
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37DSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number fail\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 

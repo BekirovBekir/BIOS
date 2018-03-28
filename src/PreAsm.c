@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <poll.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -45,6 +46,7 @@ char SaraBuffer[1024]={0};
 char LaraBuffer[1024]={0};
 char AudioCodecBuffer[1024]={0};
 unsigned char wifi_first_start_flag=0;
+struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI };
 
 int TestMMC(int Do)
 {
@@ -1437,6 +1439,92 @@ int Init_LARA_SARA(char* port_name, int port_speed){
 	ClosePort(port_id);
 	return 0;
 
+}
+
+int FuncSN_Burn_In(int Do){
+	//User will be able to enter a alphanumeric serial number. This value should be permanently stored in a protected sector in eMMC
+	#define SN_SIZE 100
+
+	char SerialNumber[SN_SIZE];
+	int fd;
+	int cnt=0;
+
+	memset(SerialNumber, 0, SN_SIZE);
+	printf("\n\nPlease, enter S/N and press 'Enter' button: ");
+		if( poll(&newpoll, 1, 2000) )
+		{
+			scanf("%s", SerialNumber);
+			printf("\nYou SN: %s\n", SerialNumber);
+		}
+		else
+		{
+			puts("Read nothing");
+		}
+
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_WRONLY);
+		if(fd < 0 )
+		{
+			printf("Error: %d\n", fd);
+			return -1;
+		}
+	lseek(fd, 1, SEEK_SET);
+
+	printf("Write output buffer to EEPROM...");
+	cnt = write(fd, SerialNumber, SN_SIZE);
+		if(cnt != SN_SIZE)
+		{
+			printf("Write only %d bytes instead %d", cnt, BUFFER_SIZE);
+		}
+
+	printf("Close EEPROM...");
+	close(fd);
+
+	//Store SN in file
+	/*fd = open(SN_File_Path, O_WRONLY | O_CREAT);
+	if(fd < 0 )
+	{
+		printf("Error: %d\n", fd);
+		return -1;//return fd;
+	}
+	i = write(fd, SerialNuber, SN_SIZE);
+	if(i != SN_SIZE)
+	{
+		printf("Write only %d bytes instead %d\n", i, SN_SIZE);
+	}
+	i = close(fd);
+	if(i != 0 )
+	{
+		printf("Error: %d\n",i);
+		return -1;//return i;
+	}
+	printf("Stored OK\n");
+
+	fd = open(SN_File_Path, O_RDONLY);
+	if(fd < 0)
+	{
+		printf("Error: %d\n", fd);
+		return -1;//return fd;
+	}
+
+	printf("Read stored SN...\n");
+	i = read(fd, SerialNuberRead, SN_SIZE);
+	if(i != BUFFER_SIZE)
+	{
+		printf("Read only %d bytes instead %d", i, SN_SIZE);
+	}
+	close(fd);
+	printf("Stored S/N: %s\n",SerialNuberRead);
+
+	if(strncmp(SerialNuber, SerialNuberRead,SN_SIZE) == 0){
+		printf("\nRead and input S/N are equal\n\n");
+		return 0;
+	}
+	else{
+		printf("\nRead and input S/N are not equal\n");
+		return -1;
+	};*/
+
+	return 0;
 }
 
 void power_init(void)

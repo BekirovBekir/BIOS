@@ -29,6 +29,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do);
 int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2);
 int Audio_Codec_Test(int Do);
 int NEO_Test(int Do);
+int FuncSN_Burn_In(int Do);
 
 
 #endif /* INC_PREASM_H_ */
