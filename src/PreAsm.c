@@ -45,6 +45,7 @@ char EmmyBTBuffer[1024]={0};
 char SaraBuffer[1024]={0};
 char LaraBuffer[1024]={0};
 char AudioCodecBuffer[1024]={0};
+char SerialNumber[100]={0};
 unsigned char wifi_first_start_flag=0;
 struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI };
 
@@ -404,6 +405,7 @@ int FuncEEPROM(int Do)
 
 	char buffer_out[BUFFER_SIZE];
 	char buffer_in[BUFFER_SIZE];
+	char buffer_save[BUFFER_SIZE];
 	int fd;
 	int i;
 
@@ -411,6 +413,31 @@ int FuncEEPROM(int Do)
 
 	memset(buffer_in, 0, BUFFER_SIZE);
 	memset(buffer_out, 0, BUFFER_SIZE);
+	memset(buffer_save, 0, BUFFER_SIZE);
+
+	printf("Open EEPROM...\n");
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDWR);
+	if(fd < 0 )
+	{
+		printf("Error: %d\n", fd);
+		return -1;
+	}
+	printf("ok\n");
+
+	i=read(fd, buffer_save, 100);
+		if(i != 100)
+		{
+			printf("Read only %d bytes instead %d", i, 100);
+		}
+
+	printf("Close EEPROM...\n");
+	i = close(fd);
+		if(i != 0 )
+		{
+			printf("Error: %d\n",i);
+			return -1;
+		}
+	printf("ok\n\n");
 
 	//system("clear");
 	//printf("\n*** EEPROM Test Application ***\n\n");
@@ -523,6 +550,25 @@ int FuncEEPROM(int Do)
 	}
 
 	printf("Output and input buffer are equal\n\n");
+
+	printf("Open EEPROM...\n");
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDWR);
+		if(fd < 0)
+		{
+			printf("Error: %d\n", fd);
+			return -1;
+		}
+		printf("ok\n");
+
+		i = write(fd, buffer_save, BUFFER_SIZE);
+			if(i != BUFFER_SIZE)
+			{
+				printf("Write only %d bytes instead %d", i, 100);
+			}
+
+		printf("Close EEPROM...\n");
+		close(fd);
+		printf("ok\n\n");
 
 	Write_EEPROM("2");
 	return 0;
@@ -1445,20 +1491,21 @@ int FuncSN_Burn_In(int Do){
 	//User will be able to enter a alphanumeric serial number. This value should be permanently stored in a protected sector in eMMC
 	#define SN_SIZE 100
 
-	char SerialNumber[SN_SIZE];
 	int fd;
 	int cnt=0;
 
 	memset(SerialNumber, 0, SN_SIZE);
 	printf("\n\nPlease, enter S/N and press 'Enter' button: ");
-		if( poll(&newpoll, 1, 2000) )
+		if( poll(&newpoll, 1, 20000) )
 		{
 			scanf("%s", SerialNumber);
 			printf("\nYou SN: %s\n", SerialNumber);
+			//strcpy(SN, SerialNumber);
 		}
 		else
 		{
-			puts("Read nothing");
+			puts("Read nothing\n");
+			return -1;
 		}
 
 	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_WRONLY);
@@ -1469,60 +1516,13 @@ int FuncSN_Burn_In(int Do){
 		}
 	lseek(fd, 1, SEEK_SET);
 
-	printf("Write output buffer to EEPROM...");
+	printf("Write S/N to EEPROM...\n");
 	cnt = write(fd, SerialNumber, SN_SIZE);
-		if(cnt != SN_SIZE)
-		{
-			printf("Write only %d bytes instead %d", cnt, BUFFER_SIZE);
-		}
 
-	printf("Close EEPROM...");
+	printf("Write %d bytes\n", cnt);
+
+	printf("Close EEPROM...\n");
 	close(fd);
-
-	//Store SN in file
-	/*fd = open(SN_File_Path, O_WRONLY | O_CREAT);
-	if(fd < 0 )
-	{
-		printf("Error: %d\n", fd);
-		return -1;//return fd;
-	}
-	i = write(fd, SerialNuber, SN_SIZE);
-	if(i != SN_SIZE)
-	{
-		printf("Write only %d bytes instead %d\n", i, SN_SIZE);
-	}
-	i = close(fd);
-	if(i != 0 )
-	{
-		printf("Error: %d\n",i);
-		return -1;//return i;
-	}
-	printf("Stored OK\n");
-
-	fd = open(SN_File_Path, O_RDONLY);
-	if(fd < 0)
-	{
-		printf("Error: %d\n", fd);
-		return -1;//return fd;
-	}
-
-	printf("Read stored SN...\n");
-	i = read(fd, SerialNuberRead, SN_SIZE);
-	if(i != BUFFER_SIZE)
-	{
-		printf("Read only %d bytes instead %d", i, SN_SIZE);
-	}
-	close(fd);
-	printf("Stored S/N: %s\n",SerialNuberRead);
-
-	if(strncmp(SerialNuber, SerialNuberRead,SN_SIZE) == 0){
-		printf("\nRead and input S/N are equal\n\n");
-		return 0;
-	}
-	else{
-		printf("\nRead and input S/N are not equal\n");
-		return -1;
-	};*/
 
 	return 0;
 }

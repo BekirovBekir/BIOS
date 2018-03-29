@@ -50,6 +50,7 @@ extern char EmmyBTBuffer[1024];
 extern char SaraBuffer[1024];
 extern char LaraBuffer[1024];
 extern char AudioCodecBuffer[1024];
+extern char SerialNumber[100];
 
 extern int fd_fb;
 extern pthread_t preasm_thread;	//preasm test thread
@@ -543,13 +544,13 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncAmbient_Light_Sensor_Functionality(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[32m OK\x1b[0m - Illumination is %s\n", LightDataBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[32m OK\x1b[0m - Illumination is %s", LightDataBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[31m Fail \x1b[0m\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CLight Sensor TEST:\x1b[31m Fail \x1b[0m");
 					write(fd_fb, buf, cnt_byte);
 				}
 
@@ -665,13 +666,13 @@ void* preasm_thread_func(void* thread_data)
 				if (FuncSN_Burn_In(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37DSerial number TEST:\x1b[32m OK\x1b[0m - Serial number wrote\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36DSerial number TEST:\x1b[32m OK\x1b[0m - Serial number is %s\n", SerialNumber);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37DSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number fail\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36DSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number fail\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 
