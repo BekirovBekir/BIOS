@@ -1514,7 +1514,7 @@ int FuncSN_Burn_In(int Do){
 			printf("Error: %d\n", fd);
 			return -1;
 		}
-	lseek(fd, 1, SEEK_SET);
+	lseek(fd, 2, SEEK_SET);
 
 	printf("Write S/N to EEPROM...\n");
 	cnt = write(fd, SerialNumber, SN_SIZE);
