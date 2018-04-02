@@ -17,5 +17,7 @@ typedef struct
 }AUDIOPARAM;
 
 int Read_Audio_Param(char* path, AUDIOPARAM* param_ptr);
+int Play_Sound(void);
+int Record_Sound(void);
 
 #endif /* INC_AUDIOCODEC_H_ */

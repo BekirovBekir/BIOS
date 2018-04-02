@@ -1380,7 +1380,12 @@ int Audio_Codec_Test(int Do)
 				strncat(AudioCodecBuffer, ptr1, (ptr2-ptr1));
 			}
 	printf("Audio codec: %s \n", AudioCodecBuffer);
-	result=0;
+		if (Play_Sound()==0)
+		{
+			result=0;
+			Record_Sound();
+		}
+		else result=-1;;
 	}
 return result;
 }
@@ -1493,8 +1498,10 @@ int FuncSN_Burn_In(int Do){
 
 	int fd;
 	int cnt=0;
+	char SerialNumberRead[SN_SIZE];
 
 	memset(SerialNumber, 0, SN_SIZE);
+	memset(SerialNumberRead, 0, SN_SIZE);
 	printf("\n\nPlease, enter S/N and press 'Enter' button: ");
 		if( poll(&newpoll, 1, 20000) )
 		{
@@ -1524,7 +1531,20 @@ int FuncSN_Burn_In(int Do){
 	printf("Close EEPROM...\n");
 	close(fd);
 
-	return 0;
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
+		if(fd < 0 )
+		{
+			printf("Error: %d\n", fd);
+			return -1;
+		}
+	lseek(fd, 2, SEEK_SET);
+	read(fd, SerialNumberRead, SN_SIZE);
+		if(strncmp(SerialNumber, SerialNumberRead, SN_SIZE) == 0)
+		{
+			printf("\nRead and input S/N are equal\n\n");
+			return 0;
+		}
+		else return -1;
 }
 
 void power_init(void)

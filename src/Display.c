@@ -24,6 +24,7 @@
 
 
 #include "Display.h"
+#include "AudioCodec.h"
 #include "FrameBuffer.h"
 #include "eeprom.h"
 #include "PreAsm.h"

@@ -18,6 +18,7 @@
 #include <fcntl.h>   /* File control definitions */
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions */
+#include <linux/kd.h>
 
 #include "AudioCodec.h"
 
@@ -58,4 +59,48 @@ int Read_Audio_Param(char* path, AUDIOPARAM* param_ptr)
 	param_ptr->capability=audinfo.capability;
 	return 0;
 }
+
+int Play_Sound(void)
+{
+
+	//system("speaker-test -t wav -c 2 -l 1");
+
+	FILE * hiddenConsole;
+	char Answer[1024];
+	int lastchar;
+	memset(Answer, 0, sizeof(Answer));
+
+	system("alsactl restore");
+
+	hiddenConsole = popen("speaker-test -t wav -c 2 -l 1", "r");
+	lastchar = fread(Answer, 1, 1024, hiddenConsole);
+	Answer[lastchar] = '\0';
+
+		if(lastchar == 0)
+		{
+			printf("\n");
+			return -1;
+		}
+
+	pclose(hiddenConsole);
+
+	char* ptr1=NULL;
+	char* ptr2=NULL;
+
+	ptr1=strstr(Answer, "0 - Front Left");
+	ptr2=strstr(Answer, "1 - Front Right");
+		if ((ptr1!=NULL) && (ptr2!=NULL))
+		{
+			return 0;
+		}
+		else return -1;
+
+}
+
+int Record_Sound(void)
+{
+	system("arecord -f dat -d 20 -D hw:0,0 test.wav");
+	system ("aplay -f dat test.wav");
+}
+
 
