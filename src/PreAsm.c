@@ -1380,12 +1380,8 @@ int Audio_Codec_Test(int Do)
 				strncat(AudioCodecBuffer, ptr1, (ptr2-ptr1));
 			}
 	printf("Audio codec: %s \n", AudioCodecBuffer);
-		if (Play_Sound()==0)
-		{
-			result=0;
-			Record_Sound();
-		}
-		else result=-1;;
+	result=0;
+
 	}
 return result;
 }

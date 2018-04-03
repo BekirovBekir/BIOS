@@ -477,7 +477,7 @@ void* preasm_thread_func(void* thread_data)
 					write(fd_fb, buf, cnt_byte);
 				}
 
-				if (FuncSPI_32MBit_NOR_Flash(1)==0)
+				/*if (FuncSPI_32MBit_NOR_Flash(1)==0)
 				{
 					memset(buf, 0, 200);
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSPI_32Mbit_NOR TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n");
@@ -633,18 +633,78 @@ void* preasm_thread_func(void* thread_data)
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24DCAM's TEST:\x1b[31m Fail \x1b[0m - CAM1 f: %s res: %ix%i; CAM2 f: %s res %ix%i\n", cam1.description, cam1.widht, cam1.height,
 									 cam2.description, cam2.widht, cam2.height);
 					write(fd_fb, buf, cnt_byte);
-				}
+				}*/
 
 				if (Audio_Codec_Test(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - %s\n", AudioCodecBuffer);
+					//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - %s\n", AudioCodecBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - \x1b[s\x1b[33mAudio sound is playing!");
 					write(fd_fb, buf, cnt_byte);
+						if (Play_Sound()==0)
+						{
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                     ");
+							write(fd_fb, buf, cnt_byte);
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[33mAudio stopped!");
+							write(fd_fb, buf, cnt_byte);
+							usleep(1000000);
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                   ");
+							write(fd_fb, buf, cnt_byte);
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[33mRecord start!");
+							write(fd_fb, buf, cnt_byte);
+								if (Record_Sound()==0)
+								{
+
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                   ");
+									write(fd_fb, buf, cnt_byte);
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[33mRecord stop!");
+									write(fd_fb, buf, cnt_byte);
+									usleep(1000000);
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                  ");
+									write(fd_fb, buf, cnt_byte);
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[33mPlay recorded sound!");
+									write(fd_fb, buf, cnt_byte);
+									system ("aplay -f dat test.wav");
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                  ");
+									write(fd_fb, buf, cnt_byte);
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[0mTest stop!\x1b[0m\n");
+									write(fd_fb, buf, cnt_byte);
+								}
+								else
+								{
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                  ");
+									write(fd_fb, buf, cnt_byte);
+									memset(buf, 0, 200);
+									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[31mRecord fail!\x1b[0m\n");
+									write(fd_fb, buf, cnt_byte);
+								}
+						}
+						else
+						{
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                    ");
+							write(fd_fb, buf, cnt_byte);
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[31mAudio playing is fail!\x1b[0m\n");
+							write(fd_fb, buf, cnt_byte);
+						}
+
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio codec TEST:\x1b[31m Fail \x1b[0m - %s\n", AudioCodecBuffer);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio codec TEST:\x1b[31m Fail \x1b[0m \n");
 					write(fd_fb, buf, cnt_byte);
 				}
 

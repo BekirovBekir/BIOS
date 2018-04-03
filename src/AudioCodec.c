@@ -33,6 +33,8 @@
 static struct v4l2_audio  audinfo;
 static struct  v4l2_audioout audinfoout;
 
+extern char AudioCodecBuffer[1024];
+
 int Read_Audio_Param(char* path, AUDIOPARAM* param_ptr)
 {
 	int audio_fd = open(path, O_RDONLY);
@@ -62,9 +64,6 @@ int Read_Audio_Param(char* path, AUDIOPARAM* param_ptr)
 
 int Play_Sound(void)
 {
-
-	//system("speaker-test -t wav -c 2 -l 1");
-
 	FILE * hiddenConsole;
 	char Answer[1024];
 	int lastchar;
@@ -74,7 +73,10 @@ int Play_Sound(void)
 
 	hiddenConsole = popen("speaker-test -t wav -c 2 -l 1", "r");
 	lastchar = fread(Answer, 1, 1024, hiddenConsole);
+	pclose(hiddenConsole);
 	Answer[lastchar] = '\0';
+
+	printf("hiddenConsole answer: \n%s", Answer);
 
 		if(lastchar == 0)
 		{
@@ -82,7 +84,7 @@ int Play_Sound(void)
 			return -1;
 		}
 
-	pclose(hiddenConsole);
+
 
 	char* ptr1=NULL;
 	char* ptr2=NULL;
@@ -93,14 +95,44 @@ int Play_Sound(void)
 		{
 			return 0;
 		}
-		else return -1;
+		else
+		{
+			return -1;
+		}
 
 }
 
 int Record_Sound(void)
 {
-	system("arecord -f dat -d 20 -D hw:0,0 test.wav");
-	system ("aplay -f dat test.wav");
+	FILE * hiddenConsole;
+	char Answer[1024];
+	int lastchar;
+
+	memset(Answer, 0, sizeof(Answer));
+
+	system("alsactl restore");
+
+	hiddenConsole = popen("arecord -f dat -d 10 -D hw:0,0 test.wav", "r");
+	lastchar = fread(Answer, 1, 1024, hiddenConsole);
+	pclose(hiddenConsole);
+	Answer[lastchar] = '\0';
+	return 0;
+
+	printf("hiddenConsole answer: \n%s", Answer);
+		if(lastchar == 0)
+		{
+			printf("\n");
+			return -1;
+		}
+
+	char* ptr1=NULL;
+
+	ptr1=strstr(Answer, "Recording WAVE");
+		if (ptr1!=NULL)
+		{
+			return 0;
+		}
+		else return -1;
 }
 
 
