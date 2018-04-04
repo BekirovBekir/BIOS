@@ -33,7 +33,6 @@
 static struct v4l2_audio  audinfo;
 static struct  v4l2_audioout audinfoout;
 
-extern char AudioCodecBuffer[1024];
 
 int Read_Audio_Param(char* path, AUDIOPARAM* param_ptr)
 {
@@ -118,6 +117,7 @@ int Record_Sound(void)
 	Answer[lastchar] = '\0';
 	return 0;
 
+	/*
 	printf("hiddenConsole answer: \n%s", Answer);
 		if(lastchar == 0)
 		{
@@ -133,6 +133,7 @@ int Record_Sound(void)
 			return 0;
 		}
 		else return -1;
+	*/
 }
 
 

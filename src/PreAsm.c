@@ -47,7 +47,7 @@ char LaraBuffer[1024]={0};
 char AudioCodecBuffer[1024]={0};
 char SerialNumber[100]={0};
 unsigned char wifi_first_start_flag=0;
-struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI };
+struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI|POLLOUT };
 
 int TestMMC(int Do)
 {
@@ -1495,15 +1495,20 @@ int FuncSN_Burn_In(int Do){
 	int fd;
 	int cnt=0;
 	char SerialNumberRead[SN_SIZE];
+	unsigned char SN[8];
 
+	memset (SN, 0, 8);
 	memset(SerialNumber, 0, SN_SIZE);
 	memset(SerialNumberRead, 0, SN_SIZE);
-	printf("\n\nPlease, enter S/N and press 'Enter' button: ");
+	printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
 		if( poll(&newpoll, 1, 20000) )
 		{
-			scanf("%s", SerialNumber);
-			printf("\nYou SN: %s\n", SerialNumber);
-			//strcpy(SN, SerialNumber);
+			//scanf("%s", SerialNumber);
+			scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7]);
+			//printf("\nYou SN: %16llx\n", SN);
+			printf("%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+			//sprintf(SerialNumber, "%16llx", SN);
+			sprintf(SerialNumber, "%02x%02x%02x%02x%02x%02x%02x%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
 		}
 		else
 		{
@@ -1517,7 +1522,7 @@ int FuncSN_Burn_In(int Do){
 			printf("Error: %d\n", fd);
 			return -1;
 		}
-	lseek(fd, 2, SEEK_SET);
+	lseek(fd, 5, SEEK_SET);
 
 	printf("Write S/N to EEPROM...\n");
 	cnt = write(fd, SerialNumber, SN_SIZE);
@@ -1533,11 +1538,12 @@ int FuncSN_Burn_In(int Do){
 			printf("Error: %d\n", fd);
 			return -1;
 		}
-	lseek(fd, 2, SEEK_SET);
+	lseek(fd, 5, SEEK_SET);
 	read(fd, SerialNumberRead, SN_SIZE);
 		if(strncmp(SerialNumber, SerialNumberRead, SN_SIZE) == 0)
 		{
 			printf("\nRead and input S/N are equal\n\n");
+			sprintf(SerialNumber, "%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
 			return 0;
 		}
 		else return -1;
