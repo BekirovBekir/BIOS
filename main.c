@@ -49,7 +49,7 @@ static ilitek_key_info key={0,0,0,0};
 		timer_tick++;
 			if (timer_tick>=6500)
 			{
-				Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
+				Write_EEPROM("2", 0);	// write eeprom 2, after reboot android will be srart
 				pthread_exit(0);
 			}
 		usleep(30000);

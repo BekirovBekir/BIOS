@@ -193,7 +193,7 @@ void GIAct (void)
 
 	system("mke2fs /dev/mmcblk1p6"); // format CACHE partition
 	sleep(1);
-	Write_EEPROM("1");	// write eeprom 1, after reboot restore process will be srart
+	Write_EEPROM("1", 0);	// write eeprom 1, after reboot restore process will be srart
 	sleep(2);
 
 	//system("reboot");
@@ -238,7 +238,7 @@ void ShipModeAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
+	Write_EEPROM("2", 0);	// write eeprom 2, after reboot android will be srart
 	sleep(2);
 
 	system("i2cset -y -f 2 0x68 0x19 0x534D w");	// ship mode
@@ -282,7 +282,7 @@ void ExitAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	Write_EEPROM("2");	// write eeprom 2, after reboot android will be srart
+	Write_EEPROM("2", 0);	// write eeprom 2, after reboot android will be srart
 	sleep(2);
 
 	//system("reboot");
@@ -328,7 +328,7 @@ void DownloadAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	Write_EEPROM("3");	// write eeprom 3, after reboot android will be srart flashing
+	Write_EEPROM("3", 0);	// write eeprom 3, after reboot android will be srart flashing
 	sleep(2);
 
 	//system("reboot");
@@ -478,18 +478,24 @@ void* preasm_thread_func(void* thread_data)
 				}
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSerial number TEST:\x1b[33m Please enter SN!\x1b[0m");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSerial number TEST:\x1b[33m Please enter 64-bit SN in HEX format!\x1b[0m");
 				write(fd_fb, buf, cnt_byte);
 				if (FuncSN_Burn_In(1)==0)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36DSerial number TEST:\x1b[32m OK\x1b[0m - Serial number is %s\n", SerialNumber);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[32m OK\x1b[0m                                                      ");
+					write(fd_fb, buf, cnt_byte);
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[32m OK\x1b[0m - Serial number is %s\n", SerialNumber);
 					write(fd_fb, buf, cnt_byte);
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36DSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number fail\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[32m OK\x1b[0m                                                      ");
+					write(fd_fb, buf, cnt_byte);
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number fail\n");
 					write(fd_fb, buf, cnt_byte);
 				}
 

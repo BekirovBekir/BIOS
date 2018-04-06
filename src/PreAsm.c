@@ -47,7 +47,7 @@ char LaraBuffer[1024]={0};
 char AudioCodecBuffer[1024]={0};
 char SerialNumber[100]={0};
 unsigned char wifi_first_start_flag=0;
-struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI|POLLOUT };
+struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI};
 
 int TestMMC(int Do)
 {
@@ -570,7 +570,7 @@ int FuncEEPROM(int Do)
 		close(fd);
 		printf("ok\n\n");
 
-	Write_EEPROM("2");
+	Write_EEPROM("2", 0);
 	return 0;
 };
 
@@ -759,10 +759,10 @@ int FuncAccelerometer_Calibration(int Do)
 		printf("Accel_Y = %i \n", ValueY );
 		printf("Accel_Z = %i \n", ValueZ );
 
-		CalibX=(ValueX*(-1))/2;
-		CalibY=(ValueY*(-1))/2;
-		CalibZ=(1024-ValueZ)/2;
-		CX=CalibX; CY=CalibY; CY=CalibZ;
+		CalibX=ValueX*(-1);//CalibX=(ValueX*(-1))/2;
+		CalibY=ValueY;//CalibY=(ValueY*(-1))/2;
+		CalibZ=ValueZ;//CalibZ=(1024-ValueZ)/2;
+		CX=CalibX; CY=CalibY; CZ=CalibZ;
 		printf("CalibX = %i \n", CalibX );
 		printf("CalibY = %i \n", CalibY );
 		printf("CalibZ = %i \n", CalibZ );
@@ -815,6 +815,7 @@ int FuncAccelerometer_Calibration(int Do)
 
 	//Store Calibrate in file
 	sprintf(dataBuffer, "%i %i %i",CalibX,CalibY,CalibZ);
+	if (Write_EEPROM(dataBuffer, 19)==0) return -1;
 	fdC = open(CalibAccel_File_Path, O_WRONLY | O_CREAT);
 	if(fdC < 0 )
 	{
@@ -1490,16 +1491,15 @@ int Init_LARA_SARA(char* port_name, int port_speed){
 
 int FuncSN_Burn_In(int Do){
 	//User will be able to enter a alphanumeric serial number. This value should be permanently stored in a protected sector in eMMC
-	#define SN_SIZE 100
 
 	int fd;
 	int cnt=0;
-	char SerialNumberRead[SN_SIZE];
+	char SerialNumberRead[16];
 	unsigned char SN[8];
 
 	memset (SN, 0, 8);
-	memset(SerialNumber, 0, SN_SIZE);
-	memset(SerialNumberRead, 0, SN_SIZE);
+	memset(SerialNumber, 0, 16);
+	memset(SerialNumberRead, 0, 16);
 	printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
 		if( poll(&newpoll, 1, 20000) )
 		{
@@ -1522,10 +1522,10 @@ int FuncSN_Burn_In(int Do){
 			printf("Error: %d\n", fd);
 			return -1;
 		}
-	lseek(fd, 5, SEEK_SET);
+	lseek(fd, 2, SEEK_SET);
 
 	printf("Write S/N to EEPROM...\n");
-	cnt = write(fd, SerialNumber, SN_SIZE);
+	cnt = write(fd, SerialNumber, 16);
 
 	printf("Write %d bytes\n", cnt);
 
@@ -1538,9 +1538,9 @@ int FuncSN_Burn_In(int Do){
 			printf("Error: %d\n", fd);
 			return -1;
 		}
-	lseek(fd, 5, SEEK_SET);
-	read(fd, SerialNumberRead, SN_SIZE);
-		if(strncmp(SerialNumber, SerialNumberRead, SN_SIZE) == 0)
+	lseek(fd, 2, SEEK_SET);
+	read(fd, SerialNumberRead, 16);
+		if(strncmp(SerialNumber, SerialNumberRead, 16) == 0)
 		{
 			printf("\nRead and input S/N are equal\n\n");
 			sprintf(SerialNumber, "%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);

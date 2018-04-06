@@ -26,7 +26,7 @@
 
 #define EEPROM_PATH "/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom"
 
-unsigned int Write_EEPROM(char* ptr_buf)
+unsigned int Write_EEPROM(char* ptr_buf, unsigned int pos)
 {
 	int fd;
 	char buf[50]={0};
@@ -40,6 +40,7 @@ unsigned int Write_EEPROM(char* ptr_buf)
 			return -1;
 		}
 		cnt=strlen(ptr_buf);
+		lseek(fd, pos, SEEK_SET);
 		if (write(fd, ptr_buf, cnt)!=1)
 		{
 			perror("\r\nError while writing eeprom");
