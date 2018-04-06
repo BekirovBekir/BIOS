@@ -612,7 +612,7 @@ int FuncAccelerometer_Calibration(int Do)
 	}
 	else{
 		fscanf (fp, "%i%i%i", &CalibX, &CalibY, &CalibZ);
-		CX=CalibX; CY=CalibY; CZ=CalibZ;
+		//CX=CalibX; CY=CalibY; CZ=CalibZ;
 		printf("Device already calibrate! Calibrate values: x = %i; y = %i; z = %i\n", CalibX, CalibY, CalibZ);
 		/*printf("Press 'y' to calibrate or 'n' to exit: ");
 		do{
@@ -759,13 +759,13 @@ int FuncAccelerometer_Calibration(int Do)
 		printf("Accel_Y = %i \n", ValueY );
 		printf("Accel_Z = %i \n", ValueZ );
 
-		CalibX=ValueX*(-1);//CalibX=(ValueX*(-1))/2;
-		CalibY=ValueY;//CalibY=(ValueY*(-1))/2;
-		CalibZ=ValueZ;//CalibZ=(1024-ValueZ)/2;
-		CX=CalibX; CY=CalibY; CZ=CalibZ;
-		printf("CalibX = %i \n", CalibX );
-		printf("CalibY = %i \n", CalibY );
-		printf("CalibZ = %i \n", CalibZ );
+		CalibX=CalibX=(ValueX*(-1))/2;
+		CalibY=CalibY=(ValueY*(-1))/2;
+		CalibZ=CalibZ=(1024-ValueZ)/2;
+		CX=ValueX; CY=ValueY; CZ=ValueZ;
+		printf("CalibX = %i \n", CX );
+		printf("CalibY = %i \n", CY );
+		printf("CalibZ = %i \n", CZ );
 
 		//printf("To end the test press, press 'y' - when test OK or 'n' - when test failed  \n\n");
 		//printf("Press 'y' - to write calibrates or other key to repeat: ");
