@@ -45,6 +45,7 @@ char EmmyBTBuffer[1024]={0};
 char SaraBuffer[1024]={0};
 char LaraBuffer[1024]={0};
 char AudioCodecBuffer[1024]={0};
+char AccelBuffer[1024]={0};
 char SerialNumber[100]={0};
 unsigned char wifi_first_start_flag=0;
 struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI};
@@ -589,44 +590,36 @@ int FuncAccelerometer_Calibration(int Do)
 	const char *CalibX_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_x_calibbias","/sys/bus/iio/devices/iio:device1/in_accel_x_calibbias","/sys/bus/iio/devices/iio:device2/in_accel_x_calibbias"};
 	const char *CalibY_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_y_calibbias","/sys/bus/iio/devices/iio:device1/in_accel_y_calibbias","/sys/bus/iio/devices/iio:device2/in_accel_y_calibbias"};
 	const char *CalibZ_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_z_calibbias","/sys/bus/iio/devices/iio:device1/in_accel_z_calibbias","/sys/bus/iio/devices/iio:device2/in_accel_z_calibbias"};
-	const char *CalibAccel_File_Path = {"CalibAccel"};
+	//const char *CalibAccel_File_Path = {"CalibAccel"};
 
 	char dataBuffer[BUFF_SIZE];
 
 	int fdS, fdX,fdY,fdZ, fdC, indexFile = 0;
 	int ValueX=0,ValueY=0,ValueZ=0;//ValueS=0,
-	int CalibX=0,CalibY=0,CalibZ=0, i=0;
+	int CalibX=0,CalibY=0,CalibZ=0; //i=0;
 
-	int FounFileFlag = 0, AlreadyCalibrFlag=0;
+	int FounFileFlag = 0; //AlreadyCalibrFlag=0;
 	//char userAnsw = ' ', ch=' ';
-	FILE *fp;
+	//FILE *fp;
 
-
+	memset(AccelBuffer, 0, sizeof(AccelBuffer));
 	if(!Do) return -1;
 
 
-	fp = fopen( CalibAccel_File_Path, "r" );//fdC = open( CalibAccel_File_Path, O_RDONLY );
+	/*fp = fopen( CalibAccel_File_Path, "r" );//fdC = open( CalibAccel_File_Path, O_RDONLY );
 	if(fp == NULL){
 		printf("Start calibrate\n\n");
 
 	}
 	else{
 		fscanf (fp, "%i%i%i", &CalibX, &CalibY, &CalibZ);
-		//CX=CalibX; CY=CalibY; CZ=CalibZ;
 		printf("Device already calibrate! Calibrate values: x = %i; y = %i; z = %i\n", CalibX, CalibY, CalibZ);
-		/*printf("Press 'y' to calibrate or 'n' to exit: ");
-		do{
-			ch = getchar();
-		}while(ch !='y'&& ch !='n');
-
-		if(ch == 'n'){
-			return 0;
-		}*/
 		AlreadyCalibrFlag = 1;
 		fclose(fp);
 		return 0;
-	}
+	}*/
 
+	printf("Start calibrate\n\n");
 
 	for(int i=0; i<=2; i++){
 		printf("Open: %s\n", AccelS_Read[i]);
@@ -654,6 +647,7 @@ int FuncAccelerometer_Calibration(int Do)
 	fdX = open( AccelX_Read[indexFile], O_RDONLY );
 	if(fdX == -1)
 	{
+		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
 		return -1;
 	}
@@ -664,6 +658,7 @@ int FuncAccelerometer_Calibration(int Do)
 	fdY = open( AccelY_Read[indexFile], O_RDONLY );
 	if(fdY == -1)
 	{
+		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
 		return -1;
 	}
@@ -674,18 +669,20 @@ int FuncAccelerometer_Calibration(int Do)
 	fdZ = open( AccelZ_Read[indexFile], O_RDONLY );
 	if(fdZ == -1)
 	{
+		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
 		return -1;
 	}
 	printf("Open: %s  - OK\n" ,AccelZ_Read[indexFile]);
 
-	if(AlreadyCalibrFlag){
+	//if(AlreadyCalibrFlag){
 		//Clear calibrate
 		memset(dataBuffer, 0, sizeof( dataBuffer ));
 		sprintf(dataBuffer, "%i",0);
 		fdC = open(CalibX_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
+			sprintf(AccelBuffer, "Unable to open device file!");
 			printf( "ERROR: Unable to open device file! \n" );
 			return -1;
 		}
@@ -697,6 +694,7 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibY_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
+			sprintf(AccelBuffer, "Unable to open device file!");
 			printf( "ERROR: Unable to open device file! \n" );
 			return -1;
 		}
@@ -708,13 +706,14 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibZ_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
+			sprintf(AccelBuffer, "Unable to open device file!");
 			printf( "ERROR: Unable to open device file! \n" );
 			return -1;
 		}
 		write(fdC, dataBuffer, sizeof(dataBuffer));
 		close(fdC);
-	}
-	AlreadyCalibrFlag = 0;
+	//}
+	//AlreadyCalibrFlag = 0;
 
 
 	//do{
@@ -757,15 +756,39 @@ int FuncAccelerometer_Calibration(int Do)
 		ValueZ = ValueZ/FiltrTime;
 		printf("Accel_X = %i \n", ValueX );
 		printf("Accel_Y = %i \n", ValueY );
-		printf("Accel_Z = %i \n", ValueZ );
+		printf("Accel_Z = %i \n", -ValueZ );
 
-		CalibX=CalibX=(ValueX*(-1))/2;
-		CalibY=CalibY=(ValueY*(-1))/2;
-		CalibZ=CalibZ=(1024-ValueZ)/2;
-		CX=ValueX; CY=ValueY; CZ=ValueZ;
-		printf("CalibX = %i \n", CX );
-		printf("CalibY = %i \n", CY );
-		printf("CalibZ = %i \n", CZ );
+			if ((ValueX<40) && (ValueX>-40))
+				CalibX=-ValueX/2; //-1
+			else
+			{
+				memset(AccelBuffer, 0, sizeof(AccelBuffer));
+				printf("Wrong position - OX axis!\n");
+				sprintf(AccelBuffer, "Wrong position - OX axis!");
+				return -1;
+			}
+			if ((ValueY<40) && (ValueY>-40))
+				CalibY=-ValueY/2;
+			else
+			{
+				memset(AccelBuffer, 0, sizeof(AccelBuffer));
+				printf("Wrong position - OY axis!\n");
+				sprintf(AccelBuffer, "Wrong position - OY axis!");
+				return -1;
+			}
+			if ((ValueZ<-1000) && (ValueZ>-1048))
+				CalibZ=(1024+ValueZ)/2;
+			else
+			{
+				memset(AccelBuffer, 0, sizeof(AccelBuffer));
+				printf("Wrong position - OZ axis!\n");
+				sprintf(AccelBuffer, "Wrong position - OZ axis!");
+				return -1;
+			}
+		CX=ValueX; CY=ValueY; CZ=-ValueZ;
+		printf("CalibX = %i \n", CalibX );
+		printf("CalibY = %i \n", CalibY );
+		printf("CalibZ = %i \n", CalibZ );
 
 		//printf("To end the test press, press 'y' - when test OK or 'n' - when test failed  \n\n");
 		//printf("Press 'y' - to write calibrates or other key to repeat: ");
@@ -816,7 +839,8 @@ int FuncAccelerometer_Calibration(int Do)
 	//Store Calibrate in file
 	sprintf(dataBuffer, "%i %i %i",CalibX,CalibY,CalibZ);
 	if (Write_EEPROM(dataBuffer, 19)==0) return -1;
-	fdC = open(CalibAccel_File_Path, O_WRONLY | O_CREAT);
+
+	/*fdC = open(CalibAccel_File_Path, O_WRONLY | O_CREAT);
 	if(fdC < 0 )
 	{
 		printf("Error: %d\n", fdC);
@@ -827,8 +851,7 @@ int FuncAccelerometer_Calibration(int Do)
 	{
 		printf("Write only %d bytes instead %d\n", i, SN_SIZE);
 	}
-	i = close(fdC);
-
+	i = close(fdC);*/
 
 	return 0;
 };

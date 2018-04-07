@@ -50,7 +50,8 @@ extern char EmmyWiFiBuffer[1024];
 extern char EmmyBTBuffer[1024];
 extern char SaraBuffer[1024];
 extern char LaraBuffer[1024];
-extern char AudioCodecBuffer[1024];
+//extern char AudioCodecBuffer[1024];
+extern char AccelBuffer[1024];
 extern char SerialNumber[100];
 
 extern int fd_fb;
@@ -534,7 +535,7 @@ void* preasm_thread_func(void* thread_data)
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[31m Fail \x1b[0m\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAccelerometer TEST:\x1b[31m Fail\x1b[0m - %s\n", AccelBuffer);
 					write(fd_fb, buf, cnt_byte);
 				}
 
