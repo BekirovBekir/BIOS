@@ -837,7 +837,7 @@ int FuncAccelerometer_Calibration(int Do)
 	close(fdC);
 
 	//Store Calibrate in file
-	sprintf(dataBuffer, "%i %i %i",CalibX,CalibY,CalibZ);
+	sprintf(dataBuffer, "%i %i %i ",CalibX,CalibY,CalibZ);
 	if (Write_EEPROM(dataBuffer, 19)==0) return -1;
 
 	/*fdC = open(CalibAccel_File_Path, O_WRONLY | O_CREAT);
