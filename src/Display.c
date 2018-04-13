@@ -695,7 +695,9 @@ void* preasm_thread_func(void* thread_data)
 									memset(buf, 0, 200);
 									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u\x1b[33mRecorded sound is playing!");
 									write(fd_fb, buf, cnt_byte);
+									system("amixer sset 'Lineout' 100%");
 									system ("aplay -f dat test.wav");
+									system("alsactl restore");
 									memset(buf, 0, 200);
 									cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u                                              ");
 									write(fd_fb, buf, cnt_byte);

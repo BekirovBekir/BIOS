@@ -33,6 +33,8 @@
 #include "FrameBuffer.h"
 #include "AudioCodec.h"
 
+extern FILE *stdin;
+
 
 int CX=0;
 int CY=0;
@@ -756,36 +758,48 @@ int FuncAccelerometer_Calibration(int Do)
 		ValueZ = ValueZ/FiltrTime;
 		printf("Accel_X = %i \n", ValueX );
 		printf("Accel_Y = %i \n", ValueY );
-		printf("Accel_Z = %i \n", -ValueZ );
+		printf("Accel_Z = %i \n", ValueZ );
+
+		char buf_axis[10];
+		int res_calib=0;
+		memset(buf_axis, 0, 10);
+		memset(AccelBuffer, 0, sizeof(AccelBuffer));
 
 			if ((ValueX<40) && (ValueX>-40))
 				CalibX=-ValueX/2; //-1
 			else
 			{
-				memset(AccelBuffer, 0, sizeof(AccelBuffer));
-				printf("Wrong position - OX axis!\n");
-				sprintf(AccelBuffer, "Wrong position - OX axis!");
-				return -1;
+				//memset(AccelBuffer, 0, sizeof(AccelBuffer));
+				//printf("Wrong position - OX axis!\n");
+				//sprintf(AccelBuffer, "Wrong position - OX");
+				strcpy(buf_axis, " OX");
+				res_calib=-1;
 			}
 			if ((ValueY<40) && (ValueY>-40))
 				CalibY=-ValueY/2;
 			else
 			{
-				memset(AccelBuffer, 0, sizeof(AccelBuffer));
-				printf("Wrong position - OY axis!\n");
-				sprintf(AccelBuffer, "Wrong position - OY axis!");
-				return -1;
+				//memset(AccelBuffer, 0, sizeof(AccelBuffer));
+				//printf("Wrong position - OY axis!\n");
+				//sprintf(AccelBuffer, "Wrong position - OX, OY axis!");
+				strcat(buf_axis, " OY");
+				res_calib=-1;
 			}
-			if ((ValueZ<-1000) && (ValueZ>-1048))
-				CalibZ=(1024+ValueZ)/2;
+			if ((ValueZ>1000) && (ValueZ<1048))
+				CalibZ=(1024-ValueZ)/2;
 			else
 			{
-				memset(AccelBuffer, 0, sizeof(AccelBuffer));
-				printf("Wrong position - OZ axis!\n");
-				sprintf(AccelBuffer, "Wrong position - OZ axis!");
-				return -1;
+				//memset(AccelBuffer, 0, sizeof(AccelBuffer));
+				//printf("Wrong position - OZ axis!\n");
+				//sprintf(AccelBuffer, "Wrong position - OZ axis!");
+				strcat(buf_axis, " OZ");
+				res_calib=-1;
 			}
-		CX=ValueX; CY=ValueY; CZ=-ValueZ;
+			if (res_calib==-1)
+			{
+				sprintf(AccelBuffer, "Wrong position - %s! x=%i, y=%i, z=%i", buf_axis, ValueX, ValueY, ValueZ);
+			}
+		CX=ValueX; CY=ValueY; CZ=ValueZ;
 		printf("CalibX = %i \n", CalibX );
 		printf("CalibY = %i \n", CalibY );
 		printf("CalibZ = %i \n", CalibZ );
@@ -853,7 +867,7 @@ int FuncAccelerometer_Calibration(int Do)
 	}
 	i = close(fdC);*/
 
-	return 0;
+	return res_calib;
 };
 
 int FuncConfirm_Battery_Charger_Communication(int Do)
@@ -1524,10 +1538,11 @@ int FuncSN_Burn_In(int Do){
 	memset(SerialNumber, 0, 16);
 	memset(SerialNumberRead, 0, 16);
 	printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
+	//fflush(STDIN_FILENO);
 		if( poll(&newpoll, 1, 20000) )
 		{
 			//scanf("%s", SerialNumber);
-			scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7]);
+			scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7])!=16;
 			//printf("\nYou SN: %16llx\n", SN);
 			printf("%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
 			//sprintf(SerialNumber, "%16llx", SN);

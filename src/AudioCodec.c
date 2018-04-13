@@ -111,10 +111,11 @@ int Record_Sound(void)
 
 	system("alsactl restore");
 
-	hiddenConsole = popen("arecord -f dat -d 10 -D hw:0,0 test.wav", "r");
+	hiddenConsole = popen("arecord -f dat -d 10 test.wav", "r");
 	lastchar = fread(Answer, 1, 1024, hiddenConsole);
 	pclose(hiddenConsole);
 	Answer[lastchar] = '\0';
+
 	return 0;
 
 	/*
