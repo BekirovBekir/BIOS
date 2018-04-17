@@ -125,7 +125,7 @@ void FSM_TS (ilitek_key_info* key)
 											//if (pre_asm_active) flag_for_pre_asm=1;
 											//else flag_for_pre_asm=0;
 									}
-								active_menu->menuaction();
+								active_menu->menudisplay(); //menuaction();
 							}
 						timer_tick=0;
 						fsm=2;

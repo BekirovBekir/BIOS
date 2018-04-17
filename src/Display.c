@@ -30,11 +30,29 @@
 #include "PreAsm.h"
 
 Menu PreAsm;
+Menu FullTest;
 Menu PostAsm;
 Menu GI;
 Menu ShipMode;
 Menu Exit;
 Menu Download;
+
+Menu FullTest;
+Menu EEPROMTest;
+Menu MemTest;
+Menu AccelTest;
+Menu PowerManTest;
+Menu LightSensorTest;
+Menu PressSensorTest;
+Menu EMMYTest;
+Menu ModemTest;
+Menu GPSTest;
+Menu AudiotTest;
+
+Menu FullTestSub;
+Menu EEPROMTestSub;
+
+
 //Menu PreAsmTest;
 Menu* active_menu;
 
@@ -347,13 +365,144 @@ void PreAsmTestAct(void)
 
 }
 
+void FullTestDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	//thread_flag=0;
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37m;40\x1b[0;0H*********************************************************************************************************");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[1;0H*\x1b[2;0H*\x1b[3;0H*\x1b[4;0H*\x1b[5;0H*\x1b[6;0H*\x1b[7;0H*\x1b[8;0H*\x1b[9;0H*\x1b[1;0H*\x1b[10;0H*\x1b[11;0H*\x1b[12;0H*\x1b[13;0H*\x1b[14;0H*\x1b[15;0H*\x1b[16;0H*\x1b[17;0H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[18;0H*\x1b[19;0H*\x1b[20;0H*\x1b[21;0H*\x1b[22;0H*\x1b[23;0H*\x1b[24;0H*\x1b[25;0H*\x1b[26;0H*\x1b[27;0H*\x1b[28;0H*\x1b[29;0H*\x1b[30;0H*\x1b[31;0H*\x1b[32;0H*\x1b[33;0H*\x1b[34;0H*\x1b[35;0H*\x1b[36;0H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[1;106H*\x1b[2;106H*\x1b[3;106H*\x1b[4;106H*\x1b[5;106H*\x1b[6;106H*\x1b[7;106H*\x1b[8;106H*\x1b[9;106H*\x1b[1;106H*\x1b[10;106H*\x1b[11;106H*\x1b[12;106H*\x1b[13;106H*\x1b[14;106H*\x1b[15;106H*\x1b[16;106H*\x1b[17;106H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[18;106H*\x1b[19;106H*\x1b[20;106H*\x1b[21;106H*\x1b[22;106H*\x1b[23;106H*\x1b[24;106H*\x1b[25;106H*\x1b[26;106H*\x1b[27;106H*\x1b[28;106H*\x1b[29;106H*\x1b[30;106H*\x1b[31;106H*\x1b[32;106H*\x1b[33;106H*\x1b[34;106H*\x1b[35;106H*\x1b[36;106H*");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[36;0H*********************************************************************************************************");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[4;0H*********************************************************************************************************");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[2;38H===== Pre-Assembly Test =====\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;30H \n\n"); //23
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[16;30H \n\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;30H>0. Run All Tests\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[30C1. EEPROM Memory Integrity Check / Serial Number Burn-in\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C2. Storage Memory Integrity Check\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C3. Accelerometer Test/Calibration\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C4. Power Management Test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C5. Light Sensor Test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C6. Pressure Sensor Test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C7. On-Board Wireless Module (EMMY) Test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C8. Modem Port Communication Tests\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C9. External GPS Test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C10. Audio System Test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void FullTestAct(void)
+{
+
+}
+
+void EEPROMTestAct(void)
+{
+
+}
+
+void EEPROMTestDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C> \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+}
+
 void MenuInit (void)
 {
 	PreAsm.DOWN=&PostAsm;
 	PreAsm.UP=&Download;
-	PreAsm.ENTER=&PreAsm;
+	PreAsm.ENTER=&FullTest;//&PreAsm;
 	PreAsm.menudisplay=&PreAsmDisp;
 	PreAsm.menuaction=&PreAsmAct;
+
+	FullTest.DOWN=&EEPROMTest;
+	FullTest.UP=&AudiotTest;
+	FullTest.ENTER=&FullTestSub;
+	FullTest.menudisplay=&FullTestDisp;
+	FullTest.menuaction=&FullTestAct;
+
+	EEPROMTest.DOWN=&MemTest;
+	EEPROMTest.UP=&FullTest;
+	EEPROMTest.ENTER=&EEPROMTestSub;
+	EEPROMTest.menuaction=&EEPROMTestAct;
+	EEPROMTest.menudisplay=&EEPROMTestDisp;
 
 	PostAsm.DOWN=&GI;
 	PostAsm.UP=&PreAsm;
@@ -428,7 +577,6 @@ void* preasm_thread_func(void* thread_data)
 {
 	char buf[200];
 	char cnt_byte;
-	//unsigned char state_test=0;
 
 	thread_flag=0;
 	memset(buf, 0, 200);
@@ -462,11 +610,11 @@ void* preasm_thread_func(void* thread_data)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[2;38H===== Pre-Assembly Test =====\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 
-		//for (;;)
-		//{
-			//if (state_test==0)
-			//{
-				if (TestMMC(1)==0)
+
+				FuncEEPROM(1);
+				FuncSN_Read_In(1);
+
+				/*if (TestMMC(1)==0)
 				{
 					memset(buf, 0, 200);
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3HeMMC TEST:\x1b[32m OK\x1b[0m - Output and input buffers are equal\n");
@@ -777,6 +925,7 @@ void* preasm_thread_func(void* thread_data)
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CGPS Module TEST:\x1b[31m Fail \x1b[0m - NMEA not received\n");
 					write(fd_fb, buf, cnt_byte);
 				}
+				*/
 
 
 			memset(buf, 0, 200);
@@ -785,15 +934,12 @@ void* preasm_thread_func(void* thread_data)
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 			write(fd_fb, buf, cnt_byte);
-			//state_test=1;
 			pthread_mutex_lock(&mutex);
 			thread_flag=1;
 			flag_for_pre_asm=0; //
 			pthread_mutex_unlock(&mutex);
 			pthread_exit(0);
-			//}
-		//usleep(1000000);
-		//}
+
 }
 
 

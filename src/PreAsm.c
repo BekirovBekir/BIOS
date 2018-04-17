@@ -34,6 +34,8 @@
 #include "FrameBuffer.h"
 #include "AudioCodec.h"
 
+#define BUF_SIZE_DISP 200
+
 extern FILE *stdin;
 extern int fd_fb;
 
@@ -412,8 +414,10 @@ int FuncEEPROM(int Do)
 	char buffer_out[BUFFER_SIZE];
 	char buffer_in[BUFFER_SIZE];
 	char buffer_save[BUFFER_SIZE];
+	char buf[BUF_SIZE_DISP];
 	int fd;
 	int i;
+	int cnt_byte=0;
 
 	if(!Do) return -1;
 
@@ -421,41 +425,52 @@ int FuncEEPROM(int Do)
 	memset(buffer_out, 0, BUFFER_SIZE);
 	memset(buffer_save, 0, BUFFER_SIZE);
 
-	printf("Open EEPROM...\n");
+	printf("**EEPROM Integrity Check**\n");
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[6;3H**EEPROM Integrity Check**\n");
+	write(fd_fb, buf, cnt_byte);
+
 	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDWR);
 	if(fd < 0 )
 	{
-		printf("Error: %d\n", fd);
+		printf("^Test 1A: Fail\n");
+		printf("@EEPROM opening error#\n");
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM opening error#\n");
+		write(fd_fb, buf, cnt_byte);
 		return -1;
 	}
-	printf("ok\n");
 
 	i=read(fd, buffer_save, 100);
 		if(i != 100)
 		{
-			printf("Read only %d bytes instead %d", i, 100);
+			printf("^Test 1A: Fail\n");
+			printf("@File opening error#\n");
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM opening error#\n");
+			write(fd_fb, buf, cnt_byte);
 		}
 
-	printf("Close EEPROM...\n");
+	//printf("Close EEPROM...\n");
 	i = close(fd);
 		if(i != 0 )
 		{
-			printf("Error: %d\n",i);
+			//printf("Error: %d\n",i);
 			return -1;
 		}
-	printf("ok\n\n");
+		//printf("ok\n\n");
 
-	//system("clear");
-	//printf("\n*** EEPROM Test Application ***\n\n");
 
-	printf("\nGenerate output buffer...\n");
+	//printf("\nGenerate output buffer...\n");
 	srand(time(NULL));
 	for(i=0; i<BUFFER_SIZE; i++)
 	{
 		buffer_out[i] = rand() % 255;
 	}
 
-	for(i=0; i<BUFFER_SIZE; i++)
+	/*for(i=0; i<BUFFER_SIZE; i++)
 		{
 		if(i==10) printf("\n");
 		if(i==20) printf("\n");
@@ -469,62 +484,88 @@ int FuncEEPROM(int Do)
 		printf("0x%02X ",buffer_out[i]);
 		}
 	printf("\nok");
-	printf("\n\n");
+	printf("\n\n");*/
 
 
 
-	printf("Open EEPROM...");
+	//printf("Open EEPROM...");
 	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_WRONLY);
 	if(fd < 0 )
 	{
-		printf("Error: %d\n", fd);
+		//printf("Error: %d\n", fd);
+		printf("^Test 1A: Fail\n");
+		printf("@EEPROM opening error#\n");
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM opening error#\n");
+		write(fd_fb, buf, cnt_byte);
 		return -1;
 	}
-	printf("ok\n");
+	//printf("ok\n");
 
 
-	printf("Write output buffer to EEPROM...");
+	//printf("Write output buffer to EEPROM...");
 	i = write(fd, buffer_out, BUFFER_SIZE);
 	if(i != BUFFER_SIZE)
 	{
-		printf("Write only %d bytes instead %d", i, BUFFER_SIZE);
+		//printf("Write only %d bytes instead %d", i, BUFFER_SIZE);
+		printf("^Test 1A: Fail\n");
+		printf("@EEPROM write error#\n");
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM write error#\n");
+		write(fd_fb, buf, cnt_byte);
 	}
-	printf("ok\n");
+	//printf("ok\n");
 
 
 	printf("Close EEPROM...");
 	i = close(fd);
 	if(i != 0 )
 	{
-		printf("Error: %d\n",i);
+		//printf("Error: %d\n",i);
+		printf("^Test 1A: Fail\n");
+		printf("@EEPROM close error#\n");
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM close error#\n");
+		write(fd_fb, buf, cnt_byte);
 		return -1;
 	}
-	printf("ok\n\n");
+	//printf("ok\n\n");
 
 //----------------------------------------------
 
 	fd = 0;
 
-	printf("Open EEPROM...");
+	//printf("Open EEPROM...");
 	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
 	if(fd < 0)
 	{
-		printf("Error: %d\n", fd);
+		//printf("Error: %d\n", fd);
+		printf("^Test 1A: Fail\n");
+		printf("@EEPROM opening error#\n");
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM opening error#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
-	printf("ok\n");
+	//printf("ok\n");
 
 
-	printf("Read input buffer from EEPROM...");
+	//printf("Read input buffer from EEPROM...");
 	i = read(fd, buffer_in, BUFFER_SIZE);
 	if(i != BUFFER_SIZE)
 	{
-		printf("Read only %d bytes instead %d", i, BUFFER_SIZE);
+		//printf("Read only %d bytes instead %d", i, BUFFER_SIZE);
+		printf("^Test 1A: Fail\n");
+		printf("@EEPROM write error#\n");
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM write error#\n");
+		write(fd_fb, buf, cnt_byte);
 	}
-	printf("ok\n\n");
+	//printf("ok\n\n");
 
 
-	printf("Input buffer:\n");
+	/*printf("Input buffer:\n");
 	for(i=0; i<BUFFER_SIZE; i++)
 		{
 		if(i==10) printf("\n");
@@ -540,9 +581,9 @@ int FuncEEPROM(int Do)
 		}
 	printf("\n\n");
 
-	printf("Close EEPROM...");
+	printf("Close EEPROM...");*/
 	close(fd);
-	printf("ok\n\n");
+	//printf("ok\n\n");
 
 //------------------------------------------------
 
@@ -550,35 +591,287 @@ int FuncEEPROM(int Do)
 	{
 		if(buffer_in[i] != buffer_out[i])
 		{
-			printf("WARNING: output and input buffer are not equal\n");
+			//printf("WARNING: output and input buffer are not equal\n");
+
+			printf("^Test 1A: Fail\n");
+			printf("@EEPROM write error#\n");
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@WARNING: output and input buffer are not equal#\n");
+			write(fd_fb, buf, cnt_byte);
 			return -1;
 		}
 	}
 
-	printf("Output and input buffer are equal\n\n");
+	//printf("Output and input buffer are equal\n\n");
 
-	printf("Open EEPROM...\n");
+	//printf("Open EEPROM...\n");
 	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDWR);
 		if(fd < 0)
 		{
-			printf("Error: %d\n", fd);
+			printf("^Test 1A: Fail\n");
+			printf("@EEPROM opening error#\n");
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM opening error#\n");
+			write(fd_fb, buf, cnt_byte);
 			return -1;
 		}
-		printf("ok\n");
+		//printf("ok\n");
 
 		i = write(fd, buffer_save, BUFFER_SIZE);
 			if(i != BUFFER_SIZE)
 			{
-				printf("Write only %d bytes instead %d", i, 100);
+				//printf("Write only %d bytes instead %d", i, 100);
+				printf("^Test 1A: Fail\n");
+				printf("@EEPROM write error#\n");
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Fail\n\x1b[2C@EEPROM write error#\n");
+				write(fd_fb, buf, cnt_byte);
 			}
 
-		printf("Close EEPROM...\n");
+		//printf("Close EEPROM...\n");
 		close(fd);
-		printf("ok\n\n");
+		//printf("ok\n\n");
 
-	Write_EEPROM("2", 0);
-	return 0;
+	if (Write_EEPROM("2", 0)!=-1)
+	{
+		printf("&Test 1A: OK\n");
+		printf("@EEPROM OK#\n");
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1A): Ok\n\x1b[2C@EEPROM OK#\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return 0;
+	}
+return -1;
 };
+
+int FuncSN_Burn_In(int Do){
+	//User will be able to enter a alphanumeric serial number. This value should be permanently stored in a protected sector in eMMC
+
+	int fd;
+	char SerialNumberRead[16];
+	unsigned char SN[8];
+
+	char buf[BUF_SIZE_DISP];
+	int cnt_byte=0;
+
+	memset (SN, 0, 8);
+	memset(SerialNumber, 0, 16);
+	memset(SerialNumberRead, 0, 16);
+	//printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
+		if( poll(&newpoll, 1, 30000) )
+		{
+
+			__fpurge(stdin);
+				if (scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7])==8)
+				{
+
+					printf("%02x%02x%02x%02x%02x%02x%02x%02x\n", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+					sprintf(SerialNumber, "%02x%02x%02x%02x%02x%02x%02x%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "%s\n", SerialNumber);
+					write(fd_fb, buf, cnt_byte);
+
+					//return 0;
+				}
+				else
+				{
+					__fpurge(stdin);
+					return -1;
+				}
+		}
+		else
+		{
+			//puts("Read nothing\n");
+			__fpurge(stdin);
+			return -1;
+		}
+
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_WRONLY);
+		if(fd < 0 )
+		{
+			//printf("Error: %d\n", fd);
+			printf("^Test 1B: Fail\n");
+			printf("@EEPROM opening error#\n");
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1B): Fail\n\x1b[2C@EEPROM opening error#\n");
+			write(fd_fb, buf, cnt_byte);
+			return -1;
+		}
+	lseek(fd, 2, SEEK_SET);
+
+	//printf("Write S/N to EEPROM...\n");
+	write(fd, SerialNumber, 16);
+
+	//printf("Write %d bytes\n", cnt);
+
+	//printf("Close EEPROM...\n");
+	close(fd);
+
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
+		if(fd < 0 )
+		{
+			printf("^Test 1B: Fail\n");
+			printf("@EEPROM opening error#\n");
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1B): Fail\n\x1b[2C@EEPROM opening error#\n");
+			write(fd_fb, buf, cnt_byte);
+			return -1;
+		}
+	lseek(fd, 2, SEEK_SET);
+	read(fd, SerialNumberRead, 16);
+	close(fd);
+		if(strncmp(SerialNumber, SerialNumberRead, 16) == 0)
+		{
+			//printf("\nRead and input S/N are equal\n\n");
+			//sprintf(SerialNumber, "%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+
+			printf("^Test 1B: OK\n");
+			printf("@SN is successful stored#\n");
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 1B: OK\n\x1b[2C@SN is successful stored#\n");
+			write(fd_fb, buf, cnt_byte);
+
+			return 0;
+		}
+		else return -1;
+}
+
+
+int FuncSN_Read_In(int Do)
+{
+	char SerialNumberRead[16];
+	unsigned char SN[8];
+	unsigned int sn_read_1=0;
+	unsigned int sn_read_2=0;
+	int fd;
+	char buf[BUF_SIZE_DISP];
+	int cnt_byte=0;
+
+
+
+	printf("\n**Device Serial Number Burn-In**\n");
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[1С **Device Serial Number Burn-In**\n");
+	write(fd_fb, buf, cnt_byte);
+
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
+		if(fd < 0 )
+		{
+			//printf("Error: %d\n", fd);
+			printf("^Test (1B): Fail\n");
+			printf("@EEPROM opening error#\n");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test (1B): Fail\n\x1b[2C@EEPROM opening error#\n");
+			write(fd_fb, buf, cnt_byte);
+
+			return -1;
+		}
+	lseek(fd, 2, SEEK_SET);
+
+	read(fd, SerialNumberRead, 8);
+	sn_read_1=strtoul(SerialNumberRead, NULL, 16);
+	read(fd, SerialNumberRead, 8);
+	sn_read_2=strtoul(SerialNumberRead, NULL, 16);
+	close(fd);
+
+		if ((sn_read_1==0)&&(sn_read_2==0))
+		{
+			//printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
+			//sprintf(SerialNumber_1, "\x1b[33mSN is None! Please enter 64-bit SN in HEX format!\x1b[0m");
+
+			printf("@Device Serial Number: Not Set#\n");
+			printf("Enter Device Serial Number (16 character Hex value):");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Device Serial Number: Not Set#\n\x1b[2CEnter Device Serial Number (16 character Hex value):");
+			write(fd_fb, buf, cnt_byte);
+
+			int state=0;
+				for (int i=0; i<=2; i++)
+				{
+					state=FuncSN_Burn_In(1);
+					if (state==0)
+					{
+						printf("&Test 1B: OK\n");
+
+						memset(buf, 0, 200);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 1B: OK\n");
+						write(fd_fb, buf, cnt_byte);
+						return 0;
+
+					}
+				}
+			printf("&Test 1A: Fail, EEPROM Corrupted or Inaccessible\n");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 1A: Fail, EEPROM Corrupted or Inaccessible ");
+			write(fd_fb, buf, cnt_byte);
+
+			return -1;
+		}
+		else
+		{
+			SN[0]=(unsigned char)(sn_read_2&0xFF);
+			SN[1]=(unsigned char)((sn_read_2>>8)&0xFF);
+			SN[2]=(unsigned char)((sn_read_2>>16)&0xFF);
+			SN[3]=(unsigned char)((sn_read_2>>24)&0xFF);
+
+			SN[4]=(unsigned char)(sn_read_1&0xFF);
+			SN[5]=(unsigned char)((sn_read_1>>8)&0xFF);
+			SN[6]=(unsigned char)((sn_read_1>>16)&0xFF);
+			SN[7]=(unsigned char)((sn_read_1>>24)&0xFF);
+
+			char buf[200];
+			int cnt_byte=0;
+
+			//memset(buf, 0, 200);
+			//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[32m OK\x1b[0m - SN is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x. \x1b[33mPress 'y' to enter SN or 'n' to exit\x1b[0m\n", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+			//write(fd_fb, buf, cnt_byte);
+
+			printf("@Device Serial Number: %02x%02x%02x%02x%02x%02x%02x%02x#\n", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+			printf("Re-enter Serial Number? (Y/N):\n");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Device Serial Number: %02x%02x%02x%02x%02x%02x%02x%02x#\n\x1b[2CRe-enter Serial Number? (Y/N):", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+			write(fd_fb, buf, cnt_byte);
+
+			//sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+			//printf("Press 'y' to enter SN or 'n' to exit:\n");
+			//__fpurge(stdin);
+			char ch;
+				if( poll(&newpoll, 1, 30000) )
+				{
+					ch=getchar();
+				}
+
+				if ((ch !='y' && ch !='n'))
+				{
+					//sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+					printf("@Format is Incorrect or no value entered#\n");
+
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Format is Incorrect or no value entered#\n");
+					write(fd_fb, buf, cnt_byte);
+					return -1;
+				}
+
+				if (ch =='y')
+				{
+					sprintf(SerialNumber_1, "\x1b[33mPlease enter 64-bit SN in HEX format!\x1b[0m");
+					return 0;
+				}
+				if (ch=='n')
+				{
+					sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+					return -1;
+				}
+
+		}
+return -1;
+}
 
 int FuncAccelerometer_Calibration(int Do)
 {
@@ -1529,152 +1822,7 @@ int Init_LARA_SARA(char* port_name, int port_speed){
 
 }
 
-int FuncSN_Burn_In(int Do){
-	//User will be able to enter a alphanumeric serial number. This value should be permanently stored in a protected sector in eMMC
 
-	int fd;
-	int cnt=0;
-	char SerialNumberRead[16];
-	unsigned char SN[8];
-
-	memset (SN, 0, 8);
-	memset(SerialNumber, 0, 16);
-	memset(SerialNumberRead, 0, 16);
-	printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
-		if( poll(&newpoll, 1, 20000) )
-		{
-			//scanf("%s", SerialNumber);
-			__fpurge(stdin);
-				if (scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7])==8)
-				{
-					//printf("\nYou SN: %16llx\n", SN);
-					printf("%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
-					//sprintf(SerialNumber, "%16llx", SN);
-					sprintf(SerialNumber, "%02x%02x%02x%02x%02x%02x%02x%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
-				}
-				else
-				{
-					__fpurge(stdin);
-					return 1;
-				}
-		}
-		else
-		{
-			puts("Read nothing\n");
-			return -1;
-		}
-
-	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_WRONLY);
-		if(fd < 0 )
-		{
-			printf("Error: %d\n", fd);
-			return -1;
-		}
-	lseek(fd, 2, SEEK_SET);
-
-	printf("Write S/N to EEPROM...\n");
-	cnt = write(fd, SerialNumber, 16);
-
-	printf("Write %d bytes\n", cnt);
-
-	printf("Close EEPROM...\n");
-	close(fd);
-
-	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
-		if(fd < 0 )
-		{
-			printf("Error: %d\n", fd);
-			return -1;
-		}
-	lseek(fd, 2, SEEK_SET);
-	read(fd, SerialNumberRead, 16);
-	close(fd);
-		if(strncmp(SerialNumber, SerialNumberRead, 16) == 0)
-		{
-			printf("\nRead and input S/N are equal\n\n");
-			sprintf(SerialNumber, "%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
-			return 0;
-		}
-		else return -1;
-}
-
-
-int FuncSN_Read_In(int Do)
-{
-	char SerialNumberRead[16];
-	unsigned char SN[8];
-	unsigned int sn_read_1=0;
-	unsigned int sn_read_2=0;
-
-	int fd;
-
-	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
-		if(fd < 0 )
-		{
-			printf("Error: %d\n", fd);
-			return -1;
-		}
-	lseek(fd, 2, SEEK_SET);
-
-	read(fd, SerialNumberRead, 8);
-	sn_read_1=strtoul(SerialNumberRead, NULL, 16);
-	read(fd, SerialNumberRead, 8);
-	sn_read_2=strtoul(SerialNumberRead, NULL, 16);
-	close(fd);
-
-		if ((sn_read_1==0)&&(sn_read_2==0))
-		{
-			//printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
-			sprintf(SerialNumber_1, "\x1b[33mSN is None! Please enter 64-bit SN in HEX format!\x1b[0m");
-			return 0;
-		}
-		else
-		{
-			SN[0]=(unsigned char)(sn_read_2&0xFF);
-			SN[1]=(unsigned char)((sn_read_2>>8)&0xFF);
-			SN[2]=(unsigned char)((sn_read_2>>16)&0xFF);
-			SN[3]=(unsigned char)((sn_read_2>>24)&0xFF);
-
-			SN[4]=(unsigned char)(sn_read_1&0xFF);
-			SN[5]=(unsigned char)((sn_read_1>>8)&0xFF);
-			SN[6]=(unsigned char)((sn_read_1>>16)&0xFF);
-			SN[7]=(unsigned char)((sn_read_1>>24)&0xFF);
-
-			char buf[200];
-			int cnt_byte=0;
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[32m OK\x1b[0m - SN is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x. \x1b[33mPress 'y' to enter SN or 'n' to exit\x1b[0m\n", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
-			write(fd_fb, buf, cnt_byte);
-
-			sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
-			printf("Press 'y' to enter SN or 'n' to exit:\n");
-			__fpurge(stdin);
-			char ch;
-				if( poll(&newpoll, 1, 20000) )
-				{
-					ch=getchar();
-				}
-
-				if ((ch !='y' && ch !='n'))
-				{
-					sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
-					return -1;
-				}
-
-				if (ch =='y')
-				{
-					sprintf(SerialNumber_1, "\x1b[33mPlease enter 64-bit SN in HEX format!\x1b[0m");
-					return 0;
-				}
-				if (ch=='n')
-				{
-					sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
-					return -1;
-				}
-
-		}
-return -1;
-}
 
 void power_init(void)
 {
