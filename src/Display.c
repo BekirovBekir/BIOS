@@ -53,6 +53,7 @@ extern char LaraBuffer[1024];
 //extern char AudioCodecBuffer[1024];
 extern char AccelBuffer[1024];
 extern char SerialNumber[100];
+extern char SerialNumber_1[100];
 
 extern int fd_fb;
 extern pthread_t preasm_thread;	//preasm test thread
@@ -478,25 +479,57 @@ void* preasm_thread_func(void* thread_data)
 					write(fd_fb, buf, cnt_byte);
 				}
 
-				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSerial number TEST:\x1b[33m Please enter 64-bit SN in HEX format!\x1b[0m");
-				write(fd_fb, buf, cnt_byte);
-				if (FuncSN_Burn_In(1)==0)
+				int SN_state=FuncSN_Read_In(1);
+				if (SN_state!=-1)
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[32m OK\x1b[0m                                                      ");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3H                                                                                             ");
 					write(fd_fb, buf, cnt_byte);
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[32m OK\x1b[0m - Serial number is %s\n", SerialNumber);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[32m OK\x1b[0m - %s\n", SerialNumber_1);
 					write(fd_fb, buf, cnt_byte);
+					int k=0;
+					for (k=0; k<=2; k++)
+					{
+						int SN_state_1=FuncSN_Burn_In(1);
+						if (SN_state_1==0)
+						{
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3H                                                                                                  ");
+							write(fd_fb, buf, cnt_byte);
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[32m OK\x1b[0m - Serial number is %s\n", SerialNumber);
+							write(fd_fb, buf, cnt_byte);
+							break;
+						}
+						if (SN_state_1==-1)
+						{
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3H                                                                                                      ");
+							write(fd_fb, buf, cnt_byte);
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number wasn't entered!\n");
+							write(fd_fb, buf, cnt_byte);
+							break;
+						}
+					}
+					if (k>=3)
+					{
+						memset(buf, 0, 200);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3H                                                                                                      ");
+						write(fd_fb, buf, cnt_byte);
+						memset(buf, 0, 200);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number wasn't entered!\n");
+						write(fd_fb, buf, cnt_byte);
+					}
 				}
 				else
 				{
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[32m OK\x1b[0m                                                      ");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3H                                                                                                  ");
 					write(fd_fb, buf, cnt_byte);
 					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[57DSerial number TEST:\x1b[31m Fail \x1b[0m - Serial number fail\n");
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[32m OK\x1b[0m - %s\n", SerialNumber_1);
 					write(fd_fb, buf, cnt_byte);
 				}
 
@@ -661,7 +694,6 @@ void* preasm_thread_func(void* thread_data)
 				if (Audio_Codec_Test(1)==0)
 				{
 					memset(buf, 0, 200);
-					//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - %s\n", AudioCodecBuffer);
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec TEST:\x1b[32m OK\x1b[0m - \x1b[s\x1b[33mSound test started!");
 					write(fd_fb, buf, cnt_byte);
 						if (Play_Sound()==0)

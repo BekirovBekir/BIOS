@@ -23,6 +23,7 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
+#include <stdio_ext.h>
 
 
 #include "PreAsm.h"
@@ -34,6 +35,7 @@
 #include "AudioCodec.h"
 
 extern FILE *stdin;
+extern int fd_fb;
 
 
 int CX=0;
@@ -49,6 +51,7 @@ char LaraBuffer[1024]={0};
 char AudioCodecBuffer[1024]={0};
 char AccelBuffer[1024]={0};
 char SerialNumber[100]={0};
+char SerialNumber_1[100]={0};
 unsigned char wifi_first_start_flag=0;
 struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI};
 
@@ -1538,15 +1541,22 @@ int FuncSN_Burn_In(int Do){
 	memset(SerialNumber, 0, 16);
 	memset(SerialNumberRead, 0, 16);
 	printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
-	//fflush(STDIN_FILENO);
 		if( poll(&newpoll, 1, 20000) )
 		{
 			//scanf("%s", SerialNumber);
-			scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7])!=16;
-			//printf("\nYou SN: %16llx\n", SN);
-			printf("%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
-			//sprintf(SerialNumber, "%16llx", SN);
-			sprintf(SerialNumber, "%02x%02x%02x%02x%02x%02x%02x%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+			__fpurge(stdin);
+				if (scanf("%02x%02x%02x%02x%02x%02x%02x%02x", &SN[0],&SN[1],&SN[2],&SN[3],&SN[4],&SN[5],&SN[6],&SN[7])==8)
+				{
+					//printf("\nYou SN: %16llx\n", SN);
+					printf("%02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+					//sprintf(SerialNumber, "%16llx", SN);
+					sprintf(SerialNumber, "%02x%02x%02x%02x%02x%02x%02x%02x", SN[0],SN[1],SN[2],SN[3],SN[4],SN[5],SN[6],SN[7]);
+				}
+				else
+				{
+					__fpurge(stdin);
+					return 1;
+				}
 		}
 		else
 		{
@@ -1578,6 +1588,7 @@ int FuncSN_Burn_In(int Do){
 		}
 	lseek(fd, 2, SEEK_SET);
 	read(fd, SerialNumberRead, 16);
+	close(fd);
 		if(strncmp(SerialNumber, SerialNumberRead, 16) == 0)
 		{
 			printf("\nRead and input S/N are equal\n\n");
@@ -1585,6 +1596,84 @@ int FuncSN_Burn_In(int Do){
 			return 0;
 		}
 		else return -1;
+}
+
+
+int FuncSN_Read_In(int Do)
+{
+	char SerialNumberRead[16];
+	unsigned char SN[8];
+	unsigned int sn_read_1=0;
+	unsigned int sn_read_2=0;
+
+	int fd;
+
+	fd = open("/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom", O_RDONLY);
+		if(fd < 0 )
+		{
+			printf("Error: %d\n", fd);
+			return -1;
+		}
+	lseek(fd, 2, SEEK_SET);
+
+	read(fd, SerialNumberRead, 8);
+	sn_read_1=strtoul(SerialNumberRead, NULL, 16);
+	read(fd, SerialNumberRead, 8);
+	sn_read_2=strtoul(SerialNumberRead, NULL, 16);
+	close(fd);
+
+		if ((sn_read_1==0)&&(sn_read_2==0))
+		{
+			//printf("\n\nPlease, enter S/N and press 'Enter' button: \n");
+			sprintf(SerialNumber_1, "\x1b[33mSN is None! Please enter 64-bit SN in HEX format!\x1b[0m");
+			return 0;
+		}
+		else
+		{
+			SN[0]=(unsigned char)(sn_read_2&0xFF);
+			SN[1]=(unsigned char)((sn_read_2>>8)&0xFF);
+			SN[2]=(unsigned char)((sn_read_2>>16)&0xFF);
+			SN[3]=(unsigned char)((sn_read_2>>24)&0xFF);
+
+			SN[4]=(unsigned char)(sn_read_1&0xFF);
+			SN[5]=(unsigned char)((sn_read_1>>8)&0xFF);
+			SN[6]=(unsigned char)((sn_read_1>>16)&0xFF);
+			SN[7]=(unsigned char)((sn_read_1>>24)&0xFF);
+
+			char buf[200];
+			int cnt_byte=0;
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[7;3HSerial number TEST:\x1b[32m OK\x1b[0m - SN is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x. \x1b[33mPress 'y' to enter SN or 'n' to exit\x1b[0m\n", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+			write(fd_fb, buf, cnt_byte);
+
+			sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+			printf("Press 'y' to enter SN or 'n' to exit:\n");
+			__fpurge(stdin);
+			char ch;
+				if( poll(&newpoll, 1, 20000) )
+				{
+					ch=getchar();
+				}
+
+				if ((ch !='y' && ch !='n'))
+				{
+					sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+					return -1;
+				}
+
+				if (ch =='y')
+				{
+					sprintf(SerialNumber_1, "\x1b[33mPlease enter 64-bit SN in HEX format!\x1b[0m");
+					return 0;
+				}
+				if (ch=='n')
+				{
+					sprintf(SerialNumber_1, "Serial number is %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x", SN[7], SN[6], SN[5], SN[4], SN[3], SN[2], SN[1], SN[0]);
+					return -1;
+				}
+
+		}
+return -1;
 }
 
 void power_init(void)
@@ -1646,7 +1735,6 @@ void power_set_direction(void)
 		return;
 	}
 }
-
 
 void power_set_on(void)
 {
