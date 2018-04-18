@@ -13,6 +13,7 @@ struct TMenu
 struct TMenu* UP;
 struct TMenu* DOWN;
 struct TMenu* ENTER;
+struct TMenu* ESC;
 void (*menudisplay) (void);
 void (*menuaction) (void);
 };
@@ -36,6 +37,8 @@ void ExitAct (void);
 void DownloadAct (void);
 
 void MenuInit (void);
+
+int DisplayOut(char* buf);
 
 void* preasm_thread_func(void* thread_data);
 

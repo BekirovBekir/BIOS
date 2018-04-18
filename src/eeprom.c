@@ -36,12 +36,12 @@ unsigned int Write_EEPROM(char* ptr_buf, unsigned int pos)
 	fd=open(buf, O_WRONLY);
 		if (fd<0)
 		{
-			perror("\r\nError while opening eeprom");
+			//perror("\r\nError while opening eeprom");
 			return -1;
 		}
 		cnt=strlen(ptr_buf);
 		lseek(fd, pos, SEEK_SET);
-		if (write(fd, ptr_buf, cnt)!=1)
+		if (write(fd, ptr_buf, cnt)!=cnt)
 		{
 			perror("\r\nError while writing eeprom");
 			return -1;

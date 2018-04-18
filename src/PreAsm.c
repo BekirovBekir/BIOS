@@ -880,6 +880,13 @@ int FuncAccelerometer_Calibration(int Do)
 	#define BUFF_SIZE 100
 	#define SN_SIZE 100
 
+	FILE* pFile=NULL;
+
+	pFile=fopen("/dev/ttyGS0","r+");
+
+	char buf[200];
+	int cnt_byte=0;
+
 	const char *AccelS_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_scale","/sys/bus/iio/devices/iio:device1/in_accel_scale","/sys/bus/iio/devices/iio:device2/in_accel_scale"};
 	const char *AccelX_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_x_raw","/sys/bus/iio/devices/iio:device1/in_accel_x_raw","/sys/bus/iio/devices/iio:device2/in_accel_x_raw"};
 	const char *AccelY_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_y_raw","/sys/bus/iio/devices/iio:device1/in_accel_y_raw","/sys/bus/iio/devices/iio:device2/in_accel_y_raw"};
@@ -888,7 +895,6 @@ int FuncAccelerometer_Calibration(int Do)
 	const char *CalibX_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_x_calibbias","/sys/bus/iio/devices/iio:device1/in_accel_x_calibbias","/sys/bus/iio/devices/iio:device2/in_accel_x_calibbias"};
 	const char *CalibY_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_y_calibbias","/sys/bus/iio/devices/iio:device1/in_accel_y_calibbias","/sys/bus/iio/devices/iio:device2/in_accel_y_calibbias"};
 	const char *CalibZ_Read[3] = {"/sys/bus/iio/devices/iio:device0/in_accel_z_calibbias","/sys/bus/iio/devices/iio:device1/in_accel_z_calibbias","/sys/bus/iio/devices/iio:device2/in_accel_z_calibbias"};
-	//const char *CalibAccel_File_Path = {"CalibAccel"};
 
 	char dataBuffer[BUFF_SIZE];
 
@@ -896,34 +902,25 @@ int FuncAccelerometer_Calibration(int Do)
 	int ValueX=0,ValueY=0,ValueZ=0;//ValueS=0,
 	int CalibX=0,CalibY=0,CalibZ=0; //i=0;
 
-	int FounFileFlag = 0; //AlreadyCalibrFlag=0;
-	//char userAnsw = ' ', ch=' ';
-	//FILE *fp;
+	int FounFileFlag = 0;
+
 
 	memset(AccelBuffer, 0, sizeof(AccelBuffer));
 	if(!Do) return -1;
 
-
-	/*fp = fopen( CalibAccel_File_Path, "r" );//fdC = open( CalibAccel_File_Path, O_RDONLY );
-	if(fp == NULL){
-		printf("Start calibrate\n\n");
-
-	}
-	else{
-		fscanf (fp, "%i%i%i", &CalibX, &CalibY, &CalibZ);
-		printf("Device already calibrate! Calibrate values: x = %i; y = %i; z = %i\n", CalibX, CalibY, CalibZ);
-		AlreadyCalibrFlag = 1;
-		fclose(fp);
-		return 0;
-	}*/
-
 	printf("Start calibrate\n\n");
 
+	if (pFile!=NULL) fprintf(pFile,"**Accelerometer Check**\n");
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Accelerometer Check**\n");
+	write(fd_fb, buf, cnt_byte);
+
 	for(int i=0; i<=2; i++){
-		printf("Open: %s\n", AccelS_Read[i]);
+		//printf("Open: %s\n", AccelS_Read[i]);
 		fdS = open( AccelS_Read[i], O_RDONLY );
 		if(fdS == -1){
-			printf("%s - not found\n", AccelS_Read[i]);
+			//printf("%s - not found\n", AccelS_Read[i]);
 		}
 		else{
 			FounFileFlag=1;
@@ -935,53 +932,82 @@ int FuncAccelerometer_Calibration(int Do)
 	if(FounFileFlag==0)
 	{
 		printf( "ERROR: Unable to open device file! \n" );
+
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
 		return -1;
 	}
 	printf("Open: %s  - OK\n" ,AccelS_Read[indexFile]);
 	FounFileFlag = 0;
 
-	//*******//
 	printf("Open: %s\n", AccelX_Read[indexFile]);
 	fdX = open( AccelX_Read[indexFile], O_RDONLY );
 	if(fdX == -1)
 	{
 		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
+
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
-	printf("Open: %s  - OK\n" ,AccelX_Read[indexFile]);
+	//printf("Open: %s  - OK\n" ,AccelX_Read[indexFile]);
 
-	//*******//
-	printf("Open: %s\n", AccelY_Read[indexFile]);
+	//printf("Open: %s\n", AccelY_Read[indexFile]);
 	fdY = open( AccelY_Read[indexFile], O_RDONLY );
 	if(fdY == -1)
 	{
 		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
+
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
 		return -1;
 	}
-	printf("Open: %s  - OK\n" ,AccelY_Read[indexFile]);
+	//printf("Open: %s  - OK\n" ,AccelY_Read[indexFile]);
 
-	//*******//
-	printf("Open: %s\n", AccelZ_Read[indexFile]);
+	//printf("Open: %s\n", AccelZ_Read[indexFile]);
+
 	fdZ = open( AccelZ_Read[indexFile], O_RDONLY );
 	if(fdZ == -1)
 	{
-		sprintf(AccelBuffer, "Unable to open device file!");
-		printf( "ERROR: Unable to open device file! \n" );
+		//sprintf(AccelBuffer, "Unable to open device file!");
+		//printf( "ERROR: Unable to open device file! \n" );
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
 		return -1;
 	}
-	printf("Open: %s  - OK\n" ,AccelZ_Read[indexFile]);
+	//printf("Open: %s  - OK\n" ,AccelZ_Read[indexFile]);
 
-	//if(AlreadyCalibrFlag){
-		//Clear calibrate
 		memset(dataBuffer, 0, sizeof( dataBuffer ));
 		sprintf(dataBuffer, "%i",0);
 		fdC = open(CalibX_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
-			sprintf(AccelBuffer, "Unable to open device file!");
-			printf( "ERROR: Unable to open device file! \n" );
+			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+			fclose (pFile);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+			write(fd_fb, buf, cnt_byte);
+
 			return -1;
 		}
 		write(fdC, dataBuffer, sizeof(dataBuffer));
@@ -992,8 +1018,13 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibY_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
-			sprintf(AccelBuffer, "Unable to open device file!");
-			printf( "ERROR: Unable to open device file! \n" );
+			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+			fclose (pFile);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+			write(fd_fb, buf, cnt_byte);
+
 			return -1;
 		}
 		write(fdC, dataBuffer, sizeof(dataBuffer));
@@ -1004,24 +1035,21 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibZ_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
-			sprintf(AccelBuffer, "Unable to open device file!");
-			printf( "ERROR: Unable to open device file! \n" );
+			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+			fclose (pFile);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+			write(fd_fb, buf, cnt_byte);
 			return -1;
 		}
 		write(fdC, dataBuffer, sizeof(dataBuffer));
 		close(fdC);
-	//}
-	//AlreadyCalibrFlag = 0;
-
-
-	//do{
 
 		memset(dataBuffer, 0, sizeof( dataBuffer ));
 		fdS = open(AccelS_Read[indexFile], O_RDONLY);
 		read(fdS, dataBuffer, sizeof(dataBuffer));
 		close(fdS);
-		printf("\n------------------------\n");
-		printf("Scale = %s \n", dataBuffer );
 
 		ValueX = 0;
 		ValueY = 0;
@@ -1096,18 +1124,6 @@ int FuncAccelerometer_Calibration(int Do)
 				sprintf(AccelBuffer, "Wrong position - %s! x=%i, y=%i, z=%i", buf_axis, ValueX, ValueY, ValueZ);
 			}
 		CX=ValueX; CY=ValueY; CZ=ValueZ;
-		printf("CalibX = %i \n", CalibX );
-		printf("CalibY = %i \n", CalibY );
-		printf("CalibZ = %i \n", CalibZ );
-
-		//printf("To end the test press, press 'y' - when test OK or 'n' - when test failed  \n\n");
-		//printf("Press 'y' - to write calibrates or other key to repeat: ");
-		//userAnsw = getchar();
-
-		//usleep(1000000);
-		//userAnsw = read_console();
-
-	//}while(userAnsw != 'y');
 
 	close(fdX);
 	close(fdY);
@@ -1118,7 +1134,13 @@ int FuncAccelerometer_Calibration(int Do)
 	fdC = open(CalibX_Read[indexFile], O_WRONLY);
 	if(fdC == -1)
 	{
-		printf( "ERROR: Unable to open device file! \n" );
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	write(fdC, dataBuffer, sizeof(dataBuffer));
@@ -1129,7 +1151,13 @@ int FuncAccelerometer_Calibration(int Do)
 	fdC = open(CalibY_Read[indexFile], O_WRONLY);
 	if(fdC == -1)
 	{
-		printf( "ERROR: Unable to open device file! \n" );
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	write(fdC, dataBuffer, sizeof(dataBuffer));
@@ -1140,28 +1168,52 @@ int FuncAccelerometer_Calibration(int Do)
 	fdC = open(CalibZ_Read[indexFile], O_WRONLY);
 	if(fdC == -1)
 	{
-		printf( "ERROR: Unable to open device file! \n" );
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	write(fdC, dataBuffer, sizeof(dataBuffer));
 	close(fdC);
 
 	//Store Calibrate in file
+	if (res_calib==0)
+	{
 	sprintf(dataBuffer, "%i %i %i ",CalibX,CalibY,CalibZ);
-	if (Write_EEPROM(dataBuffer, 19)==0) return -1;
+		if (Write_EEPROM(dataBuffer, 19)==0)
+		{
+			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Error while writing calibration values!#\n");
+			fclose (pFile);
 
-	/*fdC = open(CalibAccel_File_Path, O_WRONLY | O_CREAT);
-	if(fdC < 0 )
-	{
-		printf("Error: %d\n", fdC);
-		return -1;
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Error while writing calibration values!#\n");
+			write(fd_fb, buf, cnt_byte);
+
+			return -1;
+		}
+		else
+		{
+			if (pFile!=NULL) fprintf(pFile, "^&Test 3: OK\n@Calibration OK, dx=%i, dy=%i, dz=%i#\n", CalibX, CalibY, CalibZ);
+			fclose (pFile);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 3: OK\n\x1b[2C@Calibration OK, dx=%i, dy=%i, dz=%i#\n", CalibX,CalibY,CalibZ);
+			write(fd_fb, buf, cnt_byte);
+		}
 	}
-	i = write(fdC, dataBuffer, sizeof(dataBuffer));
-	if(i != SN_SIZE)
+	else
 	{
-		printf("Write only %d bytes instead %d\n", i, SN_SIZE);
+		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n @%s#\n", AccelBuffer);
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@%s#\n", AccelBuffer);
+		write(fd_fb, buf, cnt_byte);
 	}
-	i = close(fdC);*/
 
 	return res_calib;
 };
@@ -1174,9 +1226,21 @@ int FuncConfirm_Battery_Charger_Communication(int Do)
 	char Answer[ANSWER_L] ="";
 	int lastchar;
 
-	const char* ChipInfo = "0x0001";
+	char buf[200];
+	int cnt_byte=0;
+	FILE* pFile=NULL;
 
 	if(!Do) return -1;
+
+	pFile=fopen("/dev/ttyGS0","r+");
+
+	//if (pFile!=NULL) fprintf(pFile,"**Power Management Test**\n");
+
+	//memset(buf, 0, 200);
+	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Power Management Test**\n");
+	//write(fd_fb, buf, cnt_byte);
+
+	const char* ChipInfo = "0x0001";
 
 	hiddenConsole = popen("lsmod | grep ltc4015_charger", "r"); //lsmod | grep pfuze100_regulator
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -1197,9 +1261,23 @@ int FuncConfirm_Battery_Charger_Communication(int Do)
 	printf("hiddenConsole answer: \n%s", Answer);
 
 	if(strncmp(Answer, ChipInfo,6) == 0){
+
+		if (pFile!=NULL) fprintf(pFile, "^&Test 4B: OK\n@Charger is available#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 4B: OK\n\x1b[2C@Charger is available#\n");
+		write(fd_fb, buf, cnt_byte);
 		return 0;
 	}
 	else{
+		if (pFile!=NULL) fprintf(pFile, "^Test 4B: Fail\n@Charger don't answer#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 4B: Fail\n\x1b[2C@Charger don't answer#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	};
 	return 0;
@@ -1215,6 +1293,18 @@ int FuncConfirm_PMIC_Communication(int Do)
 	const char* ChipInfo = "0x10";
 
 	if(!Do) return -1;
+
+	char buf[200];
+	int cnt_byte=0;
+	FILE* pFile=NULL;
+
+	pFile=fopen("/dev/ttyGS0","r+");
+
+	if (pFile!=NULL) fprintf(pFile,"**Power Management Test**\n");
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Power Management Test**\n");
+	write(fd_fb, buf, cnt_byte);
 
 	hiddenConsole = popen("lsmod | grep pfuze100_regulator", "r"); //lsmod | grep pfuze100_regulator
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -1235,9 +1325,23 @@ int FuncConfirm_PMIC_Communication(int Do)
 	printf("hiddenConsole answer: \n%s", Answer);
 
 	if(strncmp(Answer, ChipInfo,4) == 0){
+		if (pFile!=NULL) fprintf(pFile, "^&Test 4A: OK\n@PMIC is available#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 4A: OK\n\x1b[2C@PMIC is available#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return 0;
 	}
 	else{
+		if (pFile!=NULL) fprintf(pFile, "^Test 4A: Fail\n@PMIC don't answer#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 4A: Fail\n\x1b[2C@PMIC don't answer#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	};
 
@@ -1376,6 +1480,18 @@ int FuncAmbient_Light_Sensor_Functionality(int Do)
 
 	if(!Do) return -1;
 
+	char buf[200];
+	int cnt_byte=0;
+	FILE* pFile=NULL;
+
+	pFile=fopen("/dev/ttyGS0","r+");
+
+	if (pFile!=NULL) fprintf(pFile,"**Light Sensor Test**\n");
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Light Sensor Test**\n");
+	write(fd_fb, buf, cnt_byte);
+
 	for(int i=0; i<=2; i++){
 		printf("Open: %s\n", devName[i]);
 		file = open( devName[i], O_RDONLY );
@@ -1392,15 +1508,32 @@ int FuncAmbient_Light_Sensor_Functionality(int Do)
 	if(F==0)
 	{
 		printf( "ERROR: Unable to open device file! \n" );
+
+		if (pFile!=NULL) fprintf(pFile, "^Test 5: Fail\n@Light sensor isn't available#\n");
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 5: Fail\n\x1b[2C@Light sensor isn't available#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	printf("Open OK\n");
 
 		memset(LightDataBuffer, 0, sizeof( LightDataBuffer ) );
 		file = open(devName[i_t], O_RDONLY);
-		read( file, LightDataBuffer, sizeof(LightDataBuffer) );
+		read( file, LightDataBuffer, sizeof(LightDataBuffer));
 		close(file);
 		printf("Light sensor value = %s \n", LightDataBuffer );
+		int lux=atoi(LightDataBuffer);
+		if (pFile!=NULL) fprintf(pFile, "^&Test 5: OK\n@Light sensor is available, lux=%i#\n", lux);
+		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 5: OK\n\x1b[2C@Light sensor is available, lux=%i#\n", lux);
+		write(fd_fb, buf, cnt_byte);
+
+
 
 	close(file);
 	printf("Close OK\n");
