@@ -37,8 +37,8 @@
 #endif
 
 extern Menu* active_menu;
-extern Menu PostAsm;
-extern Menu Download;
+//extern Menu PostAsm;
+//extern Menu Download;
 extern int timer_tick;
 
 unsigned char pre_asm_active=0;

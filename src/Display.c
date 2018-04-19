@@ -65,6 +65,7 @@ Menu AudiotTestSub;
 //Menu PreAsmTest;
 Menu* active_menu;
 
+/*
 extern unsigned char flag_for_pre_asm;
 
 extern int CX;
@@ -82,9 +83,12 @@ extern char AccelBuffer[1024];
 extern char SerialNumber[100];
 extern char SerialNumber_1[100];
 
-extern int fd_fb;
+
 extern pthread_t preasm_thread;	//preasm test thread
 extern int id_preasm_thread;
+*/
+
+extern int fd_fb;
 
 pthread_mutex_t mutex;
 unsigned char thread_flag=0;
@@ -1406,10 +1410,11 @@ void MenuInit (void)
 	active_menu->menudisplay();
 }
 
+/*
 void* preasm_thread_func(void* thread_data)
 {
 
 }
-
+*/
 
 

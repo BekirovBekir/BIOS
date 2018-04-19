@@ -1692,11 +1692,11 @@ int FuncBarometer_Functionality(int Do)
 		pressure /= 100;
 		printf( "Pressure hPa value = %i \n", (int)pressure);
 
-		if (pFile!=NULL) fprintf(pFile, "&Test 6: OK\n@Light sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
+		if (pFile!=NULL) fprintf(pFile, "&Test 6: OK\n@Pressure sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
 		fclose (pFile);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 6: OK\n\x1b[2C@Light sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 6: OK\n\x1b[2C@Pressure sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
 		write(fd_fb, buf, cnt_byte);
 
 
