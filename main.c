@@ -33,9 +33,6 @@
 pthread_t fsm_ts_thread;	//thread for timer
 int id_fsm_ts_thread=1;
 
-pthread_t preasm_thread;	//preasm test thread
-int id_preasm_thread=1;
-
 int timer_tick=0;
 int fd_fb;
 
@@ -74,13 +71,6 @@ int main(int argc, char* argv[])
 		{
 			perror("\nFSM thread fail\n");
 		}
-
-
-	//pthread_cancel(preasm_thread);
-	//pthread_join(preasm_thread, NULL);
-		//while (getchar()!='q');
-
-
 
 	//pthread_cancel(fsm_ts_thread);
 	pthread_join(fsm_ts_thread, NULL);

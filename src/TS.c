@@ -105,17 +105,23 @@ void FSM_TS (ilitek_key_info* key)
 						memset(buf, 0, 50);
 						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[0;0Hkey_pressed: %i\n", key->key_num);
 						write(fd_fb, buf, cnt_byte);*/
-							if ((key->key_num==4))//&& (pre_asm_active==0))
+							if (key->key_num==4)
 							{
-								active_menu=active_menu->UP;
-								active_menu->menudisplay();
+								if (active_menu->UP!=NULL)
+								{
+									active_menu=active_menu->UP;
+									active_menu->menudisplay();
+								}
 							}
-							if ((key->key_num==3)) //&& (pre_asm_active==0))
+							if (key->key_num==3)
 							{
-								active_menu=active_menu->DOWN;
-								active_menu->menudisplay();
+								if (active_menu->DOWN!=NULL)
+								{
+									active_menu=active_menu->DOWN;
+									active_menu->menudisplay();
+								}
 							}
-							if ((key->key_num==2))// && (flag_for_pre_asm==0))
+							if (key->key_num==2)
 							{
 								active_menu=active_menu->ENTER;
 									/*if ((active_menu!=&PostAsm) && (active_menu!=&Download)) // dummy for Post_asm test menu
@@ -125,8 +131,7 @@ void FSM_TS (ilitek_key_info* key)
 											//if (pre_asm_active) flag_for_pre_asm=1;
 											//else flag_for_pre_asm=0;
 									}*/
-								active_menu->menudisplay(); //menuaction();
-
+								active_menu->menudisplay();
 								active_menu->menuaction();
 							}
 							if ((key->key_num==1))
