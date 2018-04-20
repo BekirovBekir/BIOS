@@ -282,7 +282,12 @@ int read_SN_from_eeprom(unsigned char* serial_number)
 		goto close;
 	}
 
-	strncpy(serial_number, bufferA, SERIAL_NUMBER_SIZE);
+	unsigned char i;
+	//strncpy(serial_number, bufferA, SERIAL_NUMBER_SIZE);
+	for(i=0; i< SERIAL_NUMBER_SIZE; i++)
+		{
+			serial_number[i] = bufferA[i];
+		}
 
 close:
 	if(f) fclose(f);
