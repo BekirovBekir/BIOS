@@ -48,6 +48,7 @@ Menu EMMYTest;
 Menu ModemTest;
 Menu GPSTest;
 Menu AudiotTest;
+Menu CamerasTest;
 
 Menu FullTestSub;
 Menu EEPROMTestSub;
@@ -60,10 +61,13 @@ Menu EMMYTestSub;
 Menu ModemTestSub;
 Menu GPSTestSub;
 Menu AudiotTestSub;
+Menu CamerasTestSub;
 
 
 //Menu PreAsmTest;
 Menu* active_menu;
+
+extern int EEPROM_SN(void);
 
 /*
 extern unsigned char flag_for_pre_asm;
@@ -504,6 +508,10 @@ void FullTestDisp(void)
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[30C11. CAM'S test\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
@@ -675,6 +683,38 @@ void EEPROMTestDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
+}
+
+void EEPROMTestSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void EEPROMTestSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	EEPROM_SN();
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
 }
 
 void MemTestDisp(void)
@@ -1003,6 +1043,7 @@ void EMMYTestSubAct (void)
 	char cnt_byte;
 
 	FuncEMMY_163_Connectivity_Check(1);
+	//NFC();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -1127,18 +1168,26 @@ void AudiotTestDisp (void)
 	char buf[50];
 	char cnt_byte;
 
-	memset(buf, 0, 50);
+	/*memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;30H \n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30H \n");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
+
+
 
 	memset(buf, 0, 50);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24;30H \n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[26;30H \n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24;30H \n");///////////////
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
@@ -1183,6 +1232,67 @@ void AudiotTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void CamerasTestDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CamerasTestAct(void)
+{
+
+}
+
+void CamerasTestSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CamerasTestSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	Cameras_Test_Full(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void MenuInit (void)
 {
 	PreAsm.DOWN=&PostAsm;
@@ -1193,7 +1303,7 @@ void MenuInit (void)
 	PreAsm.menuaction=&PreAsmAct;
 
 	FullTest.DOWN=&EEPROMTest;
-	FullTest.UP=&AudiotTest;
+	FullTest.UP=&CamerasTest;
 	FullTest.ENTER=&FullTestSub;
 	FullTest.ESC=&PreAsm;
 	FullTest.menudisplay=&FullTestDisp;
@@ -1208,10 +1318,17 @@ void MenuInit (void)
 
 	EEPROMTest.DOWN=&MemTest;
 	EEPROMTest.UP=&FullTest;
-	EEPROMTest.ENTER=&EEPROMTest;//EEPROMTestSub;
+	EEPROMTest.ENTER=&EEPROMTestSub;
 	EEPROMTest.ESC=&PreAsm;
 	EEPROMTest.menuaction=&EEPROMTestAct;
 	EEPROMTest.menudisplay=&EEPROMTestDisp;
+
+	EEPROMTestSub.DOWN=NULL;
+	EEPROMTestSub.UP=NULL;
+	EEPROMTestSub.ENTER=&EEPROMTestSub;
+	EEPROMTestSub.ESC=&FullTest;
+	EEPROMTestSub.menuaction=&EEPROMTestSubAct;
+	EEPROMTestSub.menudisplay=&EEPROMTestSubDisp;
 
 	MemTest.DOWN=&AccelTest;
 	MemTest.UP=&EEPROMTest;
@@ -1321,7 +1438,7 @@ void MenuInit (void)
 	GPSTestSub.menuaction=&GPSTestSubAct;
 	GPSTestSub.menudisplay=&GPSTestSubDisp;
 
-	AudiotTest.DOWN=&FullTest;
+	AudiotTest.DOWN=&CamerasTest;
 	AudiotTest.UP=&GPSTest;
 	AudiotTest.ENTER=&AudiotTestSub;
 	AudiotTest.ESC=&PreAsm;
@@ -1335,6 +1452,20 @@ void MenuInit (void)
 	AudiotTestSub.ESC=&FullTest;
 	AudiotTestSub.menuaction=&AudiotTestSubAct;
 	AudiotTestSub.menudisplay=&AudioTestSubDisp;
+
+	CamerasTest.DOWN=&FullTest;
+	CamerasTest.UP=&AudiotTest;
+	CamerasTest.ENTER=&CamerasTestSub;
+	CamerasTest.ESC=&PreAsm;
+	CamerasTest.menuaction=&CamerasTestAct;
+	CamerasTest.menudisplay=&CamerasTestDisp;
+
+	CamerasTestSub.DOWN=NULL;
+	CamerasTestSub.UP=NULL;
+	CamerasTestSub.ENTER=&CamerasTestSub;
+	CamerasTestSub.ESC=&FullTest;
+	CamerasTestSub.menuaction=&CamerasTestSubAct;
+	CamerasTestSub.menudisplay=&CamerasTestSubDisp;
 
 	PostAsm.DOWN=&GI;
 	PostAsm.UP=&PreAsm;

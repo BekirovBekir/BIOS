@@ -27,10 +27,13 @@ int Init_LARA_SARA(char* port_name, int port_speed);
 int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do);
 int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do);
 int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2);
+int Cameras_Test_Full(int Do);
 int Audio_Codec_Test(int Do);
 int NEO_Test(int Do);
 int FuncSN_Burn_In(int Do);
 int FuncSN_Read_In(int Do);
+
+void NFC(void);
 
 
 #endif /* INC_PREASM_H_ */

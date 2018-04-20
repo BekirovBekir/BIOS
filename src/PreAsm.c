@@ -39,6 +39,8 @@
 extern FILE *stdin;
 extern int fd_fb;
 
+#define USB_PATH "/dev/ttyGS0"
+
 
 int CX=0;
 int CY=0;
@@ -57,6 +59,29 @@ char SerialNumber_1[100]={0};
 unsigned char wifi_first_start_flag=0;
 struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI};
 
+int USB_printf(char* buf, int timeout)
+{
+	int fd=-1;
+	int cnt=0;
+
+	fd=open(USB_PATH, O_WRONLY);
+		if (fd>=0)
+		{
+			struct pollfd polldesc={fd, POLLOUT|POLLPRI};
+				if(poll(&polldesc, 1, timeout))
+				{
+					cnt=write(fd, buf, strlen(buf));
+					close(fd);
+				}
+				{
+					close(fd);
+					return -1;
+				}
+		}
+		else return -1;
+	return cnt;
+}
+
 int TestMMC(int Do)
 {
 	//Performs checksum validation on all memory parts to ensure memory is free of corruption or defect. This includes testing
@@ -70,6 +95,13 @@ int TestMMC(int Do)
 	int i;
 
 	if(!Do) return -1;
+
+	char buf[200];
+	int cnt_byte=0;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Accelerometer Check**\n");
+	write(fd_fb, buf, cnt_byte);
 
 	memset(buffer_in, 0, BUFFER_SIZE);
 	memset(buffer_out, 0, BUFFER_SIZE);
@@ -880,10 +912,6 @@ int FuncAccelerometer_Calibration(int Do)
 	#define BUFF_SIZE 100
 	#define SN_SIZE 100
 
-	FILE* pFile=NULL;
-
-	pFile=fopen("/dev/ttyGS0","r+");
-
 	char buf[200];
 	int cnt_byte=0;
 
@@ -910,7 +938,7 @@ int FuncAccelerometer_Calibration(int Do)
 
 	printf("Start calibrate\n\n");
 
-	if (pFile!=NULL) fprintf(pFile, "**Accelerometer Check**\n");
+	USB_printf("**Accelerometer Check**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Accelerometer Check**\n");
@@ -933,8 +961,7 @@ int FuncAccelerometer_Calibration(int Do)
 	{
 		printf( "ERROR: Unable to open device file! \n" );
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -950,9 +977,7 @@ int FuncAccelerometer_Calibration(int Do)
 	{
 		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
-
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -969,8 +994,7 @@ int FuncAccelerometer_Calibration(int Do)
 		sprintf(AccelBuffer, "Unable to open device file!");
 		printf( "ERROR: Unable to open device file! \n" );
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -986,8 +1010,8 @@ int FuncAccelerometer_Calibration(int Do)
 	{
 		//sprintf(AccelBuffer, "Unable to open device file!");
 		//printf( "ERROR: Unable to open device file! \n" );
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1001,8 +1025,8 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibX_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
-			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-			fclose (pFile);
+
+			USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1018,8 +1042,7 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibY_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
-			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-			fclose (pFile);
+			USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1035,8 +1058,7 @@ int FuncAccelerometer_Calibration(int Do)
 		fdC = open(CalibZ_Read[indexFile], O_WRONLY);
 		if(fdC == -1)
 		{
-			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-			fclose (pFile);
+			USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1134,8 +1156,7 @@ int FuncAccelerometer_Calibration(int Do)
 	fdC = open(CalibX_Read[indexFile], O_WRONLY);
 	if(fdC == -1)
 	{
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1151,8 +1172,8 @@ int FuncAccelerometer_Calibration(int Do)
 	fdC = open(CalibY_Read[indexFile], O_WRONLY);
 	if(fdC == -1)
 	{
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1168,8 +1189,8 @@ int FuncAccelerometer_Calibration(int Do)
 	fdC = open(CalibZ_Read[indexFile], O_WRONLY);
 	if(fdC == -1)
 	{
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Unable to open device file!#\n");
-		fclose (pFile);
+
+		USB_printf("^Test 3: Fail\n@Unable to open device file!#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Unable to open device file!#\n");
@@ -1186,8 +1207,8 @@ int FuncAccelerometer_Calibration(int Do)
 	sprintf(dataBuffer, "%i %i %i ",CalibX,CalibY,CalibZ);
 		if (Write_EEPROM(dataBuffer, 19)==0)
 		{
-			if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n@Error while writing calibration values!#\n");
-			fclose (pFile);
+
+			USB_printf("^Test 3: Fail\n@Error while writing calibration values!#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@Error while writing calibration values!#\n");
@@ -1197,8 +1218,10 @@ int FuncAccelerometer_Calibration(int Do)
 		}
 		else
 		{
-			if (pFile!=NULL) fprintf(pFile, "&Test 3: OK\n@Calibration OK, dx=%i, dy=%i, dz=%i#\n", CalibX, CalibY, CalibZ);
-			fclose (pFile);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 3: OK\n\x1b[2C@Calibration OK, dx=%i, dy=%i, dz=%i#\n", CalibX,CalibY,CalibZ);
+			USB_printf(buf, 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 3: OK\n\x1b[2C@Calibration OK, dx=%i, dy=%i, dz=%i#\n", CalibX,CalibY,CalibZ);
@@ -1207,8 +1230,10 @@ int FuncAccelerometer_Calibration(int Do)
 	}
 	else
 	{
-		if (pFile!=NULL) fprintf(pFile, "^Test 3: Fail\n @%s#\n", AccelBuffer);
-		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "^Test 3: Fail\n@%s#\n", AccelBuffer);
+		USB_printf(buf, 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail\n\x1b[2C@%s#\n", AccelBuffer);
@@ -1228,17 +1253,8 @@ int FuncConfirm_Battery_Charger_Communication(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
 	if(!Do) return -1;
-
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	//if (pFile!=NULL) fprintf(pFile,"**Power Management Test**\n");
-
-	//memset(buf, 0, 200);
-	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Power Management Test**\n");
-	//write(fd_fb, buf, cnt_byte);
 
 	const char* ChipInfo = "0x0001";
 
@@ -1262,8 +1278,7 @@ int FuncConfirm_Battery_Charger_Communication(int Do)
 
 	if(strncmp(Answer, ChipInfo,6) == 0){
 
-		if (pFile!=NULL) fprintf(pFile, "&Test 4B: OK\n@Charger is available#\n");
-		fclose (pFile);
+		USB_printf("&Test 4B: OK\n@Charger is available#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 4B: OK\n\x1b[2C@Charger is available#\n");
@@ -1271,8 +1286,8 @@ int FuncConfirm_Battery_Charger_Communication(int Do)
 		return 0;
 	}
 	else{
-		if (pFile!=NULL) fprintf(pFile, "^Test 4B: Fail\n@Charger don't answer#\n");
-		fclose (pFile);
+
+		USB_printf("^Test 4B: Fail\n@Charger don't answer#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 4B: Fail\n\x1b[2C@Charger don't answer#\n");
@@ -1296,11 +1311,8 @@ int FuncConfirm_PMIC_Communication(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**Power Management Test**\n");
+	USB_printf("**Power Management Test**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Power Management Test**\n");
@@ -1325,8 +1337,8 @@ int FuncConfirm_PMIC_Communication(int Do)
 	printf("hiddenConsole answer: \n%s", Answer);
 
 	if(strncmp(Answer, ChipInfo,4) == 0){
-		if (pFile!=NULL) fprintf(pFile, "&Test 4A: OK\n@PMIC is available#\n");
-		fclose (pFile);
+
+		USB_printf("&Test 4A: OK\n@PMIC is available#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 4A: OK\n\x1b[2C@PMIC is available#\n");
@@ -1335,8 +1347,8 @@ int FuncConfirm_PMIC_Communication(int Do)
 		return 0;
 	}
 	else{
-		if (pFile!=NULL) fprintf(pFile, "^Test 4A: Fail\n@PMIC don't answer#\n");
-		fclose (pFile);
+
+		USB_printf("^Test 4A: Fail\n@PMIC don't answer#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 4A: Fail\n\x1b[2C@PMIC don't answer#\n");
@@ -1345,7 +1357,6 @@ int FuncConfirm_PMIC_Communication(int Do)
 		return -1;
 	};
 
-	//modprobe pfuze100_regulator
 };
 
 int FuncEMMY_163_Connectivity_Check(int Do)
@@ -1360,16 +1371,13 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
 	if(!Do) return -1;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**EMMY Test**\n");
+	USB_printf("**Wifi Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**EMMY Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Wifi Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 		if (wifi_first_start_flag!=1)
@@ -1390,8 +1398,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	if(lastchar == 0){
 		printf("\n Kernel module 'sd8xxx' not loaded!!! Load module and try again\n");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 7: Fail, module sd8xxx not loaded\n@Module sd8xxx not loaded#\n");
-		fclose (pFile);
+		USB_printf("^Test 7: Fail, module sd8xxx not loaded\n@Module sd8xxx not loaded#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 7: Fail, module sd8xxx not loaded\n\x1b[2C@Module sd8xxx not loaded#\n");
@@ -1408,7 +1415,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		printf("\n Kernel module 'mlan' not loaded!!! Load module and try again\n");
 		sprintf (EmmyWiFiBuffer, "Module 'mlan' not loaded");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 7A: Fail, module mlan not loaded\n@Module mlan not loaded#\n");
+		USB_printf("^Test 7A: Fail, module mlan not loaded\n@Module mlan not loaded#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 7A: Fail, module mlan not loaded\n\x1b[2C@Module mlan not loaded#\n");
@@ -1447,8 +1454,21 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		printf("\nWiFi Failed\n");
 		result=0;
 	}
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "^&Test 7A: OK\n@%s#\n", EmmyWiFiBuffer);
+	USB_printf(buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 7A: OK\n\x1b[2C@%s#\n", EmmyWiFiBuffer);
+	write(fd_fb, buf, cnt_byte);
 
 	//Validate Bluetooth Antenna by detecting and printing available Bluetooth devices to pair
+
+	USB_printf("**Bluetooth Test**\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Bluetooth Test**\n");
+	write(fd_fb, buf, cnt_byte);
 
 	hiddenConsole = popen("lsmod | grep bt8xxx", "r");
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -1459,7 +1479,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		printf("\n Kernel module 'bt8xxx' not loaded!!! Load module and try again");
 		sprintf (EmmyBTBuffer, "Module 'bt8xxx' not loaded");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 7B: Fail, module bt8xxx not loaded\n@Module bt8xxx not loaded#\n");
+		USB_printf("^Test 7B: Fail, module bt8xxx not loaded\n@Module bt8xxx not loaded#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 7B: Fail, module bt8xxx not loaded\n\x1b[2C@Module bt8xxx not loaded#\n");
@@ -1493,27 +1513,27 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 			result=0;
 		}
 
-	printf("\nFound bluetooth devices: \n%s", Answer);
-
-	if(result == 0){
-
-		if (pFile!=NULL) fprintf(pFile, "^&Test 7A: OK\n@%s#\n", EmmyWiFiBuffer);
-
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 7A: OK\n\x1b[2C@%s#\n", EmmyWiFiBuffer);
-		write(fd_fb, buf, cnt_byte);
-
-		if (pFile!=NULL) fprintf(pFile, "^&Test 7B: OK\n@%s#\n", EmmyBTBuffer);
+		cnt_byte=snprintf(buf, sizeof(buf), "^&Test 7B: OK\n@%s#\n", EmmyBTBuffer);
+		USB_printf(buf, 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 7B: OK\n\x1b[2C@%s#\n", EmmyBTBuffer);
 		write(fd_fb, buf, cnt_byte);
 
-		fclose (pFile);
+	printf("\nFound bluetooth devices: \n%s", Answer);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "./NFC_test %s, %i", USB_PATH, fd_fb);
+	system(buf);
+
+	if(result == 0){
 
 		return 0;
 	}
 	else{
+
 		return -1;
 	}
 
@@ -1530,11 +1550,8 @@ int FuncAmbient_Light_Sensor_Functionality(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**Light Sensor Test**\n");
+	USB_printf("**Light Sensor Test**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Light Sensor Test**\n");
@@ -1557,8 +1574,7 @@ int FuncAmbient_Light_Sensor_Functionality(int Do)
 	{
 		printf( "ERROR: Unable to open device file! \n" );
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 5: Fail\n@Light sensor isn't available#\n");
-		fclose (pFile);
+		USB_printf("^Test 5: Fail\n@Light sensor isn't available#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 5: Fail\n\x1b[2C@Light sensor isn't available#\n");
@@ -1573,9 +1589,12 @@ int FuncAmbient_Light_Sensor_Functionality(int Do)
 		read( file, LightDataBuffer, sizeof(LightDataBuffer));
 		close(file);
 		printf("Light sensor value = %s \n", LightDataBuffer );
+
 		int lux=atoi(LightDataBuffer);
-		if (pFile!=NULL) fprintf(pFile, "^&Test 5: OK\n@Light sensor is available, lux=%i#\n", lux);
-		fclose (pFile);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "&Test 5: OK\n@Light sensor is available, lux=%i#\n", lux);
+		USB_printf(buf, 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 5: OK\n\x1b[2C@Light sensor is available, lux=%i#\n", lux);
@@ -1602,11 +1621,8 @@ int FuncBarometer_Functionality(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**Pressure Sensor Test**\n");
+	USB_printf("**Pressure Sensor Test**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Pressure Sensor Test**\n");
@@ -1629,8 +1645,7 @@ int FuncBarometer_Functionality(int Do)
 	{
 		printf( "ERROR: Unable to open device file! \n" );
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 6: Fail, pressure sensor isn't available\n@Pressure sensor isn't available#\n");
-		fclose (pFile);
+		USB_printf("^Test 6: Fail, pressure sensor isn't available\n@Pressure sensor isn't available#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 6: Fail, pressure sensor isn't available\n\x1b[2C@Pressure sensor isn't available#\n");
@@ -1658,8 +1673,7 @@ int FuncBarometer_Functionality(int Do)
 	{
 		printf( "ERROR: Unable to open device file! \n" );
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 6: Fail, pressure sensor isn't available\n@Pressure sensor isn't available#\n");
-		fclose (pFile);
+		USB_printf("^Test 6: Fail, pressure sensor isn't available\n@Pressure sensor isn't available#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 6: Fail, pressure sensor isn't available\n\x1b[2C@Pressure sensor isn't available#\n");
@@ -1692,13 +1706,13 @@ int FuncBarometer_Functionality(int Do)
 		pressure /= 100;
 		printf( "Pressure hPa value = %i \n", (int)pressure);
 
-		if (pFile!=NULL) fprintf(pFile, "&Test 6: OK\n@Pressure sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
-		fclose (pFile);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "&Test 6: OK\n@Pressure sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
+		USB_printf(buf, 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 6: OK\n\x1b[2C@Pressure sensor is available, T=%.2f, P=%.2f#\n", temperature, pressure);
 		write(fd_fb, buf, cnt_byte);
-
 
 	close( fileTemp );
 	close( filePressure );
@@ -1720,11 +1734,8 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**USB Modem Test**\n");
+	USB_printf("**USB Modem Test**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**USB Modem Test**\n");
@@ -1737,8 +1748,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(LaraBuffer, "Error export pins");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error export pins\n@Error export pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9A: Fail, error export pins\n@Error export pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error export pins\n\x1b[2C@Error export pins#\n");
@@ -1750,8 +1760,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(LaraBuffer, "Error export pins");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error export pins\n@Error export pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9A: Fail, error export pins\n@Error export pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error export pins\n\x1b[2C@Error export pins#\n");
@@ -1767,8 +1776,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(LaraBuffer, "Error write pin 50");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9A: Fail, error write pins\n@Error write pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -1782,8 +1790,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	{
 		sprintf(LaraBuffer, "Error write pin 52");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
-		fclose (pFile);
+		USB_printf("^Test 9A: Fail, error write pins\n@Error write pins#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -1797,8 +1804,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	{
 		sprintf(LaraBuffer, "Error write pin 52");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
-		fclose (pFile);
+		USB_printf("^Test 9A: Fail, error write pins\n@Error write pins#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -1812,8 +1818,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	{
 		sprintf(LaraBuffer, "Error write pin 52");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
-		fclose (pFile);
+		USB_printf("^Test 9A: Fail, error write pins\n@Error write pins#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -1835,8 +1840,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	}
 	if(LaraErr){
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error init module\n@Error init module#\n");
-		fclose (pFile);
+		USB_printf("^Test 9A: Fail, error init module\n@Error init module#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error init module\n\x1b[2C@Error init module#\n");
@@ -1851,8 +1855,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(LaraBuffer, "Error unexport pin 50");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
@@ -1864,8 +1867,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(LaraBuffer, "Error unexport pin 52");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9A: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
@@ -1876,8 +1878,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	sprintf(LaraBuffer, "SARA-R410M module received ATE0 command");
 
-	if (pFile!=NULL) fprintf(pFile, "&Test 9A: OK\n@Module received ATE0 command#\n");
-	fclose (pFile);
+	USB_printf("&Test 9A: OK\n@Module received ATE0 command#\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 9A: OK\n\x1b[2C@Module received ATE0 command#\n");
@@ -1901,11 +1902,8 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**UART Modem Test**\n");
+	USB_printf("**UART Modem Test**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**UART Modem Test**\n");
@@ -1918,8 +1916,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(SaraBuffer, "Error export pins");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error export pins\n@Error export pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9B: Fail, error export pins\n@Error export pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error export pins\n\x1b[2C@Error export pins#\n");
@@ -1931,8 +1928,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(SaraBuffer, "Error export pins");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error export pins\n@Error export pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9B: Fail, error export pins\n@Error export pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error export pins\n\x1b[2C@Error export pins#\n");
@@ -1948,8 +1944,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	{
 		sprintf(SaraBuffer, "Error write pin 49");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error write pins\n@Error write pins#\n");
-		fclose (pFile);
+		USB_printf("^Test 9B: Fail, error write pins\n@Error write pins#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -1970,8 +1965,8 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		printf( "SARA answer 'OK' \n" );
 	}
 	if(SaraErr){
-		if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error init module\n@Error init module#\n");
-		fclose (pFile);
+
+		USB_printf("^Test 9B: Fail, error init module\n@Error init module#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error init module\n\x1b[2C@Error init module#\n");
@@ -1984,8 +1979,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	{
 		sprintf(SaraBuffer, "Error write pin 48");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error write pins\n@Error write pins#\n");
-		fclose (pFile);
+		USB_printf("^Test 9B: Fail, error write pins\n@Error write pins#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -2000,8 +1994,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	{
 		sprintf(SaraBuffer, "Error write pin 48");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error write pins\n@Error write pins#\n");
-		fclose (pFile);
+		USB_printf("^Test 9B: Fail, error write pins\n@Error write pins#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -2016,8 +2009,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(SaraBuffer, "Error unexport pin 48");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
@@ -2029,8 +2021,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(SaraBuffer, "Error unexport pin 49");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
@@ -2041,8 +2032,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 		sprintf(SaraBuffer, "SARA-U201 module received ATE0 command");
 
-		if (pFile!=NULL) fprintf(pFile, "&Test 9B: OK\n@Module received ATE0 command#\n");
-		fclose (pFile);
+		USB_printf("&Test 9B: OK\n@Module received ATE0 command#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 9B: OK\n\x1b[2C@Module received ATE0 command#\n");
@@ -2068,6 +2058,51 @@ int Cameras_Test(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2)
 	else return -1;
 }
 
+int Cameras_Test_Full(int Do)
+{
+	if(!Do) return -1;
+
+	char buf[200];
+	int cnt_byte=0;
+
+	CAMPARAM cam1={0};
+	CAMPARAM cam2={0};
+
+	USB_printf("**Cameras Test**\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Cameras Test**\n");
+	write(fd_fb, buf, cnt_byte);
+
+		if (Cameras_Test(Do, &cam1, &cam2)==0)
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "&Test 12: OK\n@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n", cam1.description, cam1.widht, cam1.height,
+																															cam2.description, cam2.widht, cam2.height);
+			USB_printf(buf, 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 12: OK\n\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n", cam1.description, cam1.widht, cam1.height,
+																																		cam2.description, cam2.widht, cam2.height);
+			write(fd_fb, buf, cnt_byte);
+			return 0;
+		}
+		else
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 12: Fail\n@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n", cam1.description, cam1.widht, cam1.height,
+																																cam2.description, cam2.widht, cam2.height);
+			USB_printf(buf, 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 12: Fail\n\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n", cam1.description, cam1.widht, cam1.height,
+																																			cam2.description, cam2.widht, cam2.height);
+			write(fd_fb, buf, cnt_byte);
+			return 0;
+		}
+return 0;
+}
+
 int Audio_Codec_Test(int Do)
 {
 	FILE * hiddenConsole;
@@ -2080,11 +2115,8 @@ int Audio_Codec_Test(int Do)
 
 	char buf[200];
 	int cnt_byte=0;
-	FILE* pFile=NULL;
 
-	pFile=fopen("/dev/ttyGS0","r+");
-
-	if (pFile!=NULL) fprintf(pFile,"**Audio System (Codec/Amplifier test)**\n");
+	USB_printf("**Audio System (Codec/Amplifier test)**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Audio System (Codec/Amplifier test)**\n");
@@ -2100,8 +2132,7 @@ int Audio_Codec_Test(int Do)
 		printf("\n");
 		sprintf (AudioCodecBuffer, "Audio codec not detected!");
 
-		if (pFile!=NULL) fprintf(pFile, "^Test 11: Fail, audio codec not detected\n@Audio codec not detected#\n");
-		fclose (pFile);
+		USB_printf("^Test 11: Fail, audio codec not detected\n@Audio codec not detected#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 11: Fail, audio codec not detected\n\x1b[2C@Audio codec not detected#\n");
@@ -2134,7 +2165,7 @@ int Audio_Codec_Test(int Do)
 	{
 		system("alsactl restore");
 
-		if (pFile!=NULL) fprintf(pFile, "@Recording is started. Time is 10 seconds#\n");
+		USB_printf("@Recording is started. Time is 10 seconds#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Recording is started. Time is 10 seconds#\n");
@@ -2143,7 +2174,7 @@ int Audio_Codec_Test(int Do)
 		system("arecord -f dat -d 10 test.wav");
 		system("amixer sset 'Lineout' 100%");
 
-		if (pFile!=NULL) fprintf(pFile, "@Playing sound is started#\n");
+		USB_printf("@Playing sound is started#\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Playing sound is started#\n");
@@ -2152,7 +2183,7 @@ int Audio_Codec_Test(int Do)
 		system ("aplay -f dat test.wav");
 		system("alsactl restore");
 
-		if (pFile!=NULL) fprintf(pFile, "&Test 11: OK\n");
+		USB_printf("&Test 11: OK\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 11: OK\n");
@@ -2172,11 +2203,8 @@ int NEO_Test(int Do)
 
 		char buf[200];
 		int cnt_byte=0;
-		FILE* pFile=NULL;
 
-		pFile=fopen("/dev/ttyGS0","r+");
-
-		if (pFile!=NULL) fprintf(pFile,"**GPS Test**\n");
+		USB_printf("**GPS Test**\n", 1000);
 
 		memset(buf, 0, 200);
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**GPS Test**\n");
@@ -2186,8 +2214,7 @@ int NEO_Test(int Do)
 		{
 			printf("Error export pins 63\n");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 10: Fail, error export pins\n@Error export pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 10: Fail, error export pins\n@Error export pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10: Fail, error export pins\n\x1b[2C@Error export pins#\n");
@@ -2199,8 +2226,8 @@ int NEO_Test(int Do)
 		{
 			if (Write_GPIO("63", "1")!=1)
 			{
-				if (pFile!=NULL) fprintf(pFile, "^Test 10: Fail, error write pins\n@Error write pins#\n");
-				fclose (pFile);
+
+				USB_printf("^Test 10: Fail, error write pins\n@Error write pins#\n", 1000);
 
 				memset(buf, 0, 200);
 				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10: Fail, error write pins\n\x1b[2C@Error write pins#\n");
@@ -2216,8 +2243,7 @@ int NEO_Test(int Do)
 		{
 			printf("Error while open port\n");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 10: Fail, error while open port\n@Error while open port#\n");
-			fclose (pFile);
+			USB_printf("^Test 10: Fail, error while open port\n@Error while open port#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10: Fail, error while open port\n\x1b[2C@Error while open port#\n");
@@ -2236,8 +2262,7 @@ int NEO_Test(int Do)
 				Write_GPIO("63", "0");
 				DeInit_GPIO("63");
 
-				if (pFile!=NULL) fprintf(pFile, "&Test 10: OK\n@Module received NMEA#\n");
-				fclose (pFile);
+				USB_printf("&Test 10: OK\n@Module received NMEA#\n", 1000);
 
 				memset(buf, 0, 200);
 				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 10: OK\n\x1b[2C@Module received NMEA#\n");
@@ -2251,8 +2276,7 @@ int NEO_Test(int Do)
 				Write_GPIO("63", "0");
 				DeInit_GPIO("63");
 
-				if (pFile!=NULL) fprintf(pFile, "^Test 10: Fail, error unexport pins\n@Error unexport pins#\n");
-				fclose (pFile);
+				USB_printf("^Test 10: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 				memset(buf, 0, 200);
 				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
@@ -2267,8 +2291,7 @@ int NEO_Test(int Do)
 			Write_GPIO("63", "0");
 			DeInit_GPIO("63");
 
-			if (pFile!=NULL) fprintf(pFile, "^Test 10: Fail, error unexport pins\n@Error unexport pins#\n");
-			fclose (pFile);
+			USB_printf("^Test 10: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
@@ -2281,8 +2304,7 @@ close(fd);
 Write_GPIO("63", "0");
 DeInit_GPIO("63");
 
-if (pFile!=NULL) fprintf(pFile, "^Test 10: Fail, error unexport pins\n@Error unexport pins#\n");
-fclose (pFile);
+USB_printf("^Test 10: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
 
 memset(buf, 0, 200);
 cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
