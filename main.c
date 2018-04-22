@@ -21,6 +21,7 @@
 #include "FrameBuffer.h"
 #include "Display.h"
 #include "eeprom.h"
+#include "PreAsm.h"
 
 #define DEBUG 1
 
@@ -33,8 +34,15 @@
 pthread_t fsm_ts_thread;	//thread for timer
 int id_fsm_ts_thread=1;
 
+pthread_t test_sel_thread;	// thread for select test from USB port
+int id_test_sel_thread=1;
+
+pthread_mutex_t mutex;
+
 int timer_tick=0;
 int fd_fb;
+
+extern int preasm_flag;
 
 void* fsm_ts_thread_func(void* thread_data)
 {
@@ -51,6 +59,28 @@ static ilitek_key_info key={0,0,0,0};
 			}
 		usleep(30000);
 	}
+	return EXIT_SUCCESS;
+}
+
+void* test_sel_thread_func(void* thread_data)
+{
+	int ch=0;
+	int buf_preasm_flag;
+	for (;;)
+	{
+		pthread_mutex_lock(&mutex);
+		buf_preasm_flag=preasm_flag;
+		pthread_mutex_unlock(&mutex);
+
+		if (buf_preasm_flag==1)
+		{
+		ch=USB_getc(1000);
+		TestRun(ch);
+		}
+
+	}
+
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, char* argv[])
@@ -71,6 +101,16 @@ int main(int argc, char* argv[])
 		{
 			perror("\nFSM thread fail\n");
 		}
+
+	trhread_state=pthread_create(&test_sel_thread, NULL, test_sel_thread_func, &id_test_sel_thread);
+			if (trhread_state==0)
+			{
+				printf ("\nPreasm thread started\n");
+			}
+			else
+			{
+				perror("\nPreasm thread fail\n");
+			}
 
 	//pthread_cancel(fsm_ts_thread);
 	pthread_join(fsm_ts_thread, NULL);

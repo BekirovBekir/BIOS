@@ -40,6 +40,8 @@ void MenuInit (void);
 
 int DisplayOut(char* buf);
 
+void TestRun(int test_num);
+
 void* preasm_thread_func(void* thread_data);
 
 #endif /* INC_DISPLAY_H_ */

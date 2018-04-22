@@ -94,8 +94,26 @@ extern int id_preasm_thread;
 
 extern int fd_fb;
 
-pthread_mutex_t mutex;
 unsigned char thread_flag=0;
+
+void TestRun(int test_num)
+{
+	switch (test_num)
+	{
+		case 0:
+
+		break;
+		case '0':
+
+		break;
+		case '3':
+		active_menu=&AccelTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		break;
+	}
+}
+
 
 int DisplayOut(char* buf)
 {

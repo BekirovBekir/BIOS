@@ -24,6 +24,7 @@
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
 #include <stdio_ext.h>
+#include <termios.h>
 
 
 #include "PreAsm.h"
@@ -59,11 +60,39 @@ char SerialNumber_1[100]={0};
 unsigned char wifi_first_start_flag=0;
 struct pollfd newpoll={ STDIN_FILENO, POLLIN|POLLPRI};
 
+int USB_getc(int timeout)
+{
+	FILE *f;
+	int ch;
+
+	struct pollfd pollin={ STDIN_FILENO, POLLIN|POLLPRI};
+
+		f = fopen(USB_PATH, "w");
+			if (f == NULL)
+			return -1;
+
+		pollin.fd = fileno(f);
+		tcflush(fileno(f), TCIOFLUSH);
+
+			if( poll(&pollin, 1, timeout) )
+			{
+				ch=getc(f);
+			}
+			else
+			{
+				//Timeout
+				ch=0;
+			}
+		fclose(f);
+		return ch;
+}
+
 int USB_printf(char* buf, int timeout)
 {
 	int fd=-1;
 	int cnt=0;
 
+	//pthread_mutex_lock(&mutex);
 	fd=open(USB_PATH, O_WRONLY);
 		if (fd>=0)
 		{
@@ -75,10 +104,16 @@ int USB_printf(char* buf, int timeout)
 				}
 				{
 					close(fd);
+					//pthread_mutex_unlock(&mutex);
 					return -1;
 				}
 		}
-		else return -1;
+		else
+		{
+			//pthread_mutex_unlock(&mutex);
+			return -1;
+		}
+	//pthread_mutex_unlock(&mutex);
 	return cnt;
 }
 
@@ -1455,7 +1490,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		result=0;
 	}
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "^&Test 7A: OK\n@%s#\n", EmmyWiFiBuffer);
+	cnt_byte=snprintf(buf, sizeof(buf), "&Test 7A: OK\n@%s#\n", EmmyWiFiBuffer);
 	USB_printf(buf, 1000);
 
 	memset(buf, 0, 200);
@@ -1514,7 +1549,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		}
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "^&Test 7B: OK\n@%s#\n", EmmyBTBuffer);
+		cnt_byte=snprintf(buf, sizeof(buf), "&Test 7B: OK\n@%s#\n", EmmyBTBuffer);
 		USB_printf(buf, 1000);
 
 		memset(buf, 0, 200);

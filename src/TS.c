@@ -37,9 +37,11 @@
 #endif
 
 extern Menu* active_menu;
-//extern Menu PostAsm;
-//extern Menu Download;
+extern Menu PreAsm;
 extern int timer_tick;
+extern pthread_mutex_t mutex;
+
+int preasm_flag=0;
 
 unsigned char pre_asm_active=0;
 unsigned char flag_for_pre_asm=0;
@@ -124,15 +126,12 @@ void FSM_TS (ilitek_key_info* key)
 							if (key->key_num==2)
 							{
 								active_menu=active_menu->ENTER;
-									/*if ((active_menu!=&PostAsm) && (active_menu!=&Download)) // dummy for Post_asm test menu
-									{
-											pre_asm_active^=(1<<0);
-											flag_for_pre_asm=(pre_asm_active ? 1 : 0);
-											//if (pre_asm_active) flag_for_pre_asm=1;
-											//else flag_for_pre_asm=0;
-									}*/
 								active_menu->menudisplay();
 								active_menu->menuaction();
+
+								pthread_mutex_lock(&mutex);
+								preasm_flag=((active_menu==&PreAsm) ? 1 : 0);
+								pthread_mutex_unlock(&mutex);
 							}
 							if ((key->key_num==1))
 							{

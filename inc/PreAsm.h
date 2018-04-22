@@ -33,6 +33,9 @@ int NEO_Test(int Do);
 int FuncSN_Burn_In(int Do);
 int FuncSN_Read_In(int Do);
 
+int USB_printf(char* buf, int timeout);
+int USB_getc(int timeout);
+
 void NFC(void);
 
 
