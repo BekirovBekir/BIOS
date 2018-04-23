@@ -37,7 +37,7 @@
 #endif
 
 extern Menu* active_menu;
-extern Menu PreAsm;
+extern Menu FullTest;
 extern int timer_tick;
 extern pthread_mutex_t mutex;
 
@@ -129,16 +129,25 @@ void FSM_TS (ilitek_key_info* key)
 								active_menu->menudisplay();
 								active_menu->menuaction();
 
-								pthread_mutex_lock(&mutex);
-								preasm_flag=((active_menu==&PreAsm) ? 1 : 0);
-								pthread_mutex_unlock(&mutex);
+
+								//pthread_mutex_lock(&mutex);
+								//preasm_flag=((active_menu==&FullTest) ? 1 : 0);
+								//pthread_mutex_unlock(&mutex);
+
+
 							}
 							if ((key->key_num==1))
 							{
 								active_menu=active_menu->ESC;
 									if (active_menu!=NULL) active_menu->menudisplay();
 
+
+								//pthread_mutex_lock(&mutex);
+								//preasm_flag=((active_menu==&FullTest) ? 1 : 0);
+								//pthread_mutex_unlock(&mutex);
+
 							}
+
 						timer_tick=0;
 						fsm=2;
 					}

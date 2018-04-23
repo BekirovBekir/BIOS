@@ -68,6 +68,8 @@ Menu CamerasTestSub;
 Menu* active_menu;
 
 extern int EEPROM_SN(void);
+extern pthread_mutex_t mutex;
+extern int preasm_flag;
 
 /*
 extern unsigned char flag_for_pre_asm;
@@ -107,9 +109,25 @@ void TestRun(int test_num)
 
 		break;
 		case '3':
+		pthread_mutex_lock(&mutex);
+		preasm_flag=0;
+		pthread_mutex_unlock(&mutex);
+
 		active_menu=&AccelTestSub;
 		active_menu->menudisplay();
 		active_menu->menuaction();
+		break;
+		case '4':
+		pthread_mutex_lock(&mutex);
+		preasm_flag=0;
+		pthread_mutex_unlock(&mutex);
+
+		active_menu=&PowerManTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		break;
+		default:
+
 		break;
 	}
 }
@@ -539,6 +557,8 @@ void FullTestDisp(void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	//USB_printf("Select test (0-11) and press ENTER or use Toucscreen:\n", 1000);
 }
 
 void FullTestAct(void)
@@ -558,12 +578,12 @@ void FullTestSubDisp (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 }
 
 void FullTestSubAct (void)
@@ -571,10 +591,7 @@ void FullTestSubAct (void)
 	char buf[200];
 	char cnt_byte;
 
-	FuncAccelerometer_Calibration(1);
-	sleep(2);
-
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
@@ -582,13 +599,57 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	EEPROM_SN();
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	TestMMC(1);
+	FuncSPI_32MBit_NOR_Flash(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	FuncAccelerometer_Calibration(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
 
 	FuncConfirm_PMIC_Communication(1);
 	FuncConfirm_Battery_Charger_Communication(1);
 	sleep(2);
 
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
@@ -596,12 +657,12 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 
 	FuncAmbient_Light_Sensor_Functionality(1);
 	sleep(2);
 
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
@@ -609,12 +670,12 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 
 	FuncBarometer_Functionality(1);
 	sleep(2);
 
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
@@ -622,12 +683,12 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 
 	FuncEMMY_163_Connectivity_Check(1);
 	sleep(2);
 
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
@@ -635,13 +696,13 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 
 	FuncSARA_Module_Testing_Power_Antenna_Permission(1);
 	FuncLARA_Module_Testing_Power_Antenna_Permission(1);
 	sleep(2);
 
-	memset(buf, 0, 200);
+	/*memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
@@ -649,24 +710,41 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 
 	NEO_Test(1);
 	sleep(2);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	write(fd_fb, buf, cnt_byte);*/
 
-	 Audio_Codec_Test(1);
+	Audio_Codec_Test(1);
 	sleep(2);
 
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	Cameras_Test_Full(1);
+	sleep(2);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\n\n");
+	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -676,6 +754,8 @@ void FullTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+
+
 }
 
 void EEPROMTestAct(void)
@@ -728,6 +808,10 @@ void EEPROMTestSubAct (void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	EEPROM_SN();
 
 	memset(buf, 0, 200);
@@ -757,6 +841,43 @@ void MemTestDisp(void)
 void MemTestAct(void)
 {
 
+}
+
+void MemTestSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void MemTestSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	TestMMC(1);
+	FuncSPI_32MBit_NOR_Flash(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
 }
 
 void AccelTestDisp(void)
@@ -833,6 +954,10 @@ void AccelTestSubAct(void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncAccelerometer_Calibration(1);
 
 	memset(buf, 0, 200);
@@ -889,6 +1014,10 @@ void PowerManTestSubAct(void)
 {
 	char buf[200];
 	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
 
 	FuncConfirm_PMIC_Communication(1);
 	FuncConfirm_Battery_Charger_Communication(1);
@@ -948,6 +1077,10 @@ void LightSensorTestSubAct (void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncAmbient_Light_Sensor_Functionality(1);
 
 	memset(buf, 0, 200);
@@ -983,6 +1116,10 @@ void PressSensorTestSubAct (void)
 {
 	char buf[200];
 	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
 
 	FuncBarometer_Functionality(1);
 
@@ -1060,6 +1197,10 @@ void EMMYTestSubAct (void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncEMMY_163_Connectivity_Check(1);
 	//NFC();
 
@@ -1117,6 +1258,10 @@ void ModemTestSubAct (void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncSARA_Module_Testing_Power_Antenna_Permission(1);
 	FuncLARA_Module_Testing_Power_Antenna_Permission(1);
 
@@ -1173,6 +1318,10 @@ void GPSTestSubAct (void)
 {
 	char buf[200];
 	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
 
 	NEO_Test(1);
 
@@ -1243,6 +1392,10 @@ void AudiotTestSubAct (void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	Audio_Codec_Test(1);
 
 	memset(buf, 0, 200);
@@ -1304,6 +1457,10 @@ void CamerasTestSubAct(void)
 	char buf[200];
 	char cnt_byte;
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
 	Cameras_Test_Full(1);
 
 	memset(buf, 0, 200);
@@ -1350,10 +1507,17 @@ void MenuInit (void)
 
 	MemTest.DOWN=&AccelTest;
 	MemTest.UP=&EEPROMTest;
-	MemTest.ENTER=&MemTest;//MemTestSub;
+	MemTest.ENTER=&MemTestSub;
 	MemTest.ESC=&PreAsm;
 	MemTest.menuaction=&MemTestAct;
 	MemTest.menudisplay=&MemTestDisp;
+
+	MemTestSub.DOWN=NULL;
+	MemTestSub.UP=NULL;
+	MemTestSub.ENTER=&MemTestSub;
+	MemTestSub.ESC=&FullTest;
+	MemTestSub.menuaction=&MemTestSubAct;
+	MemTestSub.menudisplay=&MemTestSubDisp;
 
 	AccelTest.DOWN=&PowerManTest;
 	AccelTest.UP=&MemTest;

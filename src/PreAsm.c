@@ -37,6 +37,10 @@
 
 #define BUF_SIZE_DISP 200
 
+#define BUFFER_SIZE_SPI 512
+#define SPI_NOR_DEV_NAME		"/dev/mtdblock0"
+#define SPI_NOR_SIZE			0x400000ul
+
 extern FILE *stdin;
 extern int fd_fb;
 
@@ -65,14 +69,18 @@ int USB_getc(int timeout)
 	FILE *f;
 	int ch;
 
-	struct pollfd pollin={ STDIN_FILENO, POLLIN|POLLPRI};
+	struct pollfd pollin={STDIN_FILENO, POLLIN|POLLPRI};
 
-		f = fopen(USB_PATH, "w");
+		f = fopen(USB_PATH, "r");
 			if (f == NULL)
-			return -1;
+			{
+				printf("Fail open usb!\n");
+				return -1;
+			}
 
 		pollin.fd = fileno(f);
-		tcflush(fileno(f), TCIOFLUSH);
+		//tcflush(fileno(f), TCIOFLUSH);
+		printf("flush usb!\n");
 
 			if( poll(&pollin, 1, timeout) )
 			{
@@ -84,6 +92,7 @@ int USB_getc(int timeout)
 				ch=0;
 			}
 		fclose(f);
+		printf("read usb!\n");
 		return ch;
 }
 
@@ -92,7 +101,6 @@ int USB_printf(char* buf, int timeout)
 	int fd=-1;
 	int cnt=0;
 
-	//pthread_mutex_lock(&mutex);
 	fd=open(USB_PATH, O_WRONLY);
 		if (fd>=0)
 		{
@@ -104,16 +112,13 @@ int USB_printf(char* buf, int timeout)
 				}
 				{
 					close(fd);
-					//pthread_mutex_unlock(&mutex);
 					return -1;
 				}
 		}
 		else
 		{
-			//pthread_mutex_unlock(&mutex);
 			return -1;
 		}
-	//pthread_mutex_unlock(&mutex);
 	return cnt;
 }
 
@@ -134,8 +139,11 @@ int TestMMC(int Do)
 	char buf[200];
 	int cnt_byte=0;
 
+	USB_printf("**EMMC Integrity Test**\n", 1000);
+
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Accelerometer Check**\n");
+	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**EMMC Integrity Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**EMMC Integrity Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buffer_in, 0, BUFFER_SIZE);
@@ -172,6 +180,13 @@ int TestMMC(int Do)
 	if(fd < 0 )
 	{
 		printf("Error: %d\n", fd);
+
+		USB_printf("^Test 2A: Fail\n@Fail while open EMMC#\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Fail while open EMMC#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	printf("ok\n");
@@ -196,6 +211,13 @@ int TestMMC(int Do)
 	if(fd < 0 )
 	{
 		printf("Error: %d\n", fd);
+
+		USB_printf("^Test 2A: Fail\n@Fail while open EMMC#\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Fail while open EMMC#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	printf("ok\n");
@@ -217,6 +239,7 @@ int TestMMC(int Do)
 		printf("Error: %d\n",i);
 		return -1;
 	}
+
 	printf("ok\n\n");
 
 //----------------------------------------------
@@ -228,6 +251,13 @@ int TestMMC(int Do)
 	if(fd < 0)
 	{
 		printf("Error: %d\n", fd);
+
+		USB_printf("^Test 2A: Fail\n@Fail while open EMMC#\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Fail while open EMMC#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	printf("ok\n");
@@ -274,6 +304,13 @@ int TestMMC(int Do)
 	if(fd < 0)
 	{
 		printf("Error: %d\n", fd);
+
+		USB_printf("^Test 2A: Fail\n@Fail while open EMMC#\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Fail while open EMMC#\n");
+		write(fd_fb, buf, cnt_byte);
+
 		return -1;
 	}
 	printf("ok\n");
@@ -294,11 +331,25 @@ int TestMMC(int Do)
 		if(buffer_in[i] != buffer_out[i])
 		{
 			printf("WARNING: output and input buffer are not equal\n");
+
+			USB_printf("^Test 2A: Fail\n@Output and input buffer are not equal#\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Output and input buffer are not equal#\n");
+			write(fd_fb, buf, cnt_byte);
+
+
 			return -1;
 		}
 	}
 
 	printf("Output and input buffer are equal\n\n");
+
+	USB_printf("&Test 2A: OK\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 2A: OK\n");
+	write(fd_fb, buf, cnt_byte);
 
 	return 0;
 
@@ -307,19 +358,155 @@ int TestMMC(int Do)
 int FuncSPI_32MBit_NOR_Flash(int Do)
 {
 	//Performs checksum validation on all memory parts to ensure memory is free of corruption or defect. This includes testing
-	char buffer_out[BUFFER_SIZE];
-	char buffer_in[BUFFER_SIZE];
-	char buffer_save[BUFFER_SIZE];
-	int fd;
-	int i;
+	char buffer_out[BUFFER_SIZE_SPI];
+	char buffer_in[BUFFER_SIZE_SPI];
+	char buffer_data[BUFFER_SIZE_SPI];
+
+	off_t current_offset = 0;
+	int fd, memory_size;
+	int i, FailFlag=0;
+
+	char buf[200];
+	int cnt_byte=0;
 
 	if(!Do) return -1;
 
-	memset(buffer_in, 0, BUFFER_SIZE);
-	memset(buffer_out, 0, BUFFER_SIZE);
-	memset(buffer_save, 0, BUFFER_SIZE);
+	memset(buffer_in, 0, BUFFER_SIZE_SPI);
+	memset(buffer_out, 0, BUFFER_SIZE_SPI);
+	memset(buffer_data, 0, BUFFER_SIZE_SPI);
 
-	printf("Open SPI NOR...");
+	printf("\n*** Memory Test Application ***\n\n");
+
+	printf("Generate output buffer...");
+
+	USB_printf("**32MBit NOR Flash Integrity Test**\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**32MBit NOR Flash Integrity Test**\n");
+	write(fd_fb, buf, cnt_byte);
+
+	srand(time(NULL));
+		for(i=0; i<BUFFER_SIZE_SPI; i++)
+		{
+			buffer_out[i] = rand() % 255;
+		}
+	printf("ok\n\n");
+
+
+	fd = open(SPI_NOR_DEV_NAME, O_RDWR);
+			if(fd < 0 )
+			{
+				printf("Error: %d\n", fd);
+
+				USB_printf("^Test 2B: Fail\n@Fail while open SPI NOR flash#\n", 1000);
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Fail while open SPI NOR flash#\n");
+				write(fd_fb, buf, cnt_byte);
+				return -1;
+			}
+			printf("ok\n");
+
+
+			FailFlag = 0;
+			memory_size = SPI_NOR_SIZE;
+					while ((current_offset + BUFFER_SIZE_SPI) <= memory_size)
+					{
+						printf("Testing block #%d\t-->\t", (int)(current_offset / BUFFER_SIZE_SPI + 1));
+
+						lseek(fd, current_offset, SEEK_SET);
+						i = read(fd, buffer_data, BUFFER_SIZE_SPI);
+						if(i != BUFFER_SIZE_SPI)
+						{
+							printf("Reading memory\tFAILED\n");
+							break;
+						}
+
+						lseek(fd, current_offset, SEEK_SET);
+
+						i = write(fd, buffer_out, BUFFER_SIZE_SPI);
+						if(i != BUFFER_SIZE_SPI)
+						{
+							printf("Writing test buffer to memory\tFAILED\n");
+							FailFlag = 1;
+						}
+						else
+						{
+							lseek(fd, current_offset, SEEK_SET);
+							i = read(fd, buffer_in, BUFFER_SIZE_SPI);
+							if(i != BUFFER_SIZE_SPI)
+							{
+								printf("Reading test buffer from memory\tFAILED\n");
+								FailFlag = 1;
+							}
+							else
+							{
+								for(i=0; i<BUFFER_SIZE_SPI; i++ )
+								{
+									if(buffer_in[i] != buffer_out[i])
+									{
+										printf("WARNING: output and input buffer are not equal\n");
+										FailFlag = 1;
+										break;
+									}
+								}
+							}
+						}
+
+						lseek(fd, current_offset, SEEK_SET);
+
+						i = write(fd, buffer_data, BUFFER_SIZE_SPI);
+						if(i != BUFFER_SIZE_SPI)
+						{
+							printf("Writing data to memory\tFAILED\n");
+							FailFlag = 1;
+						}
+
+						if (FailFlag) break;
+						printf("ok\n");
+						current_offset += BUFFER_SIZE_SPI;
+					}
+
+					printf("\nClose memory device ...");
+					i = close(fd);
+					if(i != 0 )
+					{
+						printf("Error: %d\n",i);
+
+						USB_printf("^Test 2B: Fail\n@Fail while close SPI NOR flash#\n", 1000);
+
+						memset(buf, 0, 200);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2B: Fail\n\x1b[2C@Fail while close SPI NOR flash#\n");
+						write(fd_fb, buf, cnt_byte);
+						close(fd);
+						return -1;//return i;
+					}
+
+					if (FailFlag==1)
+					{
+						USB_printf("^Test 2B: Fail\n@", 1000);
+
+						memset(buf, 0, 200);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2B: Fail\n");
+						write(fd_fb, buf, cnt_byte);
+					}
+					else
+					{
+					printf("ok\n\n");
+
+					USB_printf("&Test 2B: OK\n", 1000);
+
+					memset(buf, 0, 200);
+					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 2B: OK\n");
+					write(fd_fb, buf, cnt_byte);
+					}
+				close(fd);
+				return 0;
+
+
+
+
+	/*printf("Open SPI NOR...");
 	fd = open("/dev/mtdblock0", O_RDWR);
 	if(fd < 0 )
 	{
@@ -328,7 +515,7 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 	}
 	printf("ok\n");
 
-	i=read(fd, buffer_save, 100);
+	i=read(fd, buffer_save, BUFFER_SIZE_SPI);
 		if(i != 100)
 		{
 			printf("Read only %d bytes instead %d", i, 100);
@@ -345,12 +532,12 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 
 	printf("Generate output buffer...\n");
 	srand(time(NULL));
-	for(i=0; i<BUFFER_SIZE; i++)
+	for(i=0; i<BUFFER_SIZE_SPI; i++)
 	{
 		buffer_out[i] = rand() % 255;
 	}
 
-	for(i=0; i<BUFFER_SIZE; i++)
+	for(i=0; i<BUFFER_SIZE_SPI; i++)
 	{
 		if(i==10) printf("\n");
 		if(i==20) printf("\n");
@@ -380,10 +567,10 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 
 
 	printf("Write output buffer to SPI NOR...");
-	i = write(fd, buffer_out, BUFFER_SIZE);
-	if(i != BUFFER_SIZE)
+	i = write(fd, buffer_out, BUFFER_SIZE_SPI);
+	if(i != BUFFER_SIZE_SPI)
 	{
-		printf("Write only %d bytes instead %d", i, BUFFER_SIZE);
+		printf("Write only %d bytes instead %d", i, BUFFER_SIZE_SPI);
 	}
 	printf("ok\n");
 
@@ -412,16 +599,16 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 
 
 	printf("Read input buffer from SPI NOR...");
-	i = read(fd, buffer_in, BUFFER_SIZE);
-	if(i != BUFFER_SIZE)
+	i = read(fd, buffer_in, BUFFER_SIZE_SPI);
+	if(i != BUFFER_SIZE_SPI)
 	{
-		printf("Read only %d bytes instead %d", i, BUFFER_SIZE);
+		printf("Read only %d bytes instead %d", i, BUFFER_SIZE_SPI);
 	}
 	printf("ok\n\n");
 
 
 	printf("Input buffer:\n");
-	for(i=0; i<BUFFER_SIZE; i++)
+	for(i=0; i<BUFFER_SIZE_SPI; i++)
 		{
 		if(i==10) printf("\n");
 		if(i==20) printf("\n");
@@ -449,8 +636,8 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 	}
 	printf("ok\n");
 
-	i = write(fd, buffer_save, BUFFER_SIZE);
-		if(i != BUFFER_SIZE)
+	i = write(fd, buffer_save, BUFFER_SIZE_SPI);
+		if(i != BUFFER_SIZE_SPI)
 		{
 			printf("Write only %d bytes instead %d", i, 100);
 		}
@@ -460,7 +647,7 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 
 //------------------------------------------------
 
-	for(i=0; i<BUFFER_SIZE; i++ )
+	for(i=0; i<BUFFER_SIZE_SPI; i++ )
 	{
 		if(buffer_in[i] != buffer_out[i])
 		{
@@ -471,6 +658,7 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 
 	printf("Output and input buffer are equal\n\n");
 	return 0;
+	*/
 };
 
 int FuncEEPROM(int Do)
@@ -976,7 +1164,7 @@ int FuncAccelerometer_Calibration(int Do)
 	USB_printf("**Accelerometer Check**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Accelerometer Check**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Accelerometer Check**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	for(int i=0; i<=2; i++){
@@ -1350,7 +1538,7 @@ int FuncConfirm_PMIC_Communication(int Do)
 	USB_printf("**Power Management Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Power Management Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Power Management Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	hiddenConsole = popen("lsmod | grep pfuze100_regulator", "r"); //lsmod | grep pfuze100_regulator
@@ -1409,10 +1597,10 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 	if(!Do) return -1;
 
-	USB_printf("**Wifi Test**\n", 1000);
+	USB_printf("**EMMY Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Wifi Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**EMMY Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 		if (wifi_first_start_flag!=1)
@@ -1460,6 +1648,13 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	}
 	//print networks
 	printf("\n\nScanning WiFi networks... Wait 10 sec...\n\n");
+
+	USB_printf("Searching for Wifi Networks...\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSearching for Wifi Networks...\n");
+	write(fd_fb, buf, cnt_byte);
+
 	hiddenConsole = popen("iw dev mlan0 scan | grep SSID", "r");
 
 	sleep(10);
@@ -1504,6 +1699,14 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Bluetooth Test**\n");
 	write(fd_fb, buf, cnt_byte);
+
+
+	USB_printf("Searching for BT Device...\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CSearching for BT Device...\n");
+	write(fd_fb, buf, cnt_byte);
+
 
 	hiddenConsole = popen("lsmod | grep bt8xxx", "r");
 	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
@@ -1560,7 +1763,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "./NFC_test %s, %i", USB_PATH, fd_fb);
+	cnt_byte=snprintf(buf, sizeof(buf), "/root/NFC_test %s, %i", USB_PATH, fd_fb);
 	system(buf);
 
 	if(result == 0){
@@ -1589,7 +1792,7 @@ int FuncAmbient_Light_Sensor_Functionality(int Do)
 	USB_printf("**Light Sensor Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Light Sensor Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Light Sensor Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	for(int i=0; i<=2; i++){
@@ -1660,7 +1863,7 @@ int FuncBarometer_Functionality(int Do)
 	USB_printf("**Pressure Sensor Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Pressure Sensor Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Pressure Sensor Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	for(int i=0; i<=2; i++){
@@ -1773,7 +1976,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	USB_printf("**USB Modem Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**USB Modem Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**USB Modem Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 		//setup GPIO
@@ -2106,7 +2309,7 @@ int Cameras_Test_Full(int Do)
 	USB_printf("**Cameras Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Cameras Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cameras Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 		if (Cameras_Test(Do, &cam1, &cam2)==0)
@@ -2154,7 +2357,7 @@ int Audio_Codec_Test(int Do)
 	USB_printf("**Audio System (Codec/Amplifier test)**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Audio System (Codec/Amplifier test)**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Audio System (Codec/Amplifier test)**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	hiddenConsole = popen("cat /sys/class/i2c-dev/i2c-1/device/1-0038/uevent", "r");
@@ -2242,7 +2445,7 @@ int NEO_Test(int Do)
 		USB_printf("**GPS Test**\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**GPS Test**\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**GPS Test**\n");
 		write(fd_fb, buf, cnt_byte);
 
 		if (Init_GPIO("63", "out")!=1)

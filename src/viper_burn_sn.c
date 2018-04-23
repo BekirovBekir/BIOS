@@ -7,6 +7,7 @@
 #include <time.h>
 #include <stdio_ext.h>
 #include <termios.h>
+#include <fcntl.h>
 
 #define SERIAL_NUMBER_SIZE 8
 #define SERIAL_NUMBER_OFFSET 2
@@ -42,6 +43,7 @@ int EEPROM_SN(void)
 	unsigned char str_valid = 0;
 	unsigned char i;
 	unsigned char attempts = 0;
+	unsigned char prompt_attempts;
 	char prompt;
 	//char tmp_str[100];
 	//char *line = NULL;
@@ -198,45 +200,48 @@ edit:
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CRe-enter Serial Number? (Y/N):");
 		write(fd_fb, buf, cnt_byte);
 
-		while (1)
-		{
-			//scanf("%s", &prompt);
-			get_line(&prompt, 1);
+		prompt_attempts = 0;
+				while (1)
+				{
+					//scanf("%s", &prompt);
+					get_line(&prompt, 1);
 
-			if(prompt == 'y' || prompt == 'Y')
-			{
-				prompt=0;
-				sn_valid = 0;
-				goto edit;
-			}
-			else if(prompt == 'n' || prompt == 'N')
-			{
-				break;
-			}
-			else
-			{
-						printf("\nRe-enter Serial Number? (Y/N):");
-				to_USB_console("\nRe-enter Serial Number? (Y/N):");
+					printf("typed %c\n", prompt);
 
+					if(prompt == 'y' || prompt == 'Y')
+					{
+						prompt = 0;
+						sn_valid = 0;
+						goto edit;
+					}
+					else if(prompt == 'n' || prompt == 'N')
+					{
+						break;
+					}
+					else
+					{
+						if(prompt_attempts >= ATTEMPTS-1)
+						{
+									printf("\n");
+							to_USB_console("\n");
+							break;
+						}
 
-				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\n");
-				write(fd_fb, buf, cnt_byte);
+						prompt_attempts++;
 
-				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CRe-enter Serial Number? (Y/N):");
-				write(fd_fb, buf, cnt_byte);
-			}
+								printf("\nRe-enter Serial Number? (Y/N):");
+						to_USB_console("\nRe-enter Serial Number? (Y/N):");
+					}
 
-		}
+				}
 
 	}
 
-			printf("^Test 1B: OK\n");
-	to_USB_console("^Test 1B: OK\n");
+			printf("&Test 1B: OK\n");
+	to_USB_console("&Test 1B: OK\n");
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 1B: OK\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C&Test 1B: OK\n");
 	write(fd_fb, buf, cnt_byte);
 
 	return EXIT_SUCCESS;
@@ -396,28 +401,33 @@ int validate_SN_in_eeprom(unsigned char* bufferA, unsigned char* bufferB)
 
 int to_USB_console(unsigned char* fmt, ...)
 {
-	FILE* usbcon;
+	struct pollfd usbpoll = { STDIN_FILENO, POLLOUT };
 	char buf[200];
 	va_list argptr;
+	int ret = -1;
+
+	int fd;
 
 	memset((void*)buf, 0 , sizeof(unsigned char) * 200);
 
 	va_start(argptr, fmt);
 	vsprintf(buf, fmt, argptr);
 
-   	usbcon = fopen(USB_CON_PATH, "r+");
-  	if(usbcon == NULL)
-  	{
- 		//printf("Can't open USB console\n");
- 		return -1;
-  	}
+	fd = open(USB_CON_PATH, O_WRONLY);
+	if(fd > 0)
+	{
+		usbpoll.fd = fd;
+		if( poll(&usbpoll, 1, 100) )
+		{
+			write(fd, buf, 200);
+			ret = 0;
+		}
+	}
 
-  	fwrite(buf, 1, 200, usbcon);
+	if(fd > 0)
+		close(fd);
 
-
-  	fclose(usbcon);
-
-	return 0;
+	return ret;
 }
 
 int eeprom_integrity_check(void)
@@ -437,7 +447,8 @@ int eeprom_integrity_check(void)
 	to_USB_console("\n**EEPROM Integrity Check**\n");
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**EEPROM Integrity Check**\n");
+	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**EEPROM Integrity Check**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**EEPROM Integrity Check**\n");
 	write(fd_fb, buf, cnt_byte);
 
 			printf("&Test 1A: ");
@@ -541,27 +552,35 @@ close:
 
 int get_line(char* str, int size)
 	{
-	FILE *f;
-	char *line = NULL;
-	size_t len = 0;
+	struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
+	FILE *usbcon;
+	char *line;
 	ssize_t read;
 	int ret = 0;
+	int len;
 
-	f = fopen(USB_CON_PATH, "r");
-	if (f == NULL)
-		return -1;
+	len = size+1;
+	line = (void *)malloc(len);
+	memset(line, 0, len);
 
-	usbpoll.fd = fileno(f);
-	tcflush(fileno(f), TCIOFLUSH);
+
+
+	usbcon = fopen(USB_CON_PATH, "r");
+	if (usbcon == NULL)
+	{
+		ret = -1;
+		goto close_l;
+	}
+
+
+	tcflush(fileno(usbcon), TCIOFLUSH);
+
+	usbpoll.fd = fileno(usbcon);
+	usbpoll.events = POLLIN | POLLPRI;
 
 	if( poll(&usbpoll, 1, TIMEOUT) )
 	{
-		while ((read = getline(&line, &len, f)) == '\n')
-			{
-			printf("Retrieved line of length %zu :\n", read);
-			printf("%s", line);
-			printf("0x%02x", line[0]);
-			}
+		fgets(line, len, usbcon);
 	}
 	else
 	{
@@ -569,17 +588,19 @@ int get_line(char* str, int size)
 		ret = -1;
 	}
 
-
-	if(ret ==0 )
+	if(ret == 0 )
 	{
-		strncpy(str, line, size);
+		if(len != NULL)
+			strncpy(str, line, size);
 	}
 
-	if(f)
-		fclose(f);
-	free(line);
+close_l:
+	if(usbcon)
+		fclose(usbcon);
+	if(line)
+		free(line);
 
-	return 0;
+	return ret;
 	}
 
 

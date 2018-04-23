@@ -74,7 +74,7 @@ void* test_sel_thread_func(void* thread_data)
 
 		if (buf_preasm_flag==1)
 		{
-		ch=USB_getc(1000);
+		ch=USB_getc(10000);
 		TestRun(ch);
 		}
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 			perror("\nFSM thread fail\n");
 		}
 
-	trhread_state=pthread_create(&test_sel_thread, NULL, test_sel_thread_func, &id_test_sel_thread);
+		/*trhread_state=pthread_create(&test_sel_thread, NULL, test_sel_thread_func, &id_test_sel_thread);
 			if (trhread_state==0)
 			{
 				printf ("\nPreasm thread started\n");
@@ -110,7 +110,9 @@ int main(int argc, char* argv[])
 			else
 			{
 				perror("\nPreasm thread fail\n");
-			}
+			}*/
+
+
 
 	//pthread_cancel(fsm_ts_thread);
 	pthread_join(fsm_ts_thread, NULL);
