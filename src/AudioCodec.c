@@ -21,6 +21,9 @@
 #include <linux/kd.h>
 
 #include "AudioCodec.h"
+#include "PreAsm.h"
+
+extern int fd_fb;
 
 #define DEBUG 1
 
@@ -29,6 +32,8 @@
 #else
 	#define DBG(x)
 #endif
+
+extern int get_line(char* str, int size);
 
 static struct v4l2_audio  audinfo;
 static struct  v4l2_audioout audinfoout;
@@ -68,9 +73,90 @@ int Play_Sound(void)
 	int lastchar;
 	memset(Answer, 0, sizeof(Answer));
 
+	char buf[200];
+	int cnt_byte=0;
+	char ch[10]={0};
+
+	int state=-1;
+	int repeat=0;
+
 	system("alsactl restore");
 
-	hiddenConsole = popen("speaker-test -t wav -c 2 -l 1", "r");
+	while (repeat<=2)
+	{
+		USB_printf("Playing Audio to Left Speaker\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPlaying Audio to Left Speaker\n");
+		write(fd_fb, buf, cnt_byte);
+
+		system("speaker-test -t wav -c 2 -l 1 -s 1");
+
+		USB_printf("@Confirm Sound on Left Speaker (Y/N):#", 1000);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Sound on Left Speaker (Y/N):#\n");
+		write(fd_fb, buf, cnt_byte);
+
+		//ch=USB_getc(10000);
+		get_line(ch, 1);
+			if (ch[0]=='Y' || ch[0]=='y')
+			{
+				state=0;
+				break;
+			}
+			else
+			{
+				state=-1;
+			}
+	repeat++;
+	}
+
+	if (state==0)
+	{
+	repeat=0;
+		while (repeat<=2)
+		{
+			USB_printf("Playing Audio to Right Speaker\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPlaying Audio to Right Speaker\n");
+			write(fd_fb, buf, cnt_byte);
+
+			system("speaker-test -t wav -c 2 -l 1 -s 2");
+
+			USB_printf("@Confirm Sound on Right Speaker (Y/N):#", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Sound on Right Speaker (Y/N):#\n");
+			write(fd_fb, buf, cnt_byte);
+
+			get_line(ch, 1);
+				if (ch[0]=='Y' || ch[0]=='y')
+				{
+					state=0;
+					break;
+				}
+				else
+				{
+					state=-1;
+				}
+		repeat++;
+		}
+	}
+
+		if (state==0)
+		{
+		USB_printf("&Test 10A: OK\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 10A: OK\n");
+		write(fd_fb, buf, cnt_byte);
+		}
+
+	return state;
+
+	/*
+	hiddenConsole = popen("speaker-test -t wav -c 2 -l 1 -s 1", "r");
 	lastchar = fread(Answer, 1, 1024, hiddenConsole);
 	pclose(hiddenConsole);
 	Answer[lastchar] = '\0';
@@ -83,13 +169,12 @@ int Play_Sound(void)
 			return -1;
 		}
 
-
-
 	char* ptr1=NULL;
 	char* ptr2=NULL;
 
-	ptr1=strstr(Answer, "0 - Front Left");
-	ptr2=strstr(Answer, "1 - Front Right");
+
+	ptr1=strstr(Answer, "Front Left");
+	ptr2=strstr(Answer, "Front Right");
 		if ((ptr1!=NULL) && (ptr2!=NULL))
 		{
 			return 0;
@@ -98,7 +183,7 @@ int Play_Sound(void)
 		{
 			return -1;
 		}
-
+		*/
 }
 
 int Record_Sound(void)

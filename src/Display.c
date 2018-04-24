@@ -464,6 +464,24 @@ void FullTestDisp(void)
 	char buf[200];
 	char cnt_byte;
 
+	/*
+	USB_printf("\n========================== Pre-Assembly Test =========================\n", 50);
+	USB_printf("	0. Run All Tests\n", 50);
+	USB_printf("	1. EEPROM Memory Integrity Check / Serial Number Burn-in\n", 50);
+	USB_printf("	2. Storage Memory Integrity Check\n", 50);
+	USB_printf("	3. Accelerometer Test/Calibration\n", 50);
+	USB_printf("	4. Power Management Test\n", 50);
+	USB_printf("	5. Light Sensor Test\n", 50);
+	USB_printf("	6. Pressure Sensor Test\n", 100);
+	USB_printf("	7. On-Board Wireless Module (EMMY) Test\n", 50);
+	USB_printf("	8. Modem Port Communication Tests\n", 50);
+	USB_printf("	9. External GPS Test\n", 50);
+	USB_printf("	10. Audio System Test\n", 50);
+	USB_printf("	11. CAM'S test\n", 50);
+	USB_printf("======================================================================\n", 50);
+	USB_printf("Please enter number of the test (0-11) end press ENTER\n", 50);
+	*/
+
 	//thread_flag=0;
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
@@ -558,7 +576,6 @@ void FullTestDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	//USB_printf("Select test (0-11) and press ENTER or use Toucscreen:\n", 1000);
 }
 
 void FullTestAct(void)

@@ -68,15 +68,17 @@ void* test_sel_thread_func(void* thread_data)
 	int buf_preasm_flag;
 	for (;;)
 	{
-		pthread_mutex_lock(&mutex);
-		buf_preasm_flag=preasm_flag;
-		pthread_mutex_unlock(&mutex);
+		//pthread_mutex_lock(&mutex);
+		//buf_preasm_flag=preasm_flag;
+		//pthread_mutex_unlock(&mutex);
 
-		if (buf_preasm_flag==1)
+		pthread_mutex_lock(&mutex);
+		if (preasm_flag==1)
 		{
-		ch=USB_getc(10000);
+		ch=USB_getc(200);
 		TestRun(ch);
 		}
+		pthread_mutex_unlock(&mutex);
 
 	}
 

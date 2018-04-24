@@ -34,7 +34,7 @@ static int convert_SN(unsigned char* sn_str, unsigned char* sn);
 static int to_USB_console(unsigned char* fmt, ...);
 
 static int eeprom_integrity_check(void);
-static int get_line(char* str, int size);
+int get_line(char* str, int size);
 //-----------------------------------------------------------------------
 
 int EEPROM_SN(void)
