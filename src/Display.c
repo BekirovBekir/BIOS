@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -98,38 +99,108 @@ extern int fd_fb;
 
 unsigned char thread_flag=0;
 
-void TestRun(int test_num)
+
+unsigned char isActiveFullTesetMenu(void)
 {
-	switch (test_num)
-	{
-		case 0:
+	return (&PreAsm == active_menu->ESC);
+}
 
-		break;
-		case '0':
+void gotoParentMenu(void)
+{
+	active_menu=active_menu->ESC;
+	if (active_menu!=NULL) active_menu->menudisplay();
+}
 
-		break;
-		case '3':
-		pthread_mutex_lock(&mutex);
-		preasm_flag=0;
-		pthread_mutex_unlock(&mutex);
+void TestRun(char* test_num)
+{
+	preasm_flag=0;
+	//printf("Test run!\n");
 
+		if (strncmp(test_num, "0\n", 2)==0)
+		{
+		active_menu=&FullTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "1\n", 2)==0)
+		{
+		active_menu=&EEPROMTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "2\n", 2)==0)
+		{
+		active_menu=&MemTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "3\n", 2)==0)
+		{
 		active_menu=&AccelTestSub;
 		active_menu->menudisplay();
 		active_menu->menuaction();
-		break;
-		case '4':
-		pthread_mutex_lock(&mutex);
-		preasm_flag=0;
-		pthread_mutex_unlock(&mutex);
+		}
 
+		if (strncmp(test_num, "4\n", 2)==0)
+		{
 		active_menu=&PowerManTestSub;
 		active_menu->menudisplay();
 		active_menu->menuaction();
-		break;
-		default:
+		}
 
-		break;
-	}
+		if (strncmp(test_num, "5\n", 2)==0)
+		{
+		active_menu=&LightSensorTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "6\n", 2)==0)
+		{
+		active_menu=&PressSensorTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "7\n", 2)==0)
+		{
+		active_menu=&EMMYTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "8\n", 2)==0)
+		{
+		active_menu=&ModemTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "9\n", 2)==0)
+		{
+		active_menu=&GPSTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "10\n", 2)==0)
+		{
+		active_menu=&AudiotTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "11\n", 2)==0)
+		{
+		active_menu=&CamerasTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+	preasm_flag=1;
 }
 
 
@@ -213,33 +284,7 @@ void PreAsmDisp (void)
 
 void PreAsmAct (void)
 {
-	/*static int trhread_state=-1;
 
-	if (trhread_state==-1)
-	{
-		trhread_state=pthread_create(&preasm_thread, NULL, preasm_thread_func, &id_preasm_thread);
-			if (trhread_state==0)
-			{
-				printf ("\nPreasm thread started\n");
-			}
-			else
-			{
-				perror("\nPreasm thread fail\n");
-			}
-	}
-	else
-	{
-		pthread_mutex_lock(&mutex);
-			if (thread_flag==1)
-			{
-				trhread_state=-1;
-				printf("\nPreasm thread stop\n");
-				//pthread_cancel(preasm_thread);
-				pthread_join(preasm_thread, NULL);
-				MenuInit();
-			}
-		pthread_mutex_unlock(&mutex);
-	}*/
 }
 
 void PostAsmAct (void)
@@ -464,7 +509,7 @@ void FullTestDisp(void)
 	char buf[200];
 	char cnt_byte;
 
-	/*
+
 	USB_printf("\n========================== Pre-Assembly Test =========================\n", 50);
 	USB_printf("	0. Run All Tests\n", 50);
 	USB_printf("	1. EEPROM Memory Integrity Check / Serial Number Burn-in\n", 50);
@@ -472,15 +517,15 @@ void FullTestDisp(void)
 	USB_printf("	3. Accelerometer Test/Calibration\n", 50);
 	USB_printf("	4. Power Management Test\n", 50);
 	USB_printf("	5. Light Sensor Test\n", 50);
-	USB_printf("	6. Pressure Sensor Test\n", 100);
+	USB_printf("	6. Pressure Sensor Test\n", 50);
 	USB_printf("	7. On-Board Wireless Module (EMMY) Test\n", 50);
 	USB_printf("	8. Modem Port Communication Tests\n", 50);
 	USB_printf("	9. External GPS Test\n", 50);
 	USB_printf("	10. Audio System Test\n", 50);
 	USB_printf("	11. CAM'S test\n", 50);
 	USB_printf("======================================================================\n", 50);
-	USB_printf("Please enter number of the test (0-11) end press ENTER\n", 50);
-	*/
+	USB_printf("Please enter number of the test (0-11) end press ENTER:\n", 50);
+
 
 	//thread_flag=0;
 	memset(buf, 0, 200);
@@ -635,6 +680,12 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
 
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	TestMMC(1);
 	FuncSPI_32MBit_NOR_Flash(1);
 	sleep(2);
@@ -649,6 +700,12 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
 
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncAccelerometer_Calibration(1);
 	sleep(2);
 
@@ -662,7 +719,20 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
 
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncConfirm_PMIC_Communication(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncConfirm_Battery_Charger_Communication(1);
 	sleep(2);
 
@@ -675,6 +745,12 @@ void FullTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
 
 	FuncAmbient_Light_Sensor_Functionality(1);
 	sleep(2);
@@ -689,6 +765,12 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
 
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncBarometer_Functionality(1);
 	sleep(2);
 
@@ -701,6 +783,12 @@ void FullTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
 
 	FuncEMMY_163_Connectivity_Check(1);
 	sleep(2);
@@ -715,7 +803,20 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
 
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncSARA_Module_Testing_Power_Antenna_Permission(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncLARA_Module_Testing_Power_Antenna_Permission(1);
 	sleep(2);
 
@@ -728,6 +829,12 @@ void FullTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
 
 	NEO_Test(1);
 	sleep(2);
@@ -742,6 +849,13 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
 
+	USB_printf("\n", 500);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	Audio_Codec_Test(1);
 	sleep(2);
 
@@ -754,6 +868,12 @@ void FullTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
 
 	Cameras_Test_Full(1);
 	sleep(2);
@@ -771,7 +891,6 @@ void FullTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
-
 
 }
 
@@ -890,6 +1009,13 @@ void MemTestSubAct(void)
 	write(fd_fb, buf, cnt_byte);
 
 	TestMMC(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncSPI_32MBit_NOR_Flash(1);
 
 	memset(buf, 0, 200);
@@ -1037,6 +1163,13 @@ void PowerManTestSubAct(void)
 	write(fd_fb, buf, cnt_byte);
 
 	FuncConfirm_PMIC_Communication(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncConfirm_Battery_Charger_Communication(1);
 
 	memset(buf, 0, 200);
@@ -1280,6 +1413,13 @@ void ModemTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 
 	FuncSARA_Module_Testing_Power_Antenna_Permission(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncLARA_Module_Testing_Power_Antenna_Permission(1);
 
 	memset(buf, 0, 200);
@@ -1490,7 +1630,7 @@ void MenuInit (void)
 	PreAsm.DOWN=&PostAsm;
 	PreAsm.UP=&Download;
 	PreAsm.ENTER=&FullTest;//&PreAsm;
-	PreAsm.ESC=&PreAsm;
+	PreAsm.ESC=NULL;
 	PreAsm.menudisplay=&PreAsmDisp;
 	PreAsm.menuaction=&PreAsmAct;
 
@@ -1669,28 +1809,28 @@ void MenuInit (void)
 	PostAsm.DOWN=&GI;
 	PostAsm.UP=&PreAsm;
 	PostAsm.ENTER=&PostAsm;
-	PostAsm.ESC=&PostAsm;
+	PostAsm.ESC=NULL;
 	PostAsm.menudisplay=&PostAsmDisp;
 	PostAsm.menuaction=&PostAsmAct;
 
 	GI.DOWN=&ShipMode;
 	GI.UP=&PostAsm;
 	GI.ENTER=&GI;
-	GI.ESC=&GI;
+	GI.ESC=NULL;
 	GI.menudisplay=&GIDisp;
 	GI.menuaction=&GIAct;
 
 	ShipMode.DOWN=&Exit;
 	ShipMode.UP=&GI;
 	ShipMode.ENTER=&ShipMode;
-	ShipMode.ESC=&ShipMode;
+	ShipMode.ESC=NULL;
 	ShipMode.menudisplay=&ShipModeDisp;
 	ShipMode.menuaction=&ShipModeAct;
 
 	Exit.DOWN=&Download;
 	Exit.UP=&ShipMode;
 	Exit.ENTER=&Exit;
-	Exit.ESC=&Exit;
+	Exit.ESC=NULL;
 	Exit.menudisplay=&ExitDisp;
 	Exit.menuaction=&ExitAct;
 

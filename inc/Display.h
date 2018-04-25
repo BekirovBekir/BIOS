@@ -20,6 +20,9 @@ void (*menuaction) (void);
 
 typedef struct TMenu Menu;
 
+unsigned char isActiveFullTesetMenu(void);
+void gotoParentMenu(void);
+
 void PreAsmDisp (void);
 void PostAsmDisp (void);
 void GIDisp (void);
@@ -40,7 +43,7 @@ void MenuInit (void);
 
 int DisplayOut(char* buf);
 
-void TestRun(int test_num);
+void TestRun(char* test_num);
 
 void* preasm_thread_func(void* thread_data);
 

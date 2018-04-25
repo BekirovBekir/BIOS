@@ -62,7 +62,7 @@ int EEPROM_SN(void)
 	to_USB_console("\n**Device Serial Number Burn-In**\n");
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Device Serial Number Burn-In**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Device Serial Number Burn-In**\n");
 	write(fd_fb, buf, cnt_byte);
 
 
@@ -87,10 +87,10 @@ start:
 			write(fd_fb, buf, cnt_byte);
 		}
 				printf("\n");
-		to_USB_console("\n");
+		to_USB_console("#\n");
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "#\n");
 		write(fd_fb, buf, cnt_byte);
 
 		sn_valid = 1;
@@ -148,10 +148,10 @@ edit:
 			if( get_line(sernum_str, SERIAL_NUMBER_SIZE*2) != 0)
 			{
 						printf("\n");
-				to_USB_console("\n");
+				to_USB_console("#\n");
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\n");
+				cnt_byte=snprintf(buf, sizeof(buf), "#\n");
 				write(fd_fb, buf, cnt_byte);
 			}
 
@@ -569,6 +569,7 @@ int get_line(char* str, int size)
 	if (usbcon == NULL)
 	{
 		ret = -1;
+		printf("Error not opened\n");
 		goto close_l;
 	}
 
@@ -585,6 +586,7 @@ int get_line(char* str, int size)
 	else
 	{
 		//Timeout
+		printf("Error timeout\n");
 		ret = -1;
 	}
 
@@ -592,6 +594,7 @@ int get_line(char* str, int size)
 	{
 		if(len != NULL)
 			strncpy(str, line, size);
+		printf("Enter - %s\n", str);
 	}
 
 close_l:

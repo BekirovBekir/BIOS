@@ -126,25 +126,31 @@ void FSM_TS (ilitek_key_info* key)
 							if (key->key_num==2)
 							{
 								active_menu=active_menu->ENTER;
+
+								pthread_mutex_lock(&mutex);
+								preasm_flag=((active_menu==&FullTest) ? 1 : 0);
+								//printf("PreAsm flag = %i\n", preasm_flag);
+								pthread_mutex_unlock(&mutex);
+
 								active_menu->menudisplay();
 								active_menu->menuaction();
 
-
-								//pthread_mutex_lock(&mutex);
-								//preasm_flag=((active_menu==&FullTest) ? 1 : 0);
-								//pthread_mutex_unlock(&mutex);
-
+								preasm_flag=1;
 
 							}
 							if ((key->key_num==1))
 							{
-								active_menu=active_menu->ESC;
-									if (active_menu!=NULL) active_menu->menudisplay();
+								if (active_menu->ESC!=NULL)
+								{
+									active_menu=active_menu->ESC;
+									//if (active_menu!=NULL) active_menu->menudisplay();
+									active_menu->menudisplay();
 
-
-								//pthread_mutex_lock(&mutex);
-								//preasm_flag=((active_menu==&FullTest) ? 1 : 0);
-								//pthread_mutex_unlock(&mutex);
+									pthread_mutex_lock(&mutex);
+									preasm_flag=((active_menu==&FullTest) ? 1 : 0);
+									//printf("PreAsm flag = %i\n", preasm_flag);
+									pthread_mutex_unlock(&mutex);
+								}
 
 							}
 

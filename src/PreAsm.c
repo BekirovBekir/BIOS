@@ -41,6 +41,9 @@
 #define SPI_NOR_DEV_NAME		"/dev/mtdblock0"
 #define SPI_NOR_SIZE			0x400000ul
 
+#define USB_MODEM_DESING "8A"
+#define UART_MODEM_DESING "8B"
+
 extern FILE *stdin;
 extern int fd_fb;
 
@@ -75,13 +78,13 @@ int USB_getc(int timeout)
 		f = fopen(USB_PATH, "r");
 			if (f == NULL)
 			{
-				printf("Fail open usb!\n");
+				//printf("Fail open usb!\n");
 				return -1;
 			}
 
 		pollin.fd = fileno(f);
-		//tcflush(fileno(f), TCIOFLUSH);
-		printf("flush usb!\n");
+		tcflush(fileno(f), TCIOFLUSH);
+		//printf("flush usb!\n");
 
 			if( poll(&pollin, 1, timeout) )
 			{
@@ -93,9 +96,65 @@ int USB_getc(int timeout)
 				ch=-1;
 			}
 		fclose(f);
-		printf("read usb!\n");
+		//printf("read usb!\n");
 		return ch;
 }
+
+int USB_getline(char* str, int size, int timeout)
+	{
+	struct pollfd pollin = { STDIN_FILENO, POLLIN|POLLPRI };
+	FILE *usbcon;
+	char *line;
+	ssize_t read;
+	int ret = 0;
+	int len;
+
+	len = size+1;
+	line = (void *)malloc(len);
+	memset(line, 0, len);
+
+
+
+	usbcon = fopen(USB_PATH, "r");
+	if (usbcon == NULL)
+	{
+		ret = -1;
+		printf("Error not opened\n");
+		goto close_l;
+	}
+
+
+	tcflush(fileno(usbcon), TCIOFLUSH);
+
+	pollin.fd = fileno(usbcon);
+	pollin.events = POLLIN | POLLPRI;
+
+	if( poll(&pollin, 1, timeout) )
+	{
+		fgets(line, len, usbcon);
+	}
+	else
+	{
+		//Timeout
+		//printf("Error timeout\n");
+		ret = -1;
+	}
+
+	if(ret == 0 )
+	{
+		if(len != NULL)
+			strncpy(str, line, size);
+		//printf("Enter - %s\n", str);
+	}
+
+close_l:
+	if(usbcon)
+		fclose(usbcon);
+	if(line)
+		free(line);
+
+	return ret;
+	}
 
 int USB_printf(char* buf, int timeout)
 {
@@ -402,10 +461,10 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 			{
 				printf("Error: %d\n", fd);
 
-				USB_printf("@Fail while open SPI NOR flash#\n^Test 2B: Fail\n", 1000);
+				USB_printf("^Test 2B: Fail\n@Fail while open SPI NOR flash#\n", 1000);
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Fail while open SPI NOR flash#\n\x1b[2C^Test 2A: Fail\n");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2A: Fail\n\x1b[2C@Fail while open SPI NOR flash#\n");
 				write(fd_fb, buf, cnt_byte);
 				return -1;
 			}
@@ -419,6 +478,7 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CChecking Memory Integrity");
 			write(fd_fb, buf, cnt_byte);
+			USB_printf("Checking Memory Integrity", 1000);
 
 					while ((current_offset + BUFFER_SIZE_SPI) <= memory_size)
 					{
@@ -430,6 +490,8 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 							memset(buf, 0, 200);
 							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1C.");
 							write(fd_fb, buf, cnt_byte);
+
+							USB_printf(".", 200);
 
 							dot_factor += (int)(SPI_NOR_SIZE / 40);
 						}
@@ -494,6 +556,8 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C\n");
 					write(fd_fb, buf, cnt_byte);
 
+					USB_printf("\n", 200);
+
 
 					printf("\nClose memory device ...");
 					i = close(fd);
@@ -501,10 +565,10 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 					{
 						printf("Error: %d\n",i);
 
-						USB_printf("@Fail while close SPI NOR flash#\n^Test 2B: Fail\n", 1000);
+						USB_printf("^Test 2B: Fail\n@Fail while close SPI NOR flash#\n", 1000);
 
 						memset(buf, 0, 200);
-						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Fail while close SPI NOR flash#\n\x1b[2C^Test 2B: Fail\n");
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 2B: Fail\n\x1b[2C@Fail while close SPI NOR flash#\n");
 						write(fd_fb, buf, cnt_byte);
 						close(fd);
 						return -1;//return i;
@@ -687,7 +751,7 @@ int FuncSPI_32MBit_NOR_Flash(int Do)
 	printf("Output and input buffer are equal\n\n");
 	return 0;
 	*/
-};
+}
 
 int FuncEEPROM(int Do)
 {
@@ -1729,10 +1793,10 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 	//Validate Bluetooth Antenna by detecting and printing available Bluetooth devices to pair
 
-	USB_printf("**Bluetooth Test**\n", 1000);
+	USB_printf("**\nBluetooth Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Bluetooth Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Bluetooth Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 
@@ -1795,6 +1859,12 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 		write(fd_fb, buf, cnt_byte);
 
 	printf("\nFound bluetooth devices: \n%s", Answer);
+
+	USB_printf("\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
 
 
 	memset(buf, 0, 200);
@@ -1993,10 +2063,10 @@ int FuncBarometer_Functionality(int Do)
 	return 0;
 }
 
-int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
+int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 {
 	//Test sending power on to device on UART port
-	//Test sending power on to device on USB port
+
 	//Test toggling GPIO signal for RF antenna selection for UART modem versus USB modem
 
 	#define BUFF_SIZE 100
@@ -2008,163 +2078,229 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do)
 	char buf[200];
 	int cnt_byte=0;
 
-	USB_printf("**USB Modem Test**\n", 1000);
+
+	//if (pFile!=NULL) fprintf(pFile,"**UART Modem Test**\n");
+
+	USB_printf("**UART Modem Response Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**USB Modem Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**UART Modem Response Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 		//setup GPIO
-	printf( "Setup GPIO for SARA-R410M \n" );
+	printf( "Setup GPIO for UART modem \n" );
 
-		if (Init_GPIO("50", "out")!=1)
-		{
-			sprintf(LaraBuffer, "Error export pins");
-
-			USB_printf("@Error export pins#\n^Test 9A: Fail, error export pins\n", 1000);
-
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 9A: Fail, error export pins\n");
-			write(fd_fb, buf, cnt_byte);
-
-			return -1;
-		}
-		if (Init_GPIO("52", "out")!=1)
-		{
-			sprintf(LaraBuffer, "Error export pins");
-
-			USB_printf("@Error export pins#\n^Test 9A: Fail, error export pins\n", 1000);
-
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 9A: Fail, error export pins\n");
-			write(fd_fb, buf, cnt_byte);
-
-			return -1;
-		}
-
-	//----------------------Power test modem via UART-------------------------------------------
-	printf( "SARA-R410M power-on\n" );
-
-		if (Write_GPIO("50", "1")!=1)
-		{
-			sprintf(LaraBuffer, "Error write pin 50");
-
-			USB_printf("@Error write pins#\n^Test 9A: Fail, error write pins\n", 1000);
-
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9A: Fail, error write pins\n");
-			write(fd_fb, buf, cnt_byte);
-
-			return -1;
-		}
-	usleep(500000);//sleep(1);
-
-	if (Write_GPIO("52", "0")!=1)
+	if (Init_GPIO("50", "out")!=1) // init UART modem power enable
 	{
-		sprintf(LaraBuffer, "Error write pin 52");
+		sprintf(LaraBuffer, "Error export pins");
 
-		USB_printf("@Error write pins#\n^Test 9A: Fail, error write pins\n", 1000);
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error export pins\n@Error export pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error export pins#\n^Test 8B: Fail, error export pins\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9A: Fail, error write pins\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 8B: Fail, error export pins\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
 	}
-	usleep(100000);//sleep(1);
+	if (Init_GPIO("48", "out")!=1) // init modem antenna/SIM selector
+	{
+		sprintf(LaraBuffer, "Error export pins");
+
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error export pins\n@Error export pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error export pins#\n^Test 8B: Fail, error export pins\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 8B: Fail, error export pins\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+	}
+	if (Init_GPIO("52", "out")!=1) // init modem ON pin
+	{
+		sprintf(LaraBuffer, "Error export pins");
+
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error export pins\n@Error export pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error export pins#\n^Test 8B: Fail, error export pins\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 8B: Fail, error export pins\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+	}
+
+	//----------------------Power test modem via UART-------------------------------------------
+	printf( "UART modem power-on\n" );
+
+
+	if (Write_GPIO("48", "0")!=1)
+	{
+		sprintf(LaraBuffer, "Error write pin 48");
+
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error write pins#\n^Test 8B: Fail, error write pins\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8B: Fail, error write pins\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+	}
+
+	if (Write_GPIO("50", "1")!=1)
+	{
+		sprintf(LaraBuffer, "Error write pin 50");
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error write pins#\n^Test 8B: Fail, error write pins\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8B: Fail, error write pins\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+
+	}
+
+	usleep(200000);
 
 	if (Write_GPIO("52", "1")!=1)
 	{
-		sprintf(LaraBuffer, "Error write pin 52");
+		sprintf(LaraBuffer, "Error write pin 50");
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
 
-		USB_printf("@Error write pins#\n^Test 9A: Fail, error write pins\n", 1000);
+		USB_printf("@Error write pins#\n^Test 8B: Fail, error write pins\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9A: Fail, error write pins\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8B: Fail, error write pins\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
+
 	}
-	usleep(200000);//sleep(1);
+
+	usleep(500000);
 
 	if (Write_GPIO("52", "0")!=1)
 	{
-		sprintf(LaraBuffer, "Error write pin 52");
+		sprintf(LaraBuffer, "Error write pin 50");
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
 
-		USB_printf("@Error write pins#\n^Test 9A: Fail, error write pins\n", 1000);
+		USB_printf("@Error write pins#\n^Test 8B: Fail, error write pins\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9A: Fail, error write pins\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8B: Fail, error write pins\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
+
 	}
-	usleep(3000000);
-	//ttymxc1
-	printf( "Send 'ATE0' to SARA-R410M\n" );
+
+	usleep(500000);
 
 	if(Init_LARA_SARA("/dev/ttymxc1", 115200) == -1){
-		printf( "ERROR init SARA-R410M! \n" );
-		sprintf(LaraBuffer, "ERROR init SARA-R410M");
 		LaraErr = 1;//return testFailed;
-	}
-	else{
-		printf( "LARA answer 'OK' \n" );
 	}
 	if(LaraErr){
 
-		USB_printf("@Error init module#\n^Test 9A: Fail, error init module\n", 1000);
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error init module\n@Error init module#\n");
+		//fclose (pFile);
+
+		/*USB_printf("@Error init module#\n^Test 8B: Fail, error init module\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error init module#\n\x1b[2C^Test 9A: Fail, error init module\n");
-		write(fd_fb, buf, cnt_byte);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error init module#\n\x1b[2C^Test 8B: Fail, error init module\n");
+		write(fd_fb, buf, cnt_byte);*/
 
 		return -1;
 	}
 
-	printf( "Unexport GPIO for SARA-R410M \n" );
+	if (Write_GPIO("50", "0")!=1)
+	{
+		sprintf(LaraBuffer, "Error write pin 50");
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error write pins#\n^Test 8B: Fail, error write pins\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8B: Fail, error write pins\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+
+	}
+
+	printf( "Unexport GPIO for UART \n" );
 
 		if (DeInit_GPIO("50")!=1)
 		{
 			sprintf(LaraBuffer, "Error unexport pin 50");
 
-			USB_printf("@Error unexport pins#\n^Test 9A: Fail, error unexport pins\n", 1000);
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error unexport pins#\n^Test 8B: Fail, error unexport pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9A: Fail, error unexport pins\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 8B: Fail, error unexport pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
 		}
+
+		if (DeInit_GPIO("48")!=1)
+		{
+			sprintf(LaraBuffer, "Error unexport pin 48");
+
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error unexport pins#\n^Test 8B: Fail, error unexport pins\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 8B: Fail, error unexport pins\n");
+			write(fd_fb, buf, cnt_byte);
+
+			return -1;
+		}
+
 		if (DeInit_GPIO("52")!=1)
 		{
-			sprintf(LaraBuffer, "Error unexport pin 52");
+			sprintf(LaraBuffer, "Error unexport pin 48");
 
-			USB_printf("@Error unexport pins#\n^Test 9A: Fail, error unexport pins\n", 1000);
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error unexport pins\n@Error unexport pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error unexport pins#\n^Test 8B: Fail, error unexport pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9A: Fail, error unexport pins\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 8B: Fail, error unexport pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
 		}
 
-	sprintf(LaraBuffer, "SARA-R410M module received ATE0 command");
-
-	USB_printf("@Module received ATE0 command#\n&Test 9A: OK\n", 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Module received ATE0 command#\n\x1b[2C&Test 9A: OK\n");
-	write(fd_fb, buf, cnt_byte);
 
 	return 0;
 }
 
-int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
+int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do) //
 {
-	//Test sending power on to device on UART port
 	//Test sending power on to device on USB port
-	//Test toggling GPIO signal for RF antenna selection for UART modem versus USB modem
+	//Test toggling GPIO signal for RF antenna selection for USB modem versus UART modem
 
 	#define BUFF_SIZE 100
 	int SaraErr=0;
@@ -2176,35 +2312,43 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	char buf[200];
 	int cnt_byte=0;
 
-	USB_printf("**UART Modem Test**\n", 1000);
+	//if (pFile!=NULL) fprintf(pFile,"**USB Modem Test**\n");
+
+	USB_printf("**USB Modem Response Test**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**UART Modem Test**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**USB Modem Response Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
 		//setup GPIO
-	printf( "Setup GPIO for SARA-U201 \n" );
+	printf( "Setup GPIO for USB modem \n" );
 
-		if (Init_GPIO("48", "out")!=1)
+	if (Init_GPIO("49", "out")!=1)
 		{
 			sprintf(SaraBuffer, "Error export pins");
 
-			USB_printf("^Test 9B: Fail, error export pins\n@Error export pins#\n", 1000);
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error export pins\n@Error export pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error export pins#\n^Test 8A: Fail, error export pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error export pins\n\x1b[2C@Error export pins#\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 8A: Fail, error export pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
 		}
-		if (Init_GPIO("49", "out")!=1)
+		if (Init_GPIO("48", "out")!=1)
 		{
 			sprintf(SaraBuffer, "Error export pins");
 
-			USB_printf("^Test 9B: Fail, error export pins\n@Error export pins#\n", 1000);
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error export pins\n@Error export pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error export pins#\n^Test 8A: Fail, error export pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error export pins\n\x1b[2C@Error export pins#\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 8A: Fail, error export pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
@@ -2213,79 +2357,87 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 	//----------------------Power test modem via USB------------------------------------------
 	usleep(1000000);
 
-	if (Write_GPIO("49", "1")!=1)
-	{
-		sprintf(SaraBuffer, "Error write pin 49");
-
-		USB_printf("^Test 9B: Fail, error write pins\n@Error write pins#\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error write pins\n\x1b[2C@Error write pins#\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
-	}
-	//TODO: проверить появился ли порт ttyACM0
-	usleep(12000000);//sleep(12);
-	printf( "Send 'ATE0' to SARA-U201\n" );
-
-	if(Init_LARA_SARA("/dev/ttyACM0", 115200) == -1){
-		printf( "ERROR init SARA-U201! \n" );
-		sprintf(SaraBuffer, "ERROR init SARA-U201");
-		SaraErr=1;//return testFailed;
-	}
-	else{
-		printf( "SARA answer 'OK' \n" );
-	}
-	if(SaraErr){
-
-		USB_printf("^Test 9B: Fail, error init module\n@Error init module#\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error init module\n\x1b[2C@Error init module#\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
-	}
-
 	if (Write_GPIO("48", "1")!=1)
 	{
 		sprintf(SaraBuffer, "Error write pin 48");
 
-		USB_printf("^Test 9B: Fail, error write pins\n@Error write pins#\n", 1000);
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error write pins#\n^Test 8A: Fail, error write pins\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error write pins\n\x1b[2C@Error write pins#\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8A: Fail, error write pins\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
 	}
 
-	sleep(1);
-
-	if (Write_GPIO("48", "0")!=1)
+	if (Write_GPIO("49", "1")!=1)
 	{
-		sprintf(SaraBuffer, "Error write pin 48");
+		sprintf(SaraBuffer, "Error write pin 49");
 
-		USB_printf("^Test 9B: Fail, error write pins\n@Error write pins#\n", 1000);
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error write pins#\n^Test 8A: Fail, error write pins\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error write pins\n\x1b[2C@Error write pins#\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8A: Fail, error write pins\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
 	}
 
-	printf( "Unexport GPIO for SARA-U201 \n" );
+
+	//TODO: проверить появился ли порт ttyACM0
+	usleep(12000000);
+
+	if(Init_LARA_SARA("/dev/ttyACM0", 115200) == -1){
+		SaraErr=1;//return testFailed;
+	}
+	if(SaraErr){
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error init module\n@Error init module#\n");
+		//fclose (pFile);
+
+		/*USB_printf("@Error init module#\n^Test 8A: Fail, error init module\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error init module#\n\x1b[2C^Test 8A: Fail, error init module\n");
+		write(fd_fb, buf, cnt_byte);*/
+
+		return -1;
+	}
+
+	if (Write_GPIO("49", "0")!=1)
+	{
+		sprintf(SaraBuffer, "Error write pin 49");
+
+		//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error write pins\n@Error write pins#\n");
+		//fclose (pFile);
+
+		USB_printf("@Error write pins#\n^Test 8A: Fail, error write pins\n", 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 8A: Fail, error write pins\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+	}
+
+	printf( "Unexport GPIO for USB modem \n" );
 
 		if (DeInit_GPIO("48")!=1)
 		{
 			sprintf(SaraBuffer, "Error unexport pin 48");
 
-			USB_printf("^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error unexport pins#\n^Test 8A: Fail, error unexport pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 8A: Fail, error unexport pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
@@ -2294,23 +2446,17 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 		{
 			sprintf(SaraBuffer, "Error unexport pin 49");
 
-			USB_printf("^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n", 1000);
+			//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error unexport pins\n@Error unexport pins#\n");
+			//fclose (pFile);
+
+			USB_printf("@Error unexport pins#\n^Test 8A: Fail, error unexport pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 9B: Fail, error unexport pins\n\x1b[2C@Error unexport pins#\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 8A: Fail, error unexport pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
 		}
-
-		sprintf(SaraBuffer, "SARA-U201 module received ATE0 command");
-
-		USB_printf("&Test 9B: OK\n@Module received ATE0 command#\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 9B: OK\n\x1b[2C@Module received ATE0 command#\n");
-		write(fd_fb, buf, cnt_byte);
-
 
 	return 0;
 }
@@ -2452,10 +2598,10 @@ int Audio_Codec_Test(int Do)
 		{
 			system("alsactl restore");
 
-			USB_printf("**Audio Input Test**\n", 1000);
+			USB_printf("\n**Audio Input Test**\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Audio Input Test**\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Audio Input Test**\n");
 			write(fd_fb, buf, cnt_byte);
 
 			USB_printf("Press Enter to Start 10 second recording\n", 1000);
@@ -2580,6 +2726,15 @@ int Audio_Codec_Test(int Do)
 
 							memset(buf, 0, 200);
 							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left Mic Not Detected\n");
+							write(fd_fb, buf, cnt_byte);
+						}
+
+						if (state_L==-1 && state_R==-1)
+						{
+							USB_printf("^Test 10B: Fail, Left and Right Mic Not Detected\n", 1000);
+
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left and Right Mic Not Detected\n");
 							write(fd_fb, buf, cnt_byte);
 						}
 					}
@@ -2726,46 +2881,256 @@ return -1;
 }
 
 
-int Init_LARA_SARA(char* port_name, int port_speed){
-	char buf_tx[1000]={0};
-	char buf_rx[1000]={0};
-	int cnt_byte;
-	//static
+int Init_LARA_SARA(char* port_name, int port_speed) {
+
+	int ret;
 	int port_id;
+	int size;
+	char answr_buf[1000] = {0};
+	char out_buf[1000] = {0};
+	char curr_modem[10] = {0};
+
+	char buf[200]={0};
+	int cnt_byte;
 
 	port_id=OpenPort(port_name);
 	SetPort(port_id, port_speed);
 	usleep(1000000);
-
 	ClosePort(port_id);
 	usleep(500000);
-
 
 	///----***----***---***---***---***---***---***---***--
 	port_id=OpenPort(port_name);
 	printf( "Port ID: %i\n", port_id);
 	SetPort(port_id, port_speed);
 
+	if (!strcmp(port_name,"/dev/ttymxc1")) {
+		sprintf(curr_modem, UART_MODEM_DESING);
+	} else if (!strcmp(port_name,"/dev/ttyACM0")) {
+		sprintf(curr_modem, USB_MODEM_DESING);
+	}
+
 	sleep(5);
 
-	cnt_byte=sprintf(buf_tx, "ATE0\r");	 // echo off
+	ret = sendWOPreParse(port_id, "ATE0\r", answr_buf, curr_modem);
+	if (ret) goto error;
+
+	usleep(250000);
+
+	for(int i = 0; i < 3; i++){
+
+		ret = sendWOPreParse(port_id, "AT\r", answr_buf, curr_modem);
+		if (!ret) break;
+
+		usleep(250000);
+
+	}
+
+	//if (pFile!=NULL) fprintf(pFile, "Modem is Responsive\n");
+
+	USB_printf("Modem is Responsive\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CModem is Responsive\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "AT+CGMI\r", answr_buf, curr_modem);
+	if (ret) goto error;
+
+	size = answr_buf-strstr(answr_buf, "\n\n");
+	sprintf(out_buf, "@Module Make/Model = ");
+	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
+
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "AT+CGMM\r", answr_buf, curr_modem);
+	if (ret) goto error;
+
+	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
+	strcat(out_buf, "#\n");
+
+	//if (pFile!=NULL) fputs (out_buf, pFile);
+
+	USB_printf(out_buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "AT+CGSN\r", answr_buf, curr_modem);
+	if (ret) goto error;
+
+	memset(out_buf, 0, sizeof(out_buf));
+	sprintf(out_buf, "@IMEI = ");
+	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
+	strcat(out_buf, "#\n");
+
+	//if (pFile!=NULL) fputs (out_buf, pFile);
+
+	USB_printf(out_buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	for(int i = 0; i < 2; i++){
+
+		ret = sendAndPreParse(port_id, "AT+CPIN?\r", answr_buf, curr_modem);
+		if (!ret) break;
+
+		sleep(2);
+
+	}
+	if (ret) goto error;
+
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "AT+CCID\r", answr_buf, curr_modem);
+	if (ret) goto error;
+
+	memset(out_buf, 0, sizeof(out_buf));
+	sprintf(out_buf, "@ICCID = ");
+	strncat(out_buf, answr_buf+strlen("+CCID: "), strcspn(answr_buf+strlen("+CCID: "), "\n\n"));
+	strcat(out_buf, "#\n");
+
+	//if (pFile!=NULL) fputs (out_buf, pFile);
+
+	USB_printf(out_buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "ATI9\r", answr_buf, curr_modem);
+	if (ret) goto error;
+
+	memset(out_buf, 0, sizeof(out_buf));
+	sprintf(out_buf, "@FW Version = ");
+	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
+	strcat(out_buf, "#\n");
+
+	//if (pFile!=NULL) fputs (out_buf, pFile);
+
+	USB_printf(out_buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+
+	if (!strcmp(curr_modem, UART_MODEM_DESING)) {
+		ret = sendAndPreParse(port_id, "AT+CPWROFF\r", answr_buf, curr_modem);
+		if (ret) goto error;
+	}
+
+	//if (pFile!=NULL) fprintf(pFile, "&Test %s: OK\n", curr_modem);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "&Test %s: OK\n", curr_modem);
+	USB_printf(buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: OK\n", curr_modem);
+	write(fd_fb, buf, cnt_byte);
+
+	ClosePort(port_id);
+	return 0;
+
+error:
+	ClosePort(port_id);
+	//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, Modem Not Responsive\n", curr_modem);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, Modem Not OK Responsive\n", curr_modem);
+	USB_printf(buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, Modem Not OK Responsive\n", curr_modem);
+	write(fd_fb, buf, cnt_byte);
+
+	return -1;
+
+}
+
+
+int sendAndPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type)
+{
+
+	char buf_tx[1000]={0};
+	char buf_rx[1000]={0};
+	int cnt_byte;
+
+	char buf[200]={0};
+
+	cnt_byte=sprintf(buf_tx, cmd_buf);
 	puts (buf_tx);
 	WritePort(port_id, (unsigned char*)buf_tx, cnt_byte);
 	usleep(500000);
 	cnt_byte=ReadPort(port_id, (unsigned char*)buf_rx, sizeof(buf_rx));
 	puts(buf_rx);
-	if (strstr(buf_rx, "OK")==NULL) //SARA-U201-03B-00 //LARA-R204-02B-00
+	if (strstr(buf_rx, "OK") == NULL)
 	{
-		perror("\r\nError while reading\r\n");
-		ClosePort(port_id);
+		//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, no OK returned\n", type);
+
+		/*memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", type);
+		USB_printf(buf, 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", type);
+		write(fd_fb, buf, cnt_byte);*/
+
 		return -1;
 	}
+	if (!(strstr(buf_rx, "\n\n") == buf_rx)) {
 
-	memset(buf_tx, 0, 1000);
-	memset(buf_rx, 0, 1000);
-	ClosePort(port_id);
+		//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, unexpected answer header\n", type);
+
+		/*memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, unexpected answer header\n", type);
+		USB_printf(buf, 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, unexpected answer header\n", type);
+		write(fd_fb, buf, cnt_byte);*/
+
+		return -1;
+	}
+	memcpy(ret_buf, buf_rx + strlen("\n\n"), cnt_byte);
 	return 0;
+}
 
+int sendWOPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type)
+{
+
+	char buf_tx[1000]={0};
+	char buf_rx[1000]={0};
+	int cnt_byte;
+
+	char buf[200]={0};
+
+	cnt_byte=sprintf(buf_tx, cmd_buf);
+	puts (buf_tx);
+	WritePort(port_id, (unsigned char*)buf_tx, cnt_byte);
+	usleep(500000);
+	cnt_byte=ReadPort(port_id, (unsigned char*)buf_rx, sizeof(buf_rx));
+	puts(buf_rx);
+	if (strstr(buf_rx, "OK") == NULL)
+	{
+		//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, no OK returned\n", type);
+
+		/*memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", type);
+		USB_printf(type, 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", type);
+		write(fd_fb, buf, cnt_byte);*/
+		return -1;
+	}
+	memcpy(ret_buf, buf_rx + strlen("\n\n"), cnt_byte);
+	return 0;
 }
 
 

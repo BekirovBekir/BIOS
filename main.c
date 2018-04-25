@@ -52,7 +52,7 @@ static ilitek_key_info key={0,0,0,0};
 		key=Scan_TS_Key();
 		FSM_TS(&key);
 		timer_tick++;
-			if (timer_tick>=7000)
+			if (timer_tick>=20000)
 			{
 				Write_EEPROM("2", 0);	// write eeprom 2, after reboot android will be srart
 				pthread_exit(0);
@@ -64,24 +64,40 @@ static ilitek_key_info key={0,0,0,0};
 
 void* test_sel_thread_func(void* thread_data)
 {
-	int ch=0;
-	int buf_preasm_flag;
+	char str[10]={0};
+
 	for (;;)
 	{
-		//pthread_mutex_lock(&mutex);
-		//buf_preasm_flag=preasm_flag;
-		//pthread_mutex_unlock(&mutex);
 
-		pthread_mutex_lock(&mutex);
 		if (preasm_flag==1)
 		{
-		ch=USB_getc(200);
-		TestRun(ch);
+			//printf("enter to thread\n");
+
+			memset(str, 0, sizeof(str));
+			USB_getline(str, 4, 2000);
+
+			if(isActiveFullTesetMenu())
+			{
+
+				//printf("str = %s %i \n", str, str[0]);
+				TestRun(str);
+			}
+			else
+			{
+				if(str[0] == '\n')
+				{
+					//printf("str = %c %i\n", str[0], str[0]);
+					gotoParentMenu();
+				}
+			}
+			//printf("exit from thread\n");
 		}
-		pthread_mutex_unlock(&mutex);
+		else
+		{
+			usleep(10000);
+		}
 
 	}
-
 	return EXIT_SUCCESS;
 }
 
@@ -104,7 +120,7 @@ int main(int argc, char* argv[])
 			perror("\nFSM thread fail\n");
 		}
 
-		/*trhread_state=pthread_create(&test_sel_thread, NULL, test_sel_thread_func, &id_test_sel_thread);
+		trhread_state=pthread_create(&test_sel_thread, NULL, test_sel_thread_func, &id_test_sel_thread);
 			if (trhread_state==0)
 			{
 				printf ("\nPreasm thread started\n");
@@ -112,7 +128,8 @@ int main(int argc, char* argv[])
 			else
 			{
 				perror("\nPreasm thread fail\n");
-			}*/
+			}
+
 
 
 

@@ -35,6 +35,10 @@ int FuncSN_Read_In(int Do);
 
 int USB_printf(char* buf, int timeout);
 int USB_getc(int timeout);
+int USB_getline(char* str, int size, int timeout);
+
+int sendAndPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type);
+int sendWOPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type);
 
 void NFC(void);
 
