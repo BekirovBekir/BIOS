@@ -2925,6 +2925,7 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 		usleep(250000);
 
 	}
+	if (ret) goto error_1;
 
 	//if (pFile!=NULL) fprintf(pFile, "Modem is Responsive\n");
 
@@ -2974,7 +2975,7 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 3; i++){
 
 		ret = sendAndPreParse(port_id, "AT+CPIN?\r", answr_buf, curr_modem);
 		if (!ret) break;
@@ -2982,7 +2983,8 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 		sleep(2);
 
 	}
-	if (ret) goto error;
+	if (ret==-1) goto error_1;
+	if (ret==-2) goto error_2;
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "AT+CCID\r", answr_buf, curr_modem);
@@ -3042,14 +3044,36 @@ error:
 	//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, Modem Not Responsive\n", curr_modem);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, Modem Not OK Responsive\n", curr_modem);
+	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, Modem Not Responsive\n", curr_modem);
 	USB_printf(buf, 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, Modem Not OK Responsive\n", curr_modem);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, Modem Not Responsive\n", curr_modem);
 	write(fd_fb, buf, cnt_byte);
 
 	return -1;
+
+error_1:
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", curr_modem);
+	USB_printf(curr_modem, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", curr_modem);
+	write(fd_fb, buf, cnt_byte);
+
+	return -1;
+
+error_2:
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, unexpected answer header\n", curr_modem);
+		USB_printf(buf, 1000);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, unexpected answer header\n", curr_modem);
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
 
 }
 
@@ -3095,7 +3119,7 @@ int sendAndPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, unexpected answer header\n", type);
 		write(fd_fb, buf, cnt_byte);*/
 
-		return -1;
+		return -2;
 	}
 	memcpy(ret_buf, buf_rx + strlen("\n\n"), cnt_byte);
 	return 0;
