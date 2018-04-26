@@ -2826,7 +2826,7 @@ int NEO_Test(int Do)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**GPS Test**\n");
 		write(fd_fb, buf, cnt_byte);
 
-		if (Init_GPIO("63", "out")!=1)
+		/*if (Init_GPIO("63", "out")!=1)
 		{
 			printf("Error export pins 63\n");
 
@@ -2852,9 +2852,9 @@ int NEO_Test(int Do)
 				return -1;
 			}
 		}
-		sleep(1);
+		sleep(1);*/
 
-	fd=OpenPort("/dev/ttymxc2");
+	fd=OpenPort("/dev/ttyACM20");
 		if (fd<0)
 		{
 			printf("Error while open port\n");
@@ -2875,8 +2875,8 @@ int NEO_Test(int Do)
 			if (strstr(buf_rx, "$")!=NULL)
 			{
 				close(fd);
-				Write_GPIO("63", "0");
-				DeInit_GPIO("63");
+				//Write_GPIO("63", "0");
+				//DeInit_GPIO("63");
 
 				USB_printf("@Module received NMEA#\n&Test 9: OK\n", 1000);
 
@@ -2889,13 +2889,13 @@ int NEO_Test(int Do)
 			else
 			{
 				close(fd);
-				Write_GPIO("63", "0");
-				DeInit_GPIO("63");
+				//Write_GPIO("63", "0");
+				//DeInit_GPIO("63");
 
-				USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
+				USB_printf("@Module didn't receive NMEA#\n^Test 9: Fail, module didn't receive NMEA\n", 1000);
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Module didn't receive NMEA#\n\x1b[2C^Test 9: Fail, module didn't receive NMEA\n");
 				write(fd_fb, buf, cnt_byte);
 
 				return -1;
@@ -2904,13 +2904,13 @@ int NEO_Test(int Do)
 		else
 		{
 			close(fd);
-			Write_GPIO("63", "0");
-			DeInit_GPIO("63");
+			//Write_GPIO("63", "0");
+			//DeInit_GPIO("63");
 
-			USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
+			USB_printf("@Read error#\n^Test 9: Fail, read error\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Read error#\n\x1b[2C^Test 9: Fail, read error\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
