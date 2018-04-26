@@ -667,6 +667,8 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	USB_printf("\n", 500);
+
 	EEPROM_SN();
 	sleep(2);
 
@@ -687,6 +689,13 @@ void FullTestSubAct (void)
 	write(fd_fb, buf, cnt_byte);
 
 	TestMMC(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
 	FuncSPI_32MBit_NOR_Flash(1);
 	sleep(2);
 
@@ -948,6 +957,8 @@ void EEPROMTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	USB_printf("\n", 500);
+
 	EEPROM_SN();
 
 	memset(buf, 0, 200);
@@ -1007,6 +1018,8 @@ void MemTestSubAct(void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
 
 	TestMMC(1);
 
@@ -1101,6 +1114,8 @@ void AccelTestSubAct(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	USB_printf("\n", 500);
+
 	FuncAccelerometer_Calibration(1);
 
 	memset(buf, 0, 200);
@@ -1161,6 +1176,8 @@ void PowerManTestSubAct(void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
 
 	FuncConfirm_PMIC_Communication(1);
 
@@ -1231,6 +1248,8 @@ void LightSensorTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	USB_printf("\n", 500);
+
 	FuncAmbient_Light_Sensor_Functionality(1);
 
 	memset(buf, 0, 200);
@@ -1270,6 +1289,8 @@ void PressSensorTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
 
 	FuncBarometer_Functionality(1);
 
@@ -1351,6 +1372,8 @@ void EMMYTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	USB_printf("\n", 500);
+
 	FuncEMMY_163_Connectivity_Check(1);
 	//NFC();
 
@@ -1411,6 +1434,8 @@ void ModemTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
 
 	FuncSARA_Module_Testing_Power_Antenna_Permission(1);
 
@@ -1479,6 +1504,8 @@ void GPSTestSubAct (void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
 
 	NEO_Test(1);
 
@@ -1553,6 +1580,8 @@ void AudiotTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
+	USB_printf("\n", 500);
+
 	Audio_Codec_Test(1);
 
 	memset(buf, 0, 200);
@@ -1617,6 +1646,8 @@ void CamerasTestSubAct(void)
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
 
 	Cameras_Test_Full(1);
 

@@ -1793,7 +1793,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 	//Validate Bluetooth Antenna by detecting and printing available Bluetooth devices to pair
 
-	USB_printf("**\nBluetooth Test**\n", 1000);
+	USB_printf("\n**Bluetooth Test**\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Bluetooth Test**\n");
@@ -2781,10 +2781,10 @@ int NEO_Test(int Do)
 		{
 			printf("Error export pins 63\n");
 
-			USB_printf("@Error export pins#\n^Test 10: Fail, error export pins\n", 1000);
+			USB_printf("@Error export pins#\n^Test 9: Fail, error export pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 10: Fail, error export pins\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 9: Fail, error export pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
@@ -2794,10 +2794,10 @@ int NEO_Test(int Do)
 			if (Write_GPIO("63", "1")!=1)
 			{
 
-				USB_printf("@Error write pins#\n^Test 10: Fail, error write pins\n", 1000);
+				USB_printf("@Error write pins#\n^Test 9: Fail, error write pins\n", 1000);
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 10: Fail, error write pins\n");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9: Fail, error write pins\n");
 				write(fd_fb, buf, cnt_byte);
 
 				return -1;
@@ -2810,10 +2810,10 @@ int NEO_Test(int Do)
 		{
 			printf("Error while open port\n");
 
-			USB_printf("@Error while open port#\n^Test 10: Fail, error while open port\n", 1000);
+			USB_printf("@Error while open port#\n^Test 9: Fail, error while open port\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error while open port#\n\x1b[2C^Test 10: Fail, error while open port\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error while open port#\n\x1b[2C^Test 9: Fail, error while open port\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
@@ -2829,10 +2829,10 @@ int NEO_Test(int Do)
 				Write_GPIO("63", "0");
 				DeInit_GPIO("63");
 
-				USB_printf("@Module received NMEA#\n&Test 10: OK\n", 1000);
+				USB_printf("@Module received NMEA#\n&Test 9: OK\n", 1000);
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Module received NMEA#\n\x1b[2C&Test 10: OK\n");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Module received NMEA#\n\x1b[2C&Test 9: OK\n");
 				write(fd_fb, buf, cnt_byte);
 
 				return 0;
@@ -2843,10 +2843,10 @@ int NEO_Test(int Do)
 				Write_GPIO("63", "0");
 				DeInit_GPIO("63");
 
-				USB_printf("@Error unexport pins#\n^Test 10: Fail, error unexport pins\n", 1000);
+				USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 10: Fail, error unexport pins\n");
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
 				write(fd_fb, buf, cnt_byte);
 
 				return -1;
@@ -2858,10 +2858,10 @@ int NEO_Test(int Do)
 			Write_GPIO("63", "0");
 			DeInit_GPIO("63");
 
-			USB_printf("@Error unexport pins#\n^Test 10: Fail, error unexport pins\n", 1000);
+			USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 10: Fail, error unexport pins\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
 			write(fd_fb, buf, cnt_byte);
 
 			return -1;
@@ -2871,10 +2871,10 @@ close(fd);
 Write_GPIO("63", "0");
 DeInit_GPIO("63");
 
-USB_printf("@Error unexport pins#\n^Test 10: Fail, error unexport pins\n", 1000);
+USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
 
 memset(buf, 0, 200);
-cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 10: Fail, error unexport pins\n");
+cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
 write(fd_fb, buf, cnt_byte);
 
 return -1;
@@ -3056,7 +3056,7 @@ error:
 error_1:
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", curr_modem);
-	USB_printf(curr_modem, 1000);
+	USB_printf(buf, 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", curr_modem);
