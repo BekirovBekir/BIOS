@@ -2210,21 +2210,45 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission(int Do)
 
 	usleep(500000);
 
-	if(Init_LARA_SARA("/dev/ttymxc1", 115200) == -1){
-		LaraErr = 1;//return testFailed;
-	}
-	if(LaraErr){
+	LaraErr = Init_LARA_SARA("/dev/ttymxc1", 115200);
 
-		//if (pFile!=NULL) fprintf(pFile, "^Test 9A: Fail, error init module\n@Error init module#\n");
-		//fclose (pFile);
+	switch (LaraErr) {
+		case 0:
+			break;
+		case -1:
+		case -2:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8B: Fail, Modem Not Responsive\n");
+			USB_printf(buf, 1000);
 
-		/*USB_printf("@Error init module#\n^Test 8B: Fail, error init module\n", 1000);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8B: Fail, Modem Not Responsive\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
+		case -3:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8B: Fail, SIM Card Not Readable\n");
+			USB_printf(buf, 1000);
 
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error init module#\n\x1b[2C^Test 8B: Fail, error init module\n");
-		write(fd_fb, buf, cnt_byte);*/
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8B: Fail, SIM Card Not Readable\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
+		default:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8B: Fail, non-expected answer!!!\n");
+			USB_printf(buf, 1000);
 
-		return -1;
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8B: Fail, non-expected answer!!!\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
 	}
 
 	if (Write_GPIO("50", "0")!=1)
@@ -2393,20 +2417,45 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission(int Do) //
 	//TODO: проверить появился ли порт ttyACM0
 	usleep(12000000);
 
-	if(Init_LARA_SARA("/dev/ttyACM0", 115200) == -1){
-		SaraErr=1;//return testFailed;
-	}
-	if(SaraErr){
-		//if (pFile!=NULL) fprintf(pFile, "^Test 9B: Fail, error init module\n@Error init module#\n");
-		//fclose (pFile);
+	SaraErr = Init_LARA_SARA("/dev/ttyACM0", 115200);
 
-		/*USB_printf("@Error init module#\n^Test 8A: Fail, error init module\n", 1000);
+	switch (SaraErr) {
+		case 0:
+			break;
+		case -1:
+		case -2:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8A: Fail, Modem Not Responsive\n");
+			USB_printf(buf, 1000);
 
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error init module#\n\x1b[2C^Test 8A: Fail, error init module\n");
-		write(fd_fb, buf, cnt_byte);*/
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8A: Fail, Modem Not Responsive\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
+		case -3:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8A: Fail, SIM Card Not Readable\n");
+			USB_printf(buf, 1000);
 
-		return -1;
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8A: Fail, SIM Card Not Readable\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
+		default:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8A: Fail, non-expected answer!!!\n");
+			USB_printf(buf, 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8A: Fail, non-expected answer!!!\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
 	}
 
 	if (Write_GPIO("49", "0")!=1)
@@ -2880,7 +2929,6 @@ write(fd_fb, buf, cnt_byte);
 return -1;
 }
 
-
 int Init_LARA_SARA(char* port_name, int port_speed) {
 
 	int ret;
@@ -2925,7 +2973,7 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 		usleep(250000);
 
 	}
-	if (ret) goto error_1;
+	if (ret) goto error;
 
 	//if (pFile!=NULL) fprintf(pFile, "Modem is Responsive\n");
 
@@ -2943,14 +2991,14 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 	sprintf(out_buf, "@Module Make/Model = ");
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 
+	strcat(out_buf, " ");
+
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "AT+CGMM\r", answr_buf, curr_modem);
 	if (ret) goto error;
 
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 	strcat(out_buf, "#\n");
-
-	//if (pFile!=NULL) fputs (out_buf, pFile);
 
 	USB_printf(out_buf, 1000);
 
@@ -2967,8 +3015,6 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 	strcat(out_buf, "#\n");
 
-	//if (pFile!=NULL) fputs (out_buf, pFile);
-
 	USB_printf(out_buf, 1000);
 
 	memset(buf, 0, 200);
@@ -2983,19 +3029,40 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 		sleep(2);
 
 	}
-	if (ret==-1) goto error_1;
-	if (ret==-2) goto error_2;
+	if (ret) {
+		ret = -3; // ICCID read error;
+		goto error;
+	}
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "AT+CCID\r", answr_buf, curr_modem);
-	if (ret) goto error;
+	if (ret) {
+		ret = -3; // ICCID read error;
+		goto error;
+	}
 
 	memset(out_buf, 0, sizeof(out_buf));
 	sprintf(out_buf, "@ICCID = ");
 	strncat(out_buf, answr_buf+strlen("+CCID: "), strcspn(answr_buf+strlen("+CCID: "), "\n\n"));
 	strcat(out_buf, "#\n");
 
-	//if (pFile!=NULL) fputs (out_buf, pFile);
+	USB_printf(out_buf, 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "AT+CIMI\r", answr_buf, curr_modem);
+	if (ret) {
+		ret = -3; // IMSI read error;
+		goto error;
+	}
+
+	memset(out_buf, 0, sizeof(out_buf));
+	sprintf(out_buf, "@IMSI = ");
+	strncat(out_buf, answr_buf, strcspn(answr_buf, "\n\n"));
+	strcat(out_buf, "#\n");
 
 	USB_printf(out_buf, 1000);
 
@@ -3036,44 +3103,11 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: OK\n", curr_modem);
 	write(fd_fb, buf, cnt_byte);
 
-	ClosePort(port_id);
-	return 0;
+	ret = 0;
 
 error:
 	ClosePort(port_id);
-	//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, Modem Not Responsive\n", curr_modem);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, Modem Not Responsive\n", curr_modem);
-	USB_printf(buf, 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, Modem Not Responsive\n", curr_modem);
-	write(fd_fb, buf, cnt_byte);
-
-	return -1;
-
-error_1:
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", curr_modem);
-	USB_printf(buf, 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", curr_modem);
-	write(fd_fb, buf, cnt_byte);
-
-	return -1;
-
-error_2:
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, unexpected answer header\n", curr_modem);
-		USB_printf(buf, 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, unexpected answer header\n", curr_modem);
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
+	return ret;
 
 }
 
@@ -3093,32 +3127,12 @@ int sendAndPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type)
 	usleep(500000);
 	cnt_byte=ReadPort(port_id, (unsigned char*)buf_rx, sizeof(buf_rx));
 	puts(buf_rx);
-	if (strstr(buf_rx, "OK") == NULL)
+	if (strstr(buf_rx, "OK") == NULL) // no OK returned
 	{
-		//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, no OK returned\n", type);
-
-		/*memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", type);
-		USB_printf(buf, 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", type);
-		write(fd_fb, buf, cnt_byte);*/
-
 		return -1;
 	}
-	if (!(strstr(buf_rx, "\n\n") == buf_rx)) {
-
-		//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, unexpected answer header\n", type);
-
-		/*memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, unexpected answer header\n", type);
-		USB_printf(buf, 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, unexpected answer header\n", type);
-		write(fd_fb, buf, cnt_byte);*/
-
+	if (!(strstr(buf_rx, "\n\n") == buf_rx)) // no header at the reply start
+	{
 		return -2;
 	}
 	memcpy(ret_buf, buf_rx + strlen("\n\n"), cnt_byte);
@@ -3140,24 +3154,13 @@ int sendWOPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type)
 	usleep(500000);
 	cnt_byte=ReadPort(port_id, (unsigned char*)buf_rx, sizeof(buf_rx));
 	puts(buf_rx);
-	if (strstr(buf_rx, "OK") == NULL)
+	if (strstr(buf_rx, "OK") == NULL) // no OK returned
 	{
-		//if (pFile!=NULL) fprintf(pFile, "^Test %s: Fail, no OK returned\n", type);
-
-		/*memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "^Test %s: Fail, no OK returned\n", type);
-		USB_printf(type, 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test %s: Fail, no OK returned\n", type);
-		write(fd_fb, buf, cnt_byte);*/
 		return -1;
 	}
 	memcpy(ret_buf, buf_rx + strlen("\n\n"), cnt_byte);
 	return 0;
 }
-
-
 
 void power_init(void)
 {
