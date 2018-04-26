@@ -127,7 +127,7 @@ int USB_getline(char* str, int size, int timeout)
 	tcflush(fileno(usbcon), TCIOFLUSH);
 
 	pollin.fd = fileno(usbcon);
-	pollin.events = POLLIN | POLLPRI;
+	pollin.events = POLLIN | POLLPRI | POLLHUP;
 
 	if( poll(&pollin, 1, timeout) )
 	{
