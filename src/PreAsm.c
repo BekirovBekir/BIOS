@@ -2917,14 +2917,14 @@ int NEO_Test(int Do)
 		}
 
 close(fd);
-Write_GPIO("63", "0");
-DeInit_GPIO("63");
+//Write_GPIO("63", "0");
+//DeInit_GPIO("63");
 
-USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
+//USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
 
-memset(buf, 0, 200);
-cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
-write(fd_fb, buf, cnt_byte);
+//memset(buf, 0, 200);
+//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
+//write(fd_fb, buf, cnt_byte);
 
 return -1;
 }
