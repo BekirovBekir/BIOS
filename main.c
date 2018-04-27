@@ -94,7 +94,7 @@ void* test_sel_thread_func(void* thread_data)
 		}
 		else
 		{
-			usleep(10000);
+			usleep(100000);
 		}
 
 	}
