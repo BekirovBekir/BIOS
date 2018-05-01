@@ -76,6 +76,8 @@ Menu ModemTestPostAsm;
 Menu GPSTestPostAsm;
 Menu AudiotTestPostAsm;
 Menu CamerasTestPostAsm;
+Menu DisplayTestPostAsm;
+Menu CapTouchTestPostAsm;
 
 Menu FullTestPostAsmSub;
 Menu EEPROMTestPostAsmSub;
@@ -1912,6 +1914,238 @@ void PowerManTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void LightSensorTestPostAsmAct(void)
+{
+
+}
+
+void LightSensorTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[21;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[19;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void PressSensorTestPostAsmAct(void)
+{
+
+}
+
+void PressSensorTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[22;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[20;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void EMMYTestPostAsmAct(void)
+{
+
+}
+
+void EMMYTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[21;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void ModemTestPostAsmAct(void)
+{
+
+}
+
+void ModemTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[22;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void GPSTestPostAsmAct(void)
+{
+
+}
+
+void GPSTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[23;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+
+void AudiotTestPostAsmAct(void)
+{
+
+}
+
+void AudiotTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[26;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[24;30H \n");///////////////
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CamerasTestPostAsmAct(void)
+{
+
+}
+
+void CamerasTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[27;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void DisplayTestPostAsmAct(void)
+{
+
+}
+
+void DisplayTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[28;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[26;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CapTouchTestPostAsmAct(void)
+{
+
+}
+
+void CapTouchTestPostAsmDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30H \n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[27;30H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void MenuInit (void)
 {
 	PreAsm.DOWN=&PostAsm;
@@ -2071,7 +2305,6 @@ void MenuInit (void)
 	AudiotTest.menuaction=&AudiotTestAct;
 	AudiotTest.menudisplay=&AudiotTestDisp;
 
-
 	AudiotTestSub.DOWN=NULL;
 	AudiotTestSub.UP=NULL;
 	AudiotTestSub.ENTER=&AudiotTestSub;
@@ -2134,6 +2367,69 @@ void MenuInit (void)
 	PowerManTestPostAsm.ESC=&PreAsm;
 	PowerManTestPostAsm.menuaction=&PowerManTestPostAsmAct;
 	PowerManTestPostAsm.menudisplay=&PowerManTestPostAsmDisp;
+
+	LightSensorTestPostAsm.DOWN=&PressSensorTestPostAsm;
+	LightSensorTestPostAsm.UP=&PowerManTestPostAsm;
+	LightSensorTestPostAsm.ENTER=&LightSensorTestPostAsmSub;
+	LightSensorTestPostAsm.ESC=&PreAsm;
+	LightSensorTestPostAsm.menuaction=&LightSensorTestPostAsmAct;
+	LightSensorTestPostAsm.menudisplay=&LightSensorTestPostAsmDisp;
+
+	PressSensorTestPostAsm.DOWN=&EMMYTestPostAsm;
+	PressSensorTestPostAsm.UP=&LightSensorTestPostAsm;
+	PressSensorTestPostAsm.ENTER=&PressSensorTestPostAsmSub;
+	PressSensorTestPostAsm.ESC=&PreAsm;
+	PressSensorTestPostAsm.menuaction=&PressSensorTestPostAsmAct;
+	PressSensorTestPostAsm.menudisplay=&PressSensorTestPostAsmDisp;
+
+	EMMYTestPostAsm.DOWN=&ModemTestPostAsm;
+	EMMYTestPostAsm.UP=&PressSensorTestPostAsm;
+	EMMYTestPostAsm.ENTER=&EMMYTestPostAsmSub;
+	EMMYTestPostAsm.ESC=&PreAsm;
+	EMMYTestPostAsm.menuaction=&EMMYTestPostAsmAct;
+	EMMYTestPostAsm.menudisplay=&EMMYTestPostAsmDisp;
+
+	ModemTestPostAsm.DOWN=&GPSTestPostAsm;
+	ModemTestPostAsm.UP=&EMMYTestPostAsm;
+	ModemTestPostAsm.ENTER=&ModemTestPostAsmSub;
+	ModemTestPostAsm.ESC=&PreAsm;
+	ModemTestPostAsm.menuaction=&ModemTestPostAsmAct;
+	ModemTestPostAsm.menudisplay=&ModemTestPostAsmDisp;
+
+	GPSTestPostAsm.DOWN=&AudiotTestPostAsm;
+	GPSTestPostAsm.UP=&ModemTestPostAsm;
+	GPSTestPostAsm.ENTER=&GPSTestPostAsmSub;
+	GPSTestPostAsm.ESC=&PreAsm;
+	GPSTestPostAsm.menuaction=&GPSTestPostAsmAct;
+	GPSTestPostAsm.menudisplay=&GPSTestPostAsmDisp;
+
+	AudiotTestPostAsm.DOWN=&CamerasTestPostAsm;
+	AudiotTestPostAsm.UP=&GPSTestPostAsm;
+	AudiotTestPostAsm.ENTER=&AudiotTestPostAsmSub;
+	AudiotTestPostAsm.ESC=&PreAsm;
+	AudiotTestPostAsm.menuaction=&AudiotTestPostAsmAct;
+	AudiotTestPostAsm.menudisplay=&AudiotTestPostAsmDisp;
+
+	CamerasTestPostAsm.DOWN=&DisplayTestPostAsm;
+	CamerasTestPostAsm.UP=&AudiotTestPostAsm;
+	CamerasTestPostAsm.ENTER=&CamerasTestPostAsmSub;
+	CamerasTestPostAsm.ESC=&PreAsm;
+	CamerasTestPostAsm.menuaction=&CamerasTestPostAsmAct;
+	CamerasTestPostAsm.menudisplay=&CamerasTestPostAsmDisp;
+
+	DisplayTestPostAsm.DOWN=&CapTouchTestPostAsm;
+	DisplayTestPostAsm.UP=&CamerasTestPostAsm;
+	DisplayTestPostAsm.ENTER=&DisplayTestPostAsmSub;
+	DisplayTestPostAsm.ESC=&PreAsm;
+	DisplayTestPostAsm.menuaction=&DisplayTestPostAsmAct;
+	DisplayTestPostAsm.menudisplay=&DisplayTestPostAsmDisp;
+
+	CapTouchTestPostAsm.DOWN=&FullTestPostAsm;
+	CapTouchTestPostAsm.UP=&DisplayTestPostAsm;
+	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsmSub;
+	CapTouchTestPostAsm.ESC=&PreAsm;
+	CapTouchTestPostAsm.menuaction=&CapTouchTestPostAsmAct;
+	CapTouchTestPostAsm.menudisplay=&CapTouchTestPostAsmDisp;
 
 	GI.DOWN=&ShipMode;
 	GI.UP=&PostAsm;
