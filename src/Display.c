@@ -29,6 +29,7 @@
 #include "FrameBuffer.h"
 #include "eeprom.h"
 #include "PreAsm.h"
+#include "PostAsm.h"
 
 Menu PreAsm;
 Menu FullTest;
@@ -1818,6 +1819,24 @@ void FullTestPostAsmAct(void)
 
 }
 
+void FullTestPostAsmSubAct(void)
+{
+
+}
+
+void FullTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void EEPROMTestPostAsmAct(void)
 {
 
@@ -1838,6 +1857,44 @@ void EEPROMTestPostAsmDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void EEPROMTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	EEPROM_SN();
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void EEPROMTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 }
@@ -1866,9 +1923,51 @@ void MemTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
-void AccelTestPostAsmAct(void)
-{
 
+void MemTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void MemTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	TestMMC_PostAsm(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncSPI_32MBit_NOR_Flash_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
 }
 
 void AccelTestPostAsmDisp(void)
@@ -1888,6 +1987,50 @@ void AccelTestPostAsmDisp(void)
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+}
+
+void AccelTestPostAsmAct(void)
+{
+
+}
+
+void AccelTestPostAsmSubDisp(void)
+{
+char buf[200];
+char cnt_byte;
+
+memset(buf, 0, 200);
+cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+write(fd_fb, buf, cnt_byte);
+memset(buf, 0, 200);
+cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+write(fd_fb, buf, cnt_byte);
+
+memset(buf, 0, 200);
+cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+write(fd_fb, buf, cnt_byte);
+memset(buf, 0, 200);
+cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+write(fd_fb, buf, cnt_byte);
+}
+
+void AccelTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncAccelerometer_Calibration_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
 }
 
 void PowerManTestPostAsmAct(void)
@@ -1914,6 +2057,53 @@ void PowerManTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void PowerManTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void PowerManTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncConfirm_PMIC_Communication_PostAsm(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncConfirm_Battery_Charger_Communication_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+}
+
 void LightSensorTestPostAsmAct(void)
 {
 
@@ -1934,6 +2124,44 @@ void LightSensorTestPostAsmDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void LightSensorTestPostAsmSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void LightSensorTestPostAsmSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncAmbient_Light_Sensor_Functionality_PostAsm(1);
+
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 }
@@ -1962,6 +2190,44 @@ void PressSensorTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void PressSensorTestPostAsmSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncBarometer_Functionality_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void PressSensorTestPostAsmSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void EMMYTestPostAsmAct(void)
 {
 
@@ -1982,6 +2248,45 @@ void EMMYTestPostAsmDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void EMMYTestPostAsmSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void EMMYTestPostAsmSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncEMMY_163_Connectivity_Check_PostAsm(1);
+	//NFC();
+
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 }
@@ -2010,6 +2315,52 @@ void ModemTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void ModemTestPostAsmSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void ModemTestPostAsmSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void GPSTestPostAsmAct(void)
 {
 
@@ -2030,6 +2381,44 @@ void GPSTestPostAsmDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void GPSTestPostAsmSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void GPSTestPostAsmSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	NEO_Test_PostAsm(1);
+
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 }
@@ -2063,6 +2452,44 @@ void AudiotTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void AudioTestPostAsmSubDisp (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void AudiotTestPostAsmSubAct (void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	Audio_Codec_Test_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void CamerasTestPostAsmAct(void)
 {
 
@@ -2086,6 +2513,44 @@ void CamerasTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CamerasTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CamerasTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	Cameras_Test_Full_PostAsm(1);
+
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 }
@@ -2328,7 +2793,7 @@ void MenuInit (void)
 
 	PostAsm.DOWN=&GI;
 	PostAsm.UP=&PreAsm;
-	PostAsm.ENTER=&PostAsm;
+	PostAsm.ENTER=&FullTestPostAsm;
 	PostAsm.ESC=NULL;
 	PostAsm.menudisplay=&PostAsmDisp;
 	PostAsm.menuaction=&PostAsmAct;
@@ -2340,12 +2805,26 @@ void MenuInit (void)
 	FullTestPostAsm.menudisplay=&FullTestPostAsmDisp;
 	FullTestPostAsm.menuaction=&FullTestPostAsmAct;
 
+	FullTestPostAsmSub.DOWN=NULL;
+	FullTestPostAsmSub.UP=NULL;
+	FullTestPostAsmSub.ENTER=&FullTestPostAsmSub;
+	FullTestPostAsmSub.ESC=&FullTestPostAsm;
+	FullTestPostAsmSub.menuaction=&FullTestPostAsmSubAct;
+	FullTestPostAsmSub.menudisplay=&FullTestPostAsmSubDisp;
+
 	EEPROMTestPostAsm.DOWN=&MemTestPostAsm;
 	EEPROMTestPostAsm.UP=&FullTestPostAsm;
 	EEPROMTestPostAsm.ENTER=&EEPROMTestPostAsmSub;
 	EEPROMTestPostAsm.ESC=&PreAsm;
 	EEPROMTestPostAsm.menuaction=&EEPROMTestPostAsmAct;
 	EEPROMTestPostAsm.menudisplay=&EEPROMTestPostAsmDisp;
+
+	EEPROMTestPostAsmSub.DOWN=NULL;
+	EEPROMTestPostAsmSub.UP=NULL;
+	EEPROMTestPostAsmSub.ENTER=&EEPROMTestPostAsmSub;
+	EEPROMTestPostAsmSub.ESC=&FullTestPostAsm;
+	EEPROMTestPostAsmSub.menuaction=&EEPROMTestPostAsmSubAct;
+	EEPROMTestPostAsmSub.menudisplay=&EEPROMTestPostAsmSubDisp;
 
 	MemTestPostAsm.DOWN=&AccelTestPostAsm;
 	MemTestPostAsm.UP=&EEPROMTestPostAsm;
@@ -2354,12 +2833,26 @@ void MenuInit (void)
 	MemTestPostAsm.menuaction=&MemTestPostAsmAct;
 	MemTestPostAsm.menudisplay=&MemTestPostAsmDisp;
 
+	MemTestPostAsmSub.DOWN=NULL;
+	MemTestPostAsmSub.UP=NULL;
+	MemTestPostAsmSub.ENTER=&MemTestPostAsmSub;
+	MemTestPostAsmSub.ESC=&FullTestPostAsm;
+	MemTestPostAsmSub.menuaction=&MemTestPostAsmSubAct;
+	MemTestPostAsmSub.menudisplay=&MemTestPostAsmSubDisp;
+
 	AccelTestPostAsm.DOWN=&PowerManTestPostAsm;
 	AccelTestPostAsm.UP=&MemTestPostAsm;
 	AccelTestPostAsm.ENTER=&AccelTestPostAsmSub;
 	AccelTestPostAsm.ESC=&PreAsm;
 	AccelTestPostAsm.menuaction=&AccelTestPostAsmAct;
 	AccelTestPostAsm.menudisplay=&AccelTestPostAsmDisp;
+
+	AccelTestPostAsmSub.DOWN=NULL;//&AccelTestSub;
+	AccelTestPostAsmSub.UP=NULL;//&AccelTestSub;
+	AccelTestPostAsmSub.ESC=&FullTestPostAsm;
+	AccelTestPostAsmSub.ENTER=&AccelTestPostAsmSub;
+	AccelTestPostAsmSub.menuaction=&AccelTestPostAsmSubAct;
+	AccelTestPostAsmSub.menudisplay=&AccelTestPostAsmSubDisp;
 
 	PowerManTestPostAsm.DOWN=&LightSensorTestPostAsm;
 	PowerManTestPostAsm.UP=&AccelTestPostAsm;
@@ -2368,12 +2861,26 @@ void MenuInit (void)
 	PowerManTestPostAsm.menuaction=&PowerManTestPostAsmAct;
 	PowerManTestPostAsm.menudisplay=&PowerManTestPostAsmDisp;
 
+	PowerManTestPostAsmSub.DOWN=NULL;
+	PowerManTestPostAsmSub.UP=NULL;
+	PowerManTestPostAsmSub.ESC=&FullTestPostAsm;
+	PowerManTestPostAsmSub.ENTER=&PowerManTestPostAsmSub;
+	PowerManTestPostAsmSub.menuaction=&PowerManTestPostAsmSubAct;
+	PowerManTestPostAsmSub.menudisplay=&PowerManTestPostAsmSubDisp;
+
 	LightSensorTestPostAsm.DOWN=&PressSensorTestPostAsm;
 	LightSensorTestPostAsm.UP=&PowerManTestPostAsm;
 	LightSensorTestPostAsm.ENTER=&LightSensorTestPostAsmSub;
 	LightSensorTestPostAsm.ESC=&PreAsm;
 	LightSensorTestPostAsm.menuaction=&LightSensorTestPostAsmAct;
 	LightSensorTestPostAsm.menudisplay=&LightSensorTestPostAsmDisp;
+
+	LightSensorTestPostAsmSub.DOWN=NULL;
+	LightSensorTestPostAsmSub.UP=NULL;
+	LightSensorTestPostAsmSub.ENTER=&LightSensorTestPostAsmSub;
+	LightSensorTestPostAsmSub.ESC=&FullTestPostAsm;
+	LightSensorTestPostAsmSub.menuaction=&LightSensorTestPostAsmSubAct;
+	LightSensorTestPostAsmSub.menudisplay=&LightSensorTestPostAsmSubDisp;
 
 	PressSensorTestPostAsm.DOWN=&EMMYTestPostAsm;
 	PressSensorTestPostAsm.UP=&LightSensorTestPostAsm;
@@ -2382,12 +2889,26 @@ void MenuInit (void)
 	PressSensorTestPostAsm.menuaction=&PressSensorTestPostAsmAct;
 	PressSensorTestPostAsm.menudisplay=&PressSensorTestPostAsmDisp;
 
+	PressSensorTestPostAsmSub.DOWN=NULL;
+	PressSensorTestPostAsmSub.UP=NULL;
+	PressSensorTestPostAsmSub.ENTER=&PressSensorTestPostAsmSub;
+	PressSensorTestPostAsmSub.ESC=&FullTestPostAsm;
+	PressSensorTestPostAsmSub.menuaction=&PressSensorTestPostAsmSubAct;
+	PressSensorTestPostAsmSub.menudisplay=&PressSensorTestPostAsmSubDisp;
+
 	EMMYTestPostAsm.DOWN=&ModemTestPostAsm;
 	EMMYTestPostAsm.UP=&PressSensorTestPostAsm;
 	EMMYTestPostAsm.ENTER=&EMMYTestPostAsmSub;
 	EMMYTestPostAsm.ESC=&PreAsm;
 	EMMYTestPostAsm.menuaction=&EMMYTestPostAsmAct;
 	EMMYTestPostAsm.menudisplay=&EMMYTestPostAsmDisp;
+
+	EMMYTestPostAsmSub.DOWN=NULL;
+	EMMYTestPostAsmSub.UP=NULL;
+	EMMYTestPostAsmSub.ENTER=&EMMYTestPostAsmSub;
+	EMMYTestPostAsmSub.ESC=&FullTestPostAsm;
+	EMMYTestPostAsmSub.menuaction=&EMMYTestPostAsmSubAct;
+	EMMYTestPostAsmSub.menudisplay=&EMMYTestPostAsmSubDisp;
 
 	ModemTestPostAsm.DOWN=&GPSTestPostAsm;
 	ModemTestPostAsm.UP=&EMMYTestPostAsm;
@@ -2396,12 +2917,26 @@ void MenuInit (void)
 	ModemTestPostAsm.menuaction=&ModemTestPostAsmAct;
 	ModemTestPostAsm.menudisplay=&ModemTestPostAsmDisp;
 
+	ModemTestPostAsmSub.DOWN=NULL;
+	ModemTestPostAsmSub.UP=NULL;
+	ModemTestPostAsmSub.ENTER=&ModemTestPostAsmSub;
+	ModemTestPostAsmSub.ESC=&FullTestPostAsm;
+	ModemTestPostAsmSub.menuaction=&ModemTestPostAsmSubAct;
+	ModemTestPostAsmSub.menudisplay=&ModemTestPostAsmSubDisp;
+
 	GPSTestPostAsm.DOWN=&AudiotTestPostAsm;
 	GPSTestPostAsm.UP=&ModemTestPostAsm;
 	GPSTestPostAsm.ENTER=&GPSTestPostAsmSub;
 	GPSTestPostAsm.ESC=&PreAsm;
 	GPSTestPostAsm.menuaction=&GPSTestPostAsmAct;
 	GPSTestPostAsm.menudisplay=&GPSTestPostAsmDisp;
+
+	GPSTestPostAsmSub.DOWN=NULL;
+	GPSTestPostAsmSub.UP=NULL;
+	GPSTestPostAsmSub.ENTER=&GPSTestPostAsmSub;
+	GPSTestPostAsmSub.ESC=&FullTestPostAsm;
+	GPSTestPostAsmSub.menuaction=&GPSTestPostAsmSubAct;
+	GPSTestPostAsmSub.menudisplay=&GPSTestPostAsmSubDisp;
 
 	AudiotTestPostAsm.DOWN=&CamerasTestPostAsm;
 	AudiotTestPostAsm.UP=&GPSTestPostAsm;
@@ -2410,12 +2945,26 @@ void MenuInit (void)
 	AudiotTestPostAsm.menuaction=&AudiotTestPostAsmAct;
 	AudiotTestPostAsm.menudisplay=&AudiotTestPostAsmDisp;
 
+	AudiotTestPostAsmSub.DOWN=NULL;
+	AudiotTestPostAsmSub.UP=NULL;
+	AudiotTestPostAsmSub.ENTER=&AudiotTestPostAsmSub;
+	AudiotTestPostAsmSub.ESC=&FullTestPostAsm;
+	AudiotTestPostAsmSub.menuaction=&AudiotTestPostAsmSubAct;
+	AudiotTestPostAsmSub.menudisplay=&AudioTestPostAsmSubDisp;
+
 	CamerasTestPostAsm.DOWN=&DisplayTestPostAsm;
 	CamerasTestPostAsm.UP=&AudiotTestPostAsm;
 	CamerasTestPostAsm.ENTER=&CamerasTestPostAsmSub;
 	CamerasTestPostAsm.ESC=&PreAsm;
 	CamerasTestPostAsm.menuaction=&CamerasTestPostAsmAct;
 	CamerasTestPostAsm.menudisplay=&CamerasTestPostAsmDisp;
+
+	CamerasTestPostAsmSub.DOWN=NULL;
+	CamerasTestPostAsmSub.UP=NULL;
+	CamerasTestPostAsmSub.ENTER=&CamerasTestPostAsmSub;
+	CamerasTestPostAsmSub.ESC=&FullTestPostAsm;
+	CamerasTestPostAsmSub.menuaction=&CamerasTestPostAsmSubAct;
+	CamerasTestPostAsmSub.menudisplay=&CamerasTestPostAsmSubDisp;
 
 	DisplayTestPostAsm.DOWN=&CapTouchTestPostAsm;
 	DisplayTestPostAsm.UP=&CamerasTestPostAsm;
