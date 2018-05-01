@@ -37,6 +37,69 @@ static int eeprom_integrity_check(void);
 int get_line(char* str, int size);
 //-----------------------------------------------------------------------
 
+int EEPROM_SN_Read(void)
+{
+	unsigned char sn_valid = 0;
+	unsigned char str_valid = 0;
+	unsigned char i;
+	unsigned char attempts = 0;
+	unsigned char prompt_attempts;
+	char prompt;
+
+	char buf[200];
+	int cnt_byte=0;
+
+
+	if (eeprom_integrity_check() !=0 )
+		return -1;
+
+
+			printf("\n**Device Serial Number Burn-In**\n");
+	to_USB_console("\n**Device Serial Number Burn-In**\n");
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Device Serial Number Burn-In**\n");
+	write(fd_fb, buf, cnt_byte);
+
+
+			printf("@Device Serial Number: ");
+	to_USB_console("@Device Serial Number: ");
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Device Serial Number: ");
+	write(fd_fb, buf, cnt_byte);
+
+	if( read_SN_from_eeprom(sernum) == 0 )
+	{
+		for(i=0; i<SERIAL_NUMBER_SIZE; i++)
+		{
+					printf("%02x", sernum[i]);
+			to_USB_console("%02x", sernum[i]);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "%02x", sernum[i]);
+			write(fd_fb, buf, cnt_byte);
+		}
+				printf("\n");
+		to_USB_console("#\n");
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "#\n");
+		write(fd_fb, buf, cnt_byte);
+	}
+	else
+	{
+				printf("Not Set#\n");
+		to_USB_console("Not Set#\n");
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CNot Set#\n");
+		write(fd_fb, buf, cnt_byte);
+
+		return -1;
+	}
+}
+
 int EEPROM_SN(void)
 {
 	unsigned char sn_valid = 0;

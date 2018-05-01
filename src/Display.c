@@ -100,6 +100,7 @@ Menu CapTouchTestPostAsmSub;
 Menu* active_menu;
 
 extern int EEPROM_SN(void);
+extern int EEPROM_SN_Read(void);
 extern pthread_mutex_t mutex;
 extern int preasm_flag;
 
@@ -989,7 +990,8 @@ void EEPROMTestSubAct (void)
 
 	USB_printf("\n", 500);
 
-	EEPROM_SN();
+	//EEPROM_SN();
+	EEPROM_SN_Read();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -2582,6 +2584,44 @@ void DisplayTestPostAsmDisp(void)
 	write(fd_fb, buf, cnt_byte);
 }
 
+void DisplayTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	DisplayTest_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void DisplayTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
 void CapTouchTestPostAsmAct(void)
 {
 
@@ -2607,6 +2647,43 @@ void CapTouchTestPostAsmDisp(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29C>\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CapTouchTestPostAsmSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CapTouchTestPostAsmSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 }
@@ -2973,12 +3050,27 @@ void MenuInit (void)
 	DisplayTestPostAsm.menuaction=&DisplayTestPostAsmAct;
 	DisplayTestPostAsm.menudisplay=&DisplayTestPostAsmDisp;
 
+	DisplayTestPostAsmSub.DOWN=NULL;
+	DisplayTestPostAsmSub.UP=NULL;
+	DisplayTestPostAsmSub.ENTER=&DisplayTestPostAsmSub;
+	DisplayTestPostAsmSub.ESC=&FullTestPostAsm;
+	DisplayTestPostAsmSub.menuaction=&DisplayTestPostAsmSubAct;
+	DisplayTestPostAsmSub.menudisplay=&DisplayTestPostAsmSubDisp;
+
+
 	CapTouchTestPostAsm.DOWN=&FullTestPostAsm;
 	CapTouchTestPostAsm.UP=&DisplayTestPostAsm;
 	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsmSub;
 	CapTouchTestPostAsm.ESC=&PreAsm;
 	CapTouchTestPostAsm.menuaction=&CapTouchTestPostAsmAct;
 	CapTouchTestPostAsm.menudisplay=&CapTouchTestPostAsmDisp;
+
+	CapTouchTestPostAsmSub.DOWN=NULL;
+	CapTouchTestPostAsmSub.UP=NULL;
+	CapTouchTestPostAsmSub.ENTER=&CapTouchTestPostAsmSub;
+	CapTouchTestPostAsmSub.ESC=&FullTestPostAsm;
+	CapTouchTestPostAsmSub.menuaction=&CapTouchTestPostAsmSubAct;
+	CapTouchTestPostAsmSub.menudisplay=&CapTouchTestPostAsmSubDisp;
 
 	GI.DOWN=&ShipMode;
 	GI.UP=&PostAsm;

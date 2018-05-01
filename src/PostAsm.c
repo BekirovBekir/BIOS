@@ -51,7 +51,6 @@ extern int fd_fb;
 #define USB_PATH "/dev/ttyGS0"
 extern int get_line(char* str, int size);
 
-
 extern int CX;
 extern int CY;
 extern int CZ;
@@ -746,8 +745,6 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 	int CalibX=0,CalibY=0,CalibZ=0; //i=0;
 
 	int FounFileFlag = 0;
-	int Attempt = 0;
-	int PositionOkFlag = 0;
 
 
 	memset(AccelBuffer, 0, sizeof(AccelBuffer));
@@ -892,11 +889,6 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 
 //*********************************************************************************************************
 
-	for (Attempt = 0; Attempt < 3; Attempt++) {
-		ValueX = 0;
-		ValueY = 0;
-		ValueZ = 0;
-
 		for(int i=0; i<FiltrTime; i++){
 			//X
 			memset(dataBuffer, 0, sizeof( dataBuffer ));
@@ -934,118 +926,45 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CReading Accelerometer Values: x = %d, y = %d, z = %d\n", ValueX,ValueY,ValueZ);
 		write(fd_fb, buf, cnt_byte);
 
-		if ((ValueX<40) && (ValueX>-40) &&\
-			(ValueY<40) && (ValueY>-40) &&\
-			(ValueZ>1000) && (ValueZ<1048)) {
-
-			CalibX=-ValueX/2;
-			CalibY=-ValueY/2;
-			CalibZ=(1024-ValueZ)/2;
-
-			PositionOkFlag = 1;
-			break;
-
-		} else if (Attempt < 2){
-			printf("Board is out of position. Waiting for user to hit enter\n");
-			USB_printf("@Board is out of position. Press Enter to Retry#\n", 1000);
-
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Board is out of position. Press Enter to Retry#\n\n");
-			write(fd_fb, buf, cnt_byte);
-
-			//while ((char)USB_getc(1000) != '\n');
-			USB_getc(10000);
-		}
-
-	}
 //**********************************************************************************************
-	if (!PositionOkFlag) {
-		printf("Test 3: Fail, Bad Device Position or Vibration\n");
-		USB_printf("^Test 3: Fail, Bad Device Position or Vibration\n", 1000);
-
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Bad Device Position or Vibration\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
-	}
-
-
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "%i",CalibX);
-	fdC = open(CalibX_Read[indexFile], O_WRONLY);
-	if(fdC == -1)
+	int state_calib=0;
+	memset(dataBuffer, 0, 100);
+	if (Read_EEPROM(dataBuffer, 19, 14)==0)
 	{
-		printf("^Test 3: Fail, Unable to open device file for writing calibration value!\n");
-		USB_printf("^Test 3: Fail, Unable to open device file for writing calibration value!\n", 1000);
+		USB_printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n", 1000);
+		printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Unable to open device file for writing calibration value!\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
-	}
-	write(fdC, dataBuffer, sizeof(dataBuffer));
-	close(fdC);
-
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "%i",CalibY);
-	fdC = open(CalibY_Read[indexFile], O_WRONLY);
-	if(fdC == -1)
-	{
-
-		printf("^Test 3: Fail, Unable to open device file for writing calibration value!\n");
-		USB_printf("^Test 3: Fail, Unable to open device file for writing calibration value!\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Unable to open device file for writing calibration value!\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
-	}
-	write(fdC, dataBuffer, sizeof(dataBuffer));
-	close(fdC);
-
-	memset(dataBuffer, 0, sizeof( dataBuffer ));
-	sprintf(dataBuffer, "%i",CalibZ);
-	fdC = open(CalibZ_Read[indexFile], O_WRONLY);
-	if(fdC == -1)
-	{
-
-		printf("^Test 3: Fail, Unable to open device file for writing calibration value!\n");
-		USB_printf("^Test 3: Fail, Unable to open device file for writing calibration value!\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Unable to open device file for writing calibration value!\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
-	}
-	write(fdC, dataBuffer, sizeof(dataBuffer));
-	close(fdC);
-
-	//Store Calibrate in file
-	memset(buf, 0, 200);
-	snprintf(buf, sizeof(buf), "Calibration Trim Values: calX = %d, calY = %d, calZ = %d\nSaving Offset to EEPROM Memory...\n", CalibX,CalibY,CalibZ);
-	USB_printf(buf, 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CCalibration Trim Values: calX = %d, calY = %d, calZ = %d\n\x1b[2CSaving Offset to EEPROM Memory...\n", CalibX,CalibY,CalibZ);
-	write(fd_fb, buf, cnt_byte);
-
-
-	sprintf(dataBuffer, "%i %i %i ",CalibX,CalibY,CalibZ);
-	if (Write_EEPROM(dataBuffer, 19)==0)
-	{
-		USB_printf("^Test 3: Fail, Error while writing calibration values to EEPROM!\n", 1000);
-		printf("^Test 3: Fail, Error while writing calibration values to EEPROM!\n");
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Error while writing calibration values to EEPROM!\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
 	}
 	else
-	{
+	{	if (dataBuffer[0]=='0') CalibX=0;
+		else
+		{
+		CalibX=atoi(dataBuffer);
+			if (CalibX==0) state_calib=-1;
+		}
+		char* buf_cal=strchr(dataBuffer, ' ');
+			if (buf_cal==NULL) state_calib=-1;
+			else CalibY=atoi(buf_cal+1);
+		buf_cal=strchr(buf_cal+1, ' ');
+			if (buf_cal==NULL) state_calib=-1;
+			else CalibZ=atoi(buf_cal+1);
+
+		if (state_calib==-1)
+		{
+			USB_printf("^Test 3: Fail, Calibration Trim Values are Not Saved\n", 1000);
+			printf("Fail, Calibration Trim Values are Not Saved\n");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Calibration Trim Values are Not Saved\n");
+			write(fd_fb, buf, cnt_byte);
+		}
+		else
+		{
 		memset(buf, 0, 200);
 		snprintf(buf, sizeof(buf), "Confirming Saved Trim Value: calX = %d, calY = %d, calZ = %d\n", CalibX,CalibY,CalibZ);
 		USB_printf(buf, 1000);
@@ -1060,6 +979,7 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 		write(fd_fb, buf, cnt_byte);
 
 		printf("&Test 3: OK\n");
+		}
 	}
 	return 0;
 }
@@ -2609,5 +2529,59 @@ error:
 	ClosePort(port_id);
 	return ret;
 
+}
+
+void DisplayTest_PostAsm(int Do)
+{
+	char buf[200];
+	int cnt_byte=0;
+	char ch[10]={0};
+
+	int state=-1;
+
+	USB_printf("**Display testing**\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Display testing**\n");
+	write(fd_fb, buf, cnt_byte);
+
+	Fill_Buffer(100, 100, 100);
+	sleep(1);
+	Fill_Buffer(50, 50, 50);
+	sleep(2);
+	Fill_Buffer(10, 10, 10);
+	sleep(2);
+
+	USB_printf("@Confirm RGB color (Y/N):#", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm RGB color (Y/N):#\n");
+	write(fd_fb, buf, cnt_byte);
+
+	get_line(ch, 1);
+		if (ch[0]=='Y' || ch[0]=='y')
+		{
+			state=0;
+		}
+		else
+		{
+			state=-1;
+		}
+		if (state==0)
+		{
+			USB_printf("&Test 12: OK\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 12: OK\n");
+			write(fd_fb, buf, cnt_byte);
+		}
+		else
+		{
+			USB_printf("^Test 12: Fail, Colors not displayed\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 12: Fail, Colors not displayed\n");
+			write(fd_fb, buf, cnt_byte);
+		}
 }
 
