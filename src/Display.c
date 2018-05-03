@@ -235,6 +235,112 @@ void TestRun(char* test_num)
 	preasm_flag=1;
 }
 
+void TestRun_PostAsm(char* test_num)
+{
+	preasm_flag=0;
+	//printf("Test run!\n");
+
+		if (strncmp(test_num, "0\n", 2)==0)
+		{
+		active_menu=&FullTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "1\n", 2)==0)
+		{
+		active_menu=&EEPROMTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "2\n", 2)==0)
+		{
+		active_menu=&MemTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "3\n", 2)==0)
+		{
+		active_menu=&AccelTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "4\n", 2)==0)
+		{
+		active_menu=&PowerManTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "5\n", 2)==0)
+		{
+		active_menu=&LightSensorTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "6\n", 2)==0)
+		{
+		active_menu=&PressSensorTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "7\n", 2)==0)
+		{
+		active_menu=&EMMYTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "8\n", 2)==0)
+		{
+		active_menu=&ModemTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "9\n", 2)==0)
+		{
+		active_menu=&GPSTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "10\n", 2)==0)
+		{
+		active_menu=&AudiotTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "11\n", 2)==0)
+		{
+		active_menu=&CamerasTestSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "12\n", 2)==0)
+		{
+		active_menu=&DisplayTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "13\n", 2)==0)
+		{
+		active_menu=&CapTouchTestPostAsmSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+	preasm_flag=1;
+}
+
 
 int DisplayOut(char* buf)
 {
@@ -1693,7 +1799,7 @@ void FullTestPostAsmDisp(void)
 	char buf[200];
 	char cnt_byte;
 
-
+		/*
 		USB_printf("\n========================== Post-Assembly Test =========================\n", 50);
 		USB_printf("	0. Run All Tests\n", 50);
 		USB_printf("	1. EEPROM Memory Integrity Check / Serial Number Burn-in\n", 50);
@@ -1711,7 +1817,7 @@ void FullTestPostAsmDisp(void)
 		USB_printf("	13. Cap touch detection test\n", 50);
 		USB_printf("======================================================================\n", 50);
 		USB_printf("Please enter number of the test (0-13) end press ENTER:\n", 50);
-
+		*/
 
 		//thread_flag=0;
 		memset(buf, 0, 200);
@@ -1818,7 +1924,23 @@ void FullTestPostAsmDisp(void)
 
 void FullTestPostAsmAct(void)
 {
-
+	USB_printf("\n========================== Post-Assembly Test =========================\n", 50);
+	USB_printf("	0. Run All Tests\n", 50);
+	USB_printf("	1. EEPROM Memory Integrity Check / Serial Number Burn-in\n", 50);
+	USB_printf("	2. Storage Memory Integrity Check\n", 50);
+	USB_printf("	3. Accelerometer Test/Calibration\n", 50);
+	USB_printf("	4. Power Management Test\n", 50);
+	USB_printf("	5. Light Sensor Test\n", 50);
+	USB_printf("	6. Pressure Sensor Test\n", 50);
+	USB_printf("	7. On-Board Wireless Module (EMMY) Test\n", 50);
+	USB_printf("	8. Modem Port Communication Tests\n", 50);
+	USB_printf("	9. External GPS Test\n", 50);
+	USB_printf("	10. Audio System Test\n", 50);
+	USB_printf("	11. CAM'S test\n", 50);
+	USB_printf("	12. Display test\n", 50);
+	USB_printf("	13. Cap touch detection test\n", 50);
+	USB_printf("======================================================================\n", 50);
+	USB_printf("Please enter number of the test (0-13) end press ENTER:\n", 50);
 }
 
 void FullTestPostAsmSubAct(void)
@@ -2876,7 +2998,7 @@ void MenuInit (void)
 	PostAsm.menuaction=&PostAsmAct;
 
 	FullTestPostAsm.DOWN=&EEPROMTestPostAsm;
-	FullTestPostAsm.UP=&CapTouchTestPostAsmSub;
+	FullTestPostAsm.UP=&CapTouchTestPostAsm;
 	FullTestPostAsm.ENTER=&FullTestPostAsmSub;
 	FullTestPostAsm.ESC=&PreAsm;
 	FullTestPostAsm.menudisplay=&FullTestPostAsmDisp;

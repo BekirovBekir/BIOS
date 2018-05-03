@@ -45,7 +45,6 @@
 #define USB_MODEM_DESING "8A"
 #define UART_MODEM_DESING "8B"
 
-extern FILE *stdin;
 extern int fd_fb;
 
 #define USB_PATH "/dev/ttyGS0"
@@ -2545,12 +2544,18 @@ void DisplayTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Display testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
-	Fill_Buffer(100, 100, 100);
-	sleep(1);
-	Fill_Buffer(50, 50, 50);
+	Fill_Buffer(255, 0, 32);
 	sleep(2);
-	Fill_Buffer(10, 10, 10);
+	Fill_Buffer(0, 220, 0);
 	sleep(2);
+	Fill_Buffer(0, 55, 252);
+	sleep(2);
+
+	USB_printf("**Display testing**\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[1;0H**Display testing**\n");
+	write(fd_fb, buf, cnt_byte);
 
 	USB_printf("@Confirm RGB color (Y/N):#", 1000);
 
@@ -2583,5 +2588,10 @@ void DisplayTest_PostAsm(int Do)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 12: Fail, Colors not displayed\n");
 			write(fd_fb, buf, cnt_byte);
 		}
+}
+
+void CapTouchTest_PostAsm(int Do)
+{
+
 }
 
