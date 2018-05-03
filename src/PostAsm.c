@@ -50,6 +50,22 @@ extern int fd_fb;
 #define USB_PATH "/dev/ttyGS0"
 extern int get_line(char* str, int size);
 
+#define POLL_MAX 20
+#define POLL_TIMEOUT_MAX 30
+
+typedef struct {
+	long CSQsum;
+	int pollcnt;
+	int timeout;
+	int currSnglLvl;
+	int minSnglLvl;
+	int maxSnglLvl;
+} tCSQtest;
+
+int getRSSIfromCSQ(char* inString);
+
+int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart);
+
 extern int CX;
 extern int CY;
 extern int CZ;
@@ -1492,6 +1508,8 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do)
 	int LaraErr=0;
 	memset(LaraBuffer, 0, sizeof(LaraBuffer));
 
+	static int firststart = 1;
+
 	if(!Do) return -1;
 
 	char buf[200];
@@ -1629,7 +1647,9 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do)
 
 	usleep(500000);
 
-	LaraErr = Init_LARA_SARA("/dev/ttymxc1", 115200);
+	LaraErr = Init_LARA_SARA_PostAsm("/dev/ttymxc1", 115200, firststart);
+
+	firststart = 0;
 
 	switch (LaraErr) {
 		case 0:
@@ -1654,6 +1674,17 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do)
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8B: Fail, SIM Card Not Readable\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
+		case -4:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8B: Fail, Signal level doesn't meet requirements\n");
+			USB_printf(buf, 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8B: Fail, Signal level doesn't meet requirements\n");
 			write(fd_fb, buf, cnt_byte);
 			break;
 		}
@@ -1749,6 +1780,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 	int SaraErr=0;
 	memset(SaraBuffer, 0, sizeof(SaraBuffer));
 
+	static int firststart = 1;
 
 	if(!Do) return -1;
 
@@ -1836,7 +1868,9 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 	//TODO: проверить появился ли порт ttyACM0
 	usleep(12000000);
 
-	SaraErr = Init_LARA_SARA("/dev/ttyACM0", 115200);
+	SaraErr = Init_LARA_SARA_PostAsm("/dev/ttyACM0", 115200, firststart);
+
+	firststart = 0;
 
 	switch (SaraErr) {
 		case 0:
@@ -1861,6 +1895,17 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8A: Fail, SIM Card Not Readable\n");
+			write(fd_fb, buf, cnt_byte);
+			break;
+		}
+		case -4:
+		{
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "^Test 8A: Fail, Signal level doesn't meet requirements\n");
+			USB_printf(buf, 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 8A: Fail, Signal level doesn't meet requirements\n");
 			write(fd_fb, buf, cnt_byte);
 			break;
 		}
@@ -2348,65 +2393,69 @@ write(fd_fb, buf, cnt_byte);
 return -1;
 }
 
-int Init_LARA_SARA_PostAsm(char* port_name, int port_speed) {
+int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 
 	int ret;
 	int port_id;
-	int size;
-	char answr_buf[1000] = {0};
-	char out_buf[1000] = {0};
-	char curr_modem[10] = {0};
+	char answr_buf[1000] = { 0 };
+	char out_buf[1000] = { 0 };
+	char curr_modem[10] = { 0 };
 
-	char buf[200]={0};
+	char buf[200] = { 0 };
 	int cnt_byte;
 
-	port_id=OpenPort(port_name);
+	int isfirstStart = firststart;
+
+	tCSQtest signalTest = { 0 };
+	signalTest.minSnglLvl = 99;
+
+	port_id = OpenPort(port_name);
 	SetPort(port_id, port_speed);
 	usleep(1000000);
 	ClosePort(port_id);
 	usleep(500000);
 
 	///----***----***---***---***---***---***---***---***--
-	port_id=OpenPort(port_name);
-	printf( "Port ID: %i\n", port_id);
+	port_id = OpenPort(port_name);
+	printf("Port ID: %i\n", port_id);
 	SetPort(port_id, port_speed);
 
-	if (!strcmp(port_name,"/dev/ttymxc1")) {
+	if (!strcmp(port_name, "/dev/ttymxc1")) {
 		sprintf(curr_modem, UART_MODEM_DESING);
-	} else if (!strcmp(port_name,"/dev/ttyACM0")) {
+	} else if (!strcmp(port_name, "/dev/ttyACM0")) {
 		sprintf(curr_modem, USB_MODEM_DESING);
 	}
 
 	sleep(5);
 
 	ret = sendWOPreParse(port_id, "ATE0\r", answr_buf, curr_modem);
-	if (ret) goto error;
+	if (ret)
+		goto error;
 
 	usleep(250000);
 
-	for(int i = 0; i < 3; i++){
+	for (int i = 0; i < 3; i++) {
 
 		ret = sendWOPreParse(port_id, "AT\r", answr_buf, curr_modem);
-		if (!ret) break;
+		if (!ret)
+			break;
 
 		usleep(250000);
 
 	}
-	if (ret) goto error;
-
-	//if (pFile!=NULL) fprintf(pFile, "Modem is Responsive\n");
+	if (ret)
+		goto error;
 
 	USB_printf("Modem is Responsive\n", 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CModem is Responsive\n");
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2CModem is Responsive\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "AT+CGMI\r", answr_buf, curr_modem);
-	if (ret) goto error;
+	if (ret)
+		goto error;
 
-	size = answr_buf-strstr(answr_buf, "\n\n");
 	sprintf(out_buf, "@Module Make/Model = ");
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 
@@ -2414,36 +2463,36 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed) {
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "AT+CGMM\r", answr_buf, curr_modem);
-	if (ret) goto error;
+	if (ret)
+		goto error;
 
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 	strcat(out_buf, "#\n");
 
 	USB_printf(out_buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "AT+CGSN\r", answr_buf, curr_modem);
-	if (ret) goto error;
+	if (ret)
+		goto error;
 
-	memset(out_buf, 0, sizeof(out_buf));
 	sprintf(out_buf, "@IMEI = ");
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 	strcat(out_buf, "#\n");
 
 	USB_printf(out_buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
-	for(int i = 0; i < 3; i++){
+	for (int i = 0; i < 3; i++) {
 
 		ret = sendAndPreParse(port_id, "AT+CPIN?\r", answr_buf, curr_modem);
-		if (!ret) break;
+		if (!ret)
+			break;
 
 		sleep(2);
 
@@ -2460,15 +2509,14 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed) {
 		goto error;
 	}
 
-	memset(out_buf, 0, sizeof(out_buf));
 	sprintf(out_buf, "@ICCID = ");
-	strncat(out_buf, answr_buf+strlen("+CCID: "), strcspn(answr_buf+strlen("+CCID: "), "\n\n"));
+	strncat(out_buf, answr_buf + strlen("+CCID: "),
+			strcspn(answr_buf + strlen("+CCID: "), "\n\n"));
 	strcat(out_buf, "#\n");
 
 	USB_printf(out_buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
 	memset(answr_buf, 0, sizeof(answr_buf));
@@ -2478,48 +2526,113 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed) {
 		goto error;
 	}
 
-	memset(out_buf, 0, sizeof(out_buf));
 	sprintf(out_buf, "@IMSI = ");
 	strncat(out_buf, answr_buf, strcspn(answr_buf, "\n\n"));
 	strcat(out_buf, "#\n");
 
 	USB_printf(out_buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "ATI9\r", answr_buf, curr_modem);
-	if (ret) goto error;
+	if (ret)
+		goto error;
 
-	memset(out_buf, 0, sizeof(out_buf));
 	sprintf(out_buf, "@FW Version = ");
 	strncat(out_buf, answr_buf, strstr(answr_buf, "\n\n") - answr_buf);
 	strcat(out_buf, "#\n");
 
-	//if (pFile!=NULL) fputs (out_buf, pFile);
-
 	USB_printf(out_buf, 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
+
+	do {
+		ret = sendAndPreParse(port_id, "AT+CSQ\r", answr_buf, curr_modem);
+		if (ret)
+			goto error;
+
+		signalTest.currSnglLvl = getRSSIfromCSQ(answr_buf);
+
+		if (isfirstStart &&
+				(signalTest.currSnglLvl <= 10 || signalTest.currSnglLvl == 99)) {
+			signalTest.timeout++;
+
+			if (signalTest.currSnglLvl == 99) {
+				signalTest.currSnglLvl = 0;
+			}
+
+			sprintf(out_buf, "@POLLED SIGNAL STRENGTH %d: %d#\n", signalTest.pollcnt, signalTest.currSnglLvl);
+			USB_printf(out_buf, 1000);
+			cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+			write(fd_fb, buf, cnt_byte);
+
+			USB_printf(out_buf, 1000);
+			if (signalTest.timeout >= POLL_TIMEOUT_MAX) {
+				ret = -4;
+				goto error;
+			}
+			sleep(1);
+			continue;
+		}
+
+		isfirstStart = 0;
+
+		if (signalTest.currSnglLvl == 99) {
+			signalTest.currSnglLvl = 0;
+		}
+
+		if (signalTest.currSnglLvl > signalTest.maxSnglLvl) {
+			signalTest.maxSnglLvl = signalTest.currSnglLvl;
+		} else if (signalTest.currSnglLvl < signalTest.minSnglLvl) {
+			signalTest.minSnglLvl = signalTest.currSnglLvl;
+		}
+
+		signalTest.CSQsum += signalTest.currSnglLvl;
+
+		sprintf(out_buf, "@POLLED SIGNAL STRENGTH %d: %d#\n", signalTest.pollcnt, signalTest.currSnglLvl);
+		USB_printf(out_buf, 1000);
+		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+		write(fd_fb, buf, cnt_byte);
+		signalTest.pollcnt++;
+
+		sleep(1);
+
+	} while (signalTest.pollcnt < POLL_MAX);
+
+	sprintf(out_buf, "@AVERAGE SIGNAL STRENGTH: %d#\n", signalTest.CSQsum / signalTest.pollcnt);
+	USB_printf(out_buf, 1000);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	sprintf(out_buf, "@DEVIATION RANGE: %d#\n", abs(signalTest.minSnglLvl - signalTest.maxSnglLvl));
+	USB_printf(out_buf, 1000);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	if ((signalTest.CSQsum / signalTest.pollcnt ) < 10) {
+		ret = -4;
+	} else if (abs(signalTest.minSnglLvl - signalTest.maxSnglLvl) > 3) {
+		ret = -4;
+	} else {
+		ret = 0;
+	}
+	if (ret)
+		goto error;
+
 
 
 	if (!strcmp(curr_modem, UART_MODEM_DESING)) {
 		ret = sendAndPreParse(port_id, "AT+CPWROFF\r", answr_buf, curr_modem);
-		if (ret) goto error;
+		if (ret)
+			goto error;
 	}
 
-	//if (pFile!=NULL) fprintf(pFile, "&Test %s: OK\n", curr_modem);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "&Test %s: OK\n", curr_modem);
+	cnt_byte = snprintf(buf, sizeof(buf), "&Test %s: OK\n", curr_modem);
 	USB_printf(buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: OK\n", curr_modem);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: OK\n", curr_modem);
 	write(fd_fb, buf, cnt_byte);
 
 	ret = 0;
@@ -2528,6 +2641,12 @@ error:
 	ClosePort(port_id);
 	return ret;
 
+}
+
+int getRSSIfromCSQ(char* inString){
+	char outstring[sizeof(inString)] = { 0 };
+	snprintf(outstring, strcspn(inString + strlen("+CSQ: "), ",")+1, "%s", strstr(inString, "+CSQ: ")+strlen("+CSQ: "));
+	return atoi(outstring);
 }
 
 void DisplayTest_PostAsm(int Do)

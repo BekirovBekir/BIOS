@@ -20,7 +20,6 @@ int FuncAmbient_Light_Sensor_Functionality_PostAsm(int Do);
 int FuncEMMY_163_Connectivity_Check_PostAsm(int Do);
 int FuncConfirm_PMIC_Communication_PostAsm(int Do);
 
-int Init_LARA_SARA_PostAsm(char* port_name, int port_speed);
 int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do);
 int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do);
 int Cameras_Test_PostAsm(int Do, CAMPARAM* camptr1, CAMPARAM* camptr2);
