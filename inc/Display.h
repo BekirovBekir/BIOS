@@ -44,6 +44,7 @@ void MenuInit (void);
 int DisplayOut(char* buf);
 
 void TestRun(char* test_num);
+void TestRun_PostAsm(char* test_num);
 
 void* preasm_thread_func(void* thread_data);
 

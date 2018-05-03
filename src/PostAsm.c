@@ -2669,6 +2669,7 @@ void DisplayTest_PostAsm(int Do)
 	sleep(2);
 	Fill_Buffer(0, 55, 252);
 	sleep(2);
+	Fill_Buffer(0, 0, 0);
 
 	USB_printf("**Display testing**\n", 1000);
 
