@@ -43,6 +43,7 @@ int timer_tick=0;
 int fd_fb;
 
 extern int preasm_flag;
+int test_run_flag=0;
 
 void* fsm_ts_thread_func(void* thread_data)
 {
@@ -80,7 +81,8 @@ void* test_sel_thread_func(void* thread_data)
 			{
 
 				//printf("str = %s %i \n", str, str[0]);
-				TestRun(str);
+				if (test_run_flag==1) TestRun(str);
+				if (test_run_flag==2) TestRun_PostAsm(str);
 			}
 			else
 			{

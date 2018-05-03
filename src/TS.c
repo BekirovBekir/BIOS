@@ -38,10 +38,12 @@
 
 extern Menu* active_menu;
 extern Menu FullTest;
+extern Menu FullTestPostAsm;
 extern int timer_tick;
 extern pthread_mutex_t mutex;
 
 int preasm_flag=0;
+extern int test_run_flag;
 
 unsigned char pre_asm_active=0;
 unsigned char flag_for_pre_asm=0;
@@ -127,6 +129,9 @@ void FSM_TS (ilitek_key_info* key)
 							{
 								active_menu=active_menu->ENTER;
 
+									if (active_menu==&FullTest) test_run_flag=1;
+									if (active_menu==&FullTestPostAsm) test_run_flag=2;
+
 								pthread_mutex_lock(&mutex);
 								preasm_flag=((active_menu==&FullTest) ? 1 : 0);
 								//printf("PreAsm flag = %i\n", preasm_flag);
@@ -143,8 +148,13 @@ void FSM_TS (ilitek_key_info* key)
 								if (active_menu->ESC!=NULL)
 								{
 									active_menu=active_menu->ESC;
+
+									if (active_menu==&FullTest) test_run_flag=1;
+									if (active_menu==&FullTestPostAsm) test_run_flag=2;
+
 									//if (active_menu!=NULL) active_menu->menudisplay();
 									active_menu->menudisplay();
+									active_menu->menuaction(); //
 
 									pthread_mutex_lock(&mutex);
 									preasm_flag=((active_menu==&FullTest) ? 1 : 0);
