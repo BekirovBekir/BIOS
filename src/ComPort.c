@@ -125,7 +125,7 @@ int SetPort(int fd, int speed)
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= CS8;
 
-	options.c_cflag &= ~CRTSCTS;
+	//options.c_cflag &= ~CRTSCTS;
 
 	options.c_cflag |= (CLOCAL | CREAD);
 
