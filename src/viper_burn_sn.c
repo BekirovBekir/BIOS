@@ -116,11 +116,11 @@ int EEPROM_SN_Read(void)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Format is Incorrect or no value entered#\n");
 		write(fd_fb, buf, cnt_byte);
 
-		printf("\n^Test 1B: FAIL, User Failed to Proper Enter Value\n");
-		to_USB_console("\n^Test 1B: FAIL, User Failed to Proper Enter Value\n");
+		printf("\n^Test 1B: FAIL, Format is Incorrect or no value entered\n");
+		to_USB_console("\n^Test 1B: FAIL, Format is Incorrect or no value entered\n");
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 1B: FAIL, User Failed to Proper Enter Value\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 1B: FAIL, Format is Incorrect or no value entered\n");
 		write(fd_fb, buf, cnt_byte);
 
 		return -1;
