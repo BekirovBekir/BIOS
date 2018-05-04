@@ -2006,6 +2006,9 @@ int Cameras_Test_Full_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cameras Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
+
+
+
 		if (Cameras_Test(Do, &cam1, &cam2)==0)
 		{
 			memset(buf, 0, 200);
@@ -2017,6 +2020,42 @@ int Cameras_Test_Full_PostAsm(int Do)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
+
+			sleep(2);
+			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink &");
+			sleep(14);
+			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+
+			sleep(2);
+
+			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink &");
+			sleep(12);
+			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink");
+
+			sleep(1);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
+																																		cam2.description, cam2.widht, cam2.height);
+			write(fd_fb, buf, cnt_byte);
+
+			sleep(2);
+
 			return 0;
 		}
 		else
@@ -2030,9 +2069,11 @@ int Cameras_Test_Full_PostAsm(int Do)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C^Test 11: Fail\n", cam1.description, cam1.widht, cam1.height,
 																																			cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
-			return 0;
+
+			return 1;
 		}
-return 0;
+
+	//return 0;
 }
 
 int Audio_Codec_Test_PostAsm(int Do)
