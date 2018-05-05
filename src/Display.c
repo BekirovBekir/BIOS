@@ -2676,6 +2676,7 @@ void CamerasTestPostAsmSubAct(void)
 {
 	char buf[200];
 	char cnt_byte;
+	int res=1;
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
@@ -2683,11 +2684,19 @@ void CamerasTestPostAsmSubAct(void)
 
 	USB_printf("\n", 500);
 
-	Cameras_Test_Full_PostAsm(1);
+	res = Cameras_Test_Full_PostAsm(1);
+
+	if(res == 0){
+		active_menu=&FullTestPostAsm;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+	}
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+
+
 }
 
 void DisplayTestPostAsmAct(void)

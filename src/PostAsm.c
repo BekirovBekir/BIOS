@@ -2009,6 +2009,9 @@ int Cameras_Test_Full_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cameras Test**\n");
 	write(fd_fb, buf, cnt_byte);
 
+
+
+
 		if (Cameras_Test(Do, &cam1, &cam2)==0)
 		{
 			memset(buf, 0, 200);
@@ -2020,6 +2023,42 @@ int Cameras_Test_Full_PostAsm(int Do)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
+
+			sleep(2);
+			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink &");
+			sleep(14);
+			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+
+			sleep(2);
+
+			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink &");
+			sleep(12);
+			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink");
+
+			sleep(1);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
+																																		cam2.description, cam2.widht, cam2.height);
+			write(fd_fb, buf, cnt_byte);
+
+			sleep(2);
+
 			return 0;
 		}
 		else
@@ -2033,9 +2072,11 @@ int Cameras_Test_Full_PostAsm(int Do)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C^Test 11: Fail\n", cam1.description, cam1.widht, cam1.height,
 																																			cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
-			return 0;
+
+			return 1;
 		}
-return 0;
+
+	//return 0;
 }
 
 int Audio_Codec_Test_PostAsm(int Do)
@@ -2685,11 +2726,11 @@ void DisplayTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Display testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
-	Fill_Buffer(255, 0, 32);
+	Fill_Buffer(255, 0, 0);
 	sleep(2);
-	Fill_Buffer(0, 220, 0);
+	Fill_Buffer(0, 255, 0);
 	sleep(2);
-	Fill_Buffer(0, 55, 252);
+	Fill_Buffer(0, 0, 255);
 	sleep(2);
 	Fill_Buffer(0, 0, 0);
 
@@ -2724,16 +2765,97 @@ void DisplayTest_PostAsm(int Do)
 		}
 		else
 		{
-			USB_printf("^Test 12: Fail, Colors not displayed\n", 1000);
+			USB_printf("^Test 12: Fail, Colors are not displayed\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 12: Fail, Colors not displayed\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 12: Fail, Colors are not displayed\n");
 			write(fd_fb, buf, cnt_byte);
 		}
 }
 
 void CapTouchTest_PostAsm(int Do)
 {
+
+	char buf[200];
+	int cnt_byte=0;
+	char ch[10]={0};
+
+	unsigned char ts_buf[32]={0};
+	int state=-1;
+
+	int x=0;
+	int y=0;
+
+	USB_printf("**Cap Touch Detection Testing**\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cap Touch Detection Testing**\n");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("@Touch and wait 1 second#\n", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Touch detection is started#\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[s");
+	write(fd_fb, buf, cnt_byte);
+
+
+		for (int i=0; i<=50; i++)
+		{
+			Read_i2c(0x10, ts_buf, 31);
+
+			x=((ts_buf[26]&0x3F)<<8)+ts_buf[27];
+			y=(ts_buf[28]<<8)+ts_buf[29];
+
+			memset(buf, 0, 200);
+			sprintf(buf, "@Position: x=%i, y=%i#\n", x, y);
+
+			USB_printf(buf, 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[u");
+			write(fd_fb, buf, cnt_byte);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Position: x=%i, y=%i#                                                              ", x, y);
+			write(fd_fb, buf, cnt_byte);
+
+			sleep(100);
+		}
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	get_line(ch, 1);
+		if (ch[0]=='Y' || ch[0]=='y')
+		{
+			state=0;
+		}
+		else
+		{
+			state=-1;
+		}
+
+		if (state==0)
+		{
+			USB_printf("&Test 13: OK\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 13: OK\n");
+			write(fd_fb, buf, cnt_byte);
+		}
+		else
+		{
+			USB_printf("^Test 13: Fail\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 13: Fail\n");
+			write(fd_fb, buf, cnt_byte);
+		}
 
 }
 
