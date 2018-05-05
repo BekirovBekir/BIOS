@@ -944,7 +944,7 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 //**********************************************************************************************
 	int state_calib=0;
 	memset(dataBuffer, 0, 100);
-	if (Read_EEPROM(dataBuffer, 19, 14)==0)
+	if (Read_EEPROM(dataBuffer, 19, 14)>0)
 	{
 		USB_printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n", 1000);
 		printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
