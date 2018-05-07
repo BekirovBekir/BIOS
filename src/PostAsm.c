@@ -956,7 +956,8 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
 		write(fd_fb, buf, cnt_byte);
 
-		return -1;
+		//return -1;
+		state_calib=-1;
 	}
 	else
 	{
