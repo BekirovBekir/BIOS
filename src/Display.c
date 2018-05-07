@@ -1996,7 +1996,7 @@ void EEPROMTestPostAsmSubAct(void)
 
 	USB_printf("\n", 500);
 
-	EEPROM_SN();
+	EEPROM_SN_Read();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -2804,6 +2804,7 @@ void CapTouchTestPostAsmSubAct(void)
 
 	USB_printf("\n", 500);
 
+	CapTouchTest_PostAsm(1);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");

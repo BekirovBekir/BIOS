@@ -29,5 +29,6 @@ int NEO_Test_PostAsm(int Do);
 
 void NFC_PostAsm(void);
 void DisplayTest_PostAsm(int Do);
+void CapTouchTest_PostAsm(int Do);
 
 #endif /* INC_POSTASM_H_ */

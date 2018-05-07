@@ -944,7 +944,7 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 //**********************************************************************************************
 	int state_calib=0;
 	memset(dataBuffer, 0, 100);
-	if (Read_EEPROM(dataBuffer, 19, 14)==0)
+	if (Read_EEPROM(dataBuffer, 19, 14)<=0)
 	{
 		USB_printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n", 1000);
 		printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
@@ -956,19 +956,23 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 		return -1;
 	}
 	else
-	{	if (dataBuffer[0]=='0') CalibX=0;
+	{
+		if (dataBuffer[0]=='*') state_calib=-1;
 		else
 		{
-		CalibX=atoi(dataBuffer);
-			if (CalibX==0) state_calib=-1;
+			if (dataBuffer[0]=='0') CalibX=0;
+			else
+			{
+			CalibX=atoi(dataBuffer);
+				if (CalibX==0) state_calib=-1;
+			}
+			char* buf_cal=strchr(dataBuffer, ' ');
+				if (buf_cal==NULL) state_calib=-1;
+				else CalibY=atoi(buf_cal+1);
+			buf_cal=strchr(buf_cal+1, ' ');
+				if (buf_cal==NULL) state_calib=-1;
+				else CalibZ=atoi(buf_cal+1);
 		}
-		char* buf_cal=strchr(dataBuffer, ' ');
-			if (buf_cal==NULL) state_calib=-1;
-			else CalibY=atoi(buf_cal+1);
-		buf_cal=strchr(buf_cal+1, ' ');
-			if (buf_cal==NULL) state_calib=-1;
-			else CalibZ=atoi(buf_cal+1);
-
 		if (state_calib==-1)
 		{
 			USB_printf("^Test 3: Fail, Calibration Trim Values are Not Saved\n", 1000);
@@ -2704,6 +2708,12 @@ void DisplayTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Display testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	sleep(2);
+
 	Fill_Buffer(255, 0, 0);
 	sleep(2);
 	Fill_Buffer(0, 255, 0);
@@ -2715,7 +2725,11 @@ void DisplayTest_PostAsm(int Do)
 	USB_printf("**Display testing**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[1;0H**Display testing**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Display testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	USB_printf("@Confirm RGB color (Y/N):#", 1000);
