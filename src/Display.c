@@ -2546,6 +2546,8 @@ void GPSTestPostAsmSubAct (void)
 	char USBbuf[200];
 	char cnt_byte;
 
+	int ret;
+
 	const char alpha[] = "AB";
 
 	memset(buf, 0, 200);
@@ -2579,7 +2581,9 @@ void GPSTestPostAsmSubAct (void)
 			write(fd_fb, buf, cnt_byte);
 		}
 
-		switch (NEO_Test_PostAsm(n)) {
+		ret = NEO_Test_PostAsm(n);
+
+		switch (ret) {
 		case 0: {
 			snprintf(USBbuf, sizeof(USBbuf), "@Test 10%c: OK\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
@@ -2587,6 +2591,7 @@ void GPSTestPostAsmSubAct (void)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
+
 		}
 		case -1: {
 			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO export error\n", alpha[n-1]);
@@ -2644,6 +2649,9 @@ void GPSTestPostAsmSubAct (void)
 
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2\n");
 		write(fd_fb, buf, cnt_byte);
+
+		if (ret < 0)
+			break;
 
 	}
 
