@@ -2421,10 +2421,10 @@ int NEO_Test_PostAsm(int Do)
 
 	} else if (Do == 1) {
 
-		cnt_byte=ReadPort(fd, (unsigned char*)buf_rx, sizeof(buf_rx));
-		if (cnt_byte>0)
+		cnt_byte = ReadPort(fd, (unsigned char*)buf_rx, sizeof(buf_rx));
+		if (cnt_byte > 0)
 		{
-			if (strstr(buf_rx, "$")!=NULL)
+			if (strstr(buf_rx, "$") != NULL)
 			{
 				ret = 0;
 			}
@@ -2432,6 +2432,8 @@ int NEO_Test_PostAsm(int Do)
 			{
 				ret = -4;
 			}
+		} else {
+			ret = -4;
 		}
 
 	} else {
