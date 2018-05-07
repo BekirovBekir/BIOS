@@ -2784,10 +2784,10 @@ void CapTouchTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cap Touch Detection Testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
-	USB_printf("@Touch detection is started#\n", 1000);
+	USB_printf("@Touch detection is started. The test takes 10 sec#\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Touch detection is started#\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Touch detection is started. The test takes 10 sec#\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
