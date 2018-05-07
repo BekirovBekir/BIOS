@@ -34,6 +34,7 @@
 #include "GPIO.h"
 #include "FrameBuffer.h"
 #include "AudioCodec.h"
+#include "minmea.h"
 
 
 #define BUF_SIZE_DISP 200
@@ -52,6 +53,8 @@ extern int get_line(char* str, int size);
 
 #define POLL_MAX 20
 #define POLL_TIMEOUT_MAX 30
+
+#define GPS_TIMEOUT 60
 
 typedef struct {
 	long CSQsum;
@@ -2324,118 +2327,131 @@ int NEO_Test_PostAsm(int Do)
 	int fd;
 	char buf_rx[200]={0};
 
-		if(!Do) return -1;
+	char buf[200];
+	int cnt_byte = 0;
+	int ret = 0;
 
-		char buf[200];
-		int cnt_byte=0;
+	FILE* serialf;
 
-		USB_printf("**GPS Test**\n", 1000);
+	if (Init_GPIO("63", "out")!=1)
+	{
+		return -1;
+	}
+	if (Write_GPIO("63", "1")!=1)
+	{
+		return -2;
+	}
+	if (Init_GPIO("57", "out")!=1)
+	{
+		return -1;
+	}
+	if (Write_GPIO("57", "1")!=1)
+	{
+		return -2;
+	}
 
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**GPS Test**\n");
-		write(fd_fb, buf, cnt_byte);
+	sleep(1);
 
-		if (Init_GPIO("63", "out")!=1)
-		{
-			printf("Error export pins 63\n");
+	fd = OpenPort("/dev/ttymxc2");
 
-			USB_printf("@Error export pins#\n^Test 9: Fail, error export pins\n", 1000);
+	if (fd < 0)
+	{
+		return -3;
+	}
 
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 9: Fail, error export pins\n");
-			write(fd_fb, buf, cnt_byte);
+	SetPort(fd, 9600);
 
-			return -1;
-		}
-		else
-		{
-			if (Write_GPIO("63", "1")!=1)
-			{
+	sleep(1);
 
-				USB_printf("@Error write pins#\n^Test 9: Fail, error write pins\n", 1000);
+	serialf = fdopen(fd, "w+");
+
+	if (Do == 2) {
+
+		for (int timeout = GPS_TIMEOUT; timeout > 0; timeout--) {
+
+			while (fgets(buf_rx, (int) sizeof(buf_rx), serialf) != NULL) {
+
+				printf("%s",buf_rx);
+
+				switch (minmea_sentence_id(buf_rx, false)) {
+				case MINMEA_SENTENCE_RMC: {
+					struct minmea_sentence_rmc frame;
+					if (minmea_parse_rmc(&frame, buf_rx)) {
+						printf("$xxRMC: raw coordinates and speed: (%d/%d,%d/%d) %d/%d\n",
+								frame.latitude.value, frame.latitude.scale,
+								frame.longitude.value, frame.longitude.scale,
+								frame.speed.value, frame.speed.scale);
+						if (frame.valid) {
+							ret = 0;
+							goto out;
+						}
+					}
+					else {
+						printf("$xxRMC sentence is not parsed\n");
+					}
+				} break;
+
+
+				case MINMEA_INVALID: {
+					printf("$xxxxx sentence is not valid\n");
+				} break;
+
+				default: {
+					printf("$xxxxx sentence is not parsed\n");
+				} break;
+
+				}
+
+			}
+
+			sleep(1);
+
+			if (timeout % 5 == 0) {
+				USB_printf(".", 1000);
 
 				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9: Fail, error write pins\n");
+				cnt_byte=snprintf(buf, sizeof(buf), ".");
 				write(fd_fb, buf, cnt_byte);
-
-				return -1;
 			}
+
 		}
-		sleep(1);
 
-	fd=OpenPort("/dev/ttymxc2");
-		if (fd<0)
-		{
-			printf("Error while open port\n");
+		ret = -5;
 
-			USB_printf("@Error while open port#\n^Test 9: Fail, error while open port\n", 1000);
+	} else if (Do == 1) {
 
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error while open port#\n\x1b[2C^Test 9: Fail, error while open port\n");
-			write(fd_fb, buf, cnt_byte);
-
-			return -1;
-		}
-	SetPort(fd, 9600);
-	sleep(1);
-	cnt_byte=ReadPort(fd, (unsigned char*)buf_rx, sizeof(buf_rx));
+		cnt_byte=ReadPort(fd, (unsigned char*)buf_rx, sizeof(buf_rx));
 		if (cnt_byte>0)
 		{
 			if (strstr(buf_rx, "$")!=NULL)
 			{
-				close(fd);
-				Write_GPIO("63", "0");
-				DeInit_GPIO("63");
-
-				USB_printf("@Module received NMEA#\n&Test 9: OK\n", 1000);
-
-				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Module received NMEA#\n\x1b[2C&Test 9: OK\n");
-				write(fd_fb, buf, cnt_byte);
-
-				return 0;
+				ret = 0;
 			}
 			else
 			{
-				close(fd);
-				Write_GPIO("63", "0");
-				DeInit_GPIO("63");
-
-				USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
-
-				memset(buf, 0, 200);
-				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
-				write(fd_fb, buf, cnt_byte);
-
-				return -1;
+				ret = -4;
 			}
 		}
-		else
-		{
-			close(fd);
-			Write_GPIO("63", "0");
-			DeInit_GPIO("63");
 
-			USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
+	} else {
+		ret = -1;
+	}
 
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
-			write(fd_fb, buf, cnt_byte);
 
-			return -1;
-		}
+out:
+	fclose(serialf);
+	Write_GPIO("63", "0");
+	DeInit_GPIO("63");
+	Write_GPIO("57", "0");
+	DeInit_GPIO("57");
 
-close(fd);
-Write_GPIO("63", "0");
-DeInit_GPIO("63");
+	snprintf(buf, sizeof(buf), "\n");
+	USB_printf(buf, 1000);
 
-USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2\n");
+	write(fd_fb, buf, cnt_byte);
 
-memset(buf, 0, 200);
-cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
-write(fd_fb, buf, cnt_byte);
-
-return -1;
+	return ret;
 }
 
 int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
