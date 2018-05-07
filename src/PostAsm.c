@@ -2323,137 +2323,131 @@ int NEO_Test_PostAsm(int Do)
 	int fd;
 	char buf_rx[200]={0};
 
-	if(!Do) return -1;
-
 	char buf[200];
-	int cnt_byte=0;
-
-	char* pch = NULL;
+	int cnt_byte = 0;
+	int ret = 0;
 
 	FILE* serialf;
 
-	USB_printf("**GPS Test**\n", 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**GPS Test**\n");
-	write(fd_fb, buf, cnt_byte);
-
 	if (Init_GPIO("63", "out")!=1)
 	{
-		printf("Error export pins 63\n");
-
-		USB_printf("@Error export pins#\n^Test 10: Fail, error export pins\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error export pins#\n\x1b[2C^Test 10: Fail, error export pins\n");
-		write(fd_fb, buf, cnt_byte);
-
 		return -1;
 	}
 	if (Write_GPIO("63", "1")!=1)
 	{
-
-		USB_printf("@Error write pins#\n^Test 9: Fail, error write pins\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error write pins#\n\x1b[2C^Test 9: Fail, error write pins\n");
-		write(fd_fb, buf, cnt_byte);
-
+		return -2;
+	}
+	if (Init_GPIO("57", "out")!=1)
+	{
 		return -1;
+	}
+	if (Write_GPIO("57", "1")!=1)
+	{
+		return -2;
 	}
 
 	sleep(1);
 
-	fd=OpenPort("/dev/ttymxc2");
-	if (fd<0)
+	fd = OpenPort("/dev/ttymxc2");
+
+	if (fd < 0)
 	{
-		printf("Error while open port\n");
-
-		USB_printf("@Error while open port#\n^Test 9: Fail, error while open port\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error while open port#\n\x1b[2C^Test 9: Fail, error while open port\n");
-		write(fd_fb, buf, cnt_byte);
-
-		return -1;
+		return -3;
 	}
 
 	SetPort(fd, 9600);
 
 	sleep(1);
-	//serialf = fdopen(fd, "r+");
 
-	for (int timeout = GPS_TIMEOUT; timeout > 0; timeout--) {
+	serialf = fdopen(fd, "w+");
 
-		cnt_byte = ReadPort(fd, (unsigned char* )buf_rx, sizeof(buf_rx));
-		printf("%s", buf_rx);
+	if (Do == 2) {
 
-		pch = strtok(buf_rx, "/n");
+		for (int timeout = GPS_TIMEOUT; timeout > 0; timeout--) {
 
-		while (pch != NULL) {
+			while (fgets(buf_rx, (int) sizeof(buf_rx), serialf) != NULL) {
 
-			printf("%s",buf_rx);
+				printf("%s",buf_rx);
 
-			switch (minmea_sentence_id(buf_rx, false)) {
-			case MINMEA_SENTENCE_RMC: {
-				struct minmea_sentence_rmc frame;
-				if (minmea_parse_rmc(&frame, buf_rx)) {
-					printf("$xxRMC: raw coordinates and speed: (%d/%d,%d/%d) %d/%d\n",
-							frame.latitude.value, frame.latitude.scale,
-							frame.longitude.value, frame.longitude.scale,
-							frame.speed.value, frame.speed.scale);
-					printf("$xxRMC fixed-point coordinates and speed scaled to three decimal places: (%d,%d) %d\n",
-							minmea_rescale(&frame.latitude, 1000),
-							minmea_rescale(&frame.longitude, 1000),
-							minmea_rescale(&frame.speed, 1000));
-					printf("$xxRMC floating point degree coordinates and speed: (%f,%f) %f\n",
-							minmea_tocoord(&frame.latitude),
-							minmea_tocoord(&frame.longitude),
-							minmea_tofloat(&frame.speed));
+				switch (minmea_sentence_id(buf_rx, false)) {
+				case MINMEA_SENTENCE_RMC: {
+					struct minmea_sentence_rmc frame;
+					if (minmea_parse_rmc(&frame, buf_rx)) {
+						printf("$xxRMC: raw coordinates and speed: (%d/%d,%d/%d) %d/%d\n",
+								frame.latitude.value, frame.latitude.scale,
+								frame.longitude.value, frame.longitude.scale,
+								frame.speed.value, frame.speed.scale);
+						if (frame.valid) {
+							ret = 0;
+							goto out;
+						}
+					}
+					else {
+						printf("$xxRMC sentence is not parsed\n");
+					}
+				} break;
+
+
+				case MINMEA_INVALID: {
+					printf("$xxxxx sentence is not valid\n");
+				} break;
+
+				default: {
+					printf("$xxxxx sentence is not parsed\n");
+				} break;
+
 				}
-				else {
-					printf("$xxRMC sentence is not parsed\n");
-				}
-			} break;
-
-
-			case MINMEA_INVALID: {
-				printf("$xxxxx sentence is not valid\n");
-			} break;
-
-			default: {
-				printf("$xxxxx sentence is not parsed\n");
-			} break;
 
 			}
 
-			pch = strtok(NULL, "/n");
+			sleep(1);
+
+			if (timeout % 5 == 0) {
+				USB_printf(".", 1000);
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), ".");
+				write(fd_fb, buf, cnt_byte);
+			}
 
 		}
 
-		sleep(1);
+		ret = -5;
 
-		if (timeout % 5 == 0) {
-			USB_printf(".", 1000);
+	} else if (Do == 1) {
 
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), ".");
-			write(fd_fb, buf, cnt_byte);
+		cnt_byte=ReadPort(fd, (unsigned char*)buf_rx, sizeof(buf_rx));
+		if (cnt_byte>0)
+		{
+			if (strstr(buf_rx, "$")!=NULL)
+			{
+				ret = 0;
+			}
+			else
+			{
+				ret = -4;
+			}
 		}
 
+	} else {
+		ret = -1;
 	}
 
-	close(fd);
+
+out:
+	fclose(serialf);
 	Write_GPIO("63", "0");
 	DeInit_GPIO("63");
+	Write_GPIO("57", "0");
+	DeInit_GPIO("57");
 
-	USB_printf("@Error unexport pins#\n^Test 9: Fail, error unexport pins\n", 1000);
+	snprintf(buf, sizeof(buf), "\n");
+	USB_printf(buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Error unexport pins#\n\x1b[2C^Test 9: Fail, error unexport pins\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2\n");
 	write(fd_fb, buf, cnt_byte);
 
-	return 0;
+	return ret;
 }
 
 int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
