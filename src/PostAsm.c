@@ -2030,13 +2030,7 @@ int Cameras_Test_Full_PostAsm(int Do)
 			sleep(14);
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink");
 
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
-			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
-			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
+			Fill_Buffer(0, 0, 0);
 
 			sleep(2);
 
@@ -2045,20 +2039,15 @@ int Cameras_Test_Full_PostAsm(int Do)
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink");
 
 			sleep(1);
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
-			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
-			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
+			Fill_Buffer(0, 0, 0);
+
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
 
-			sleep(2);
+			sleep(3);
 
 			return 0;
 		}
