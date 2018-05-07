@@ -2025,12 +2025,20 @@ int Cameras_Test_Full_PostAsm(int Do)
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
 
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+			write(fd_fb, buf, cnt_byte);
+
 			sleep(2);
 			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink &");
 			sleep(14);
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink");
 
 			Fill_Buffer(0, 0, 0);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+			write(fd_fb, buf, cnt_byte);
 
 			sleep(2);
 
@@ -2041,6 +2049,9 @@ int Cameras_Test_Full_PostAsm(int Do)
 			sleep(1);
 			Fill_Buffer(0, 0, 0);
 
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Cameras Test**\n");
+			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
@@ -2773,7 +2784,7 @@ void CapTouchTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cap Touch Detection Testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
-	USB_printf("@Touch and wait 1 second#\n", 1000);
+	USB_printf("@Touch detection is started#\n", 1000);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Touch detection is started#\n");
@@ -2786,13 +2797,17 @@ void CapTouchTest_PostAsm(int Do)
 
 		for (int i=0; i<=50; i++)
 		{
-			Read_i2c(0x10, ts_buf, 31);
+			memset(ts_buf, 0, 32);
+			Read_i2c(0x10, ts_buf, 5);
 
-			x=((ts_buf[26]&0x3F)<<8)+ts_buf[27];
-			y=(ts_buf[28]<<8)+ts_buf[29];
+			x=(int)(ts_buf[1]);
+			y=(int)(ts_buf[3]);
+
+			x=((x & 0x3F)<<8)+ts_buf[2];
+			y=(y<<8)+ts_buf[4];
 
 			memset(buf, 0, 200);
-			sprintf(buf, "@Position: x=%i, y=%i#\n", x, y);
+			sprintf(buf, "@Last position: x=%i, y=%i#\n", x, y);
 
 			USB_printf(buf, 1000);
 
@@ -2801,14 +2816,20 @@ void CapTouchTest_PostAsm(int Do)
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Position: x=%i, y=%i#                                                              ", x, y);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Last position: x=%i, y=%i#\x1b[K", x, y);
 			write(fd_fb, buf, cnt_byte);
 
-			sleep(100);
+			usleep(200000);
 		}
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("@Confirm touch screen working (Y/N):#", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm touch screen working (Y/N):#\n");
 	write(fd_fb, buf, cnt_byte);
 
 	get_line(ch, 1);
