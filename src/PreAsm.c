@@ -52,6 +52,7 @@ extern int fd_fb;
 extern int get_line(char* str, int size);
 
 
+
 int CX=0;
 int CY=0;
 int CZ=0;
@@ -104,7 +105,7 @@ int USB_getc(int timeout)
 int USB_getline(char* str, int size, int timeout)
 	{
 
-	struct pollfd pollin = { STDIN_FILENO, POLLIN|POLLPRI };
+	/*struct pollfd pollin = { STDIN_FILENO, POLLIN|POLLPRI };
 	FILE *usbcon;
 	char *line;
 	ssize_t read;
@@ -155,9 +156,9 @@ close_l:
 	if(line)
 		free(line);
 
-	return ret;
+	return ret;*/
 
-		/*FILE *f;
+		FILE *f;
 		char state;
 		int epfd;
 		int nfds;
@@ -166,21 +167,24 @@ close_l:
 		static int flag=0;
 
 		epfd = epoll_create(1);
+		if (flag==0)
+		{
 
-		f = fopen(USB_PATH, "r");
-		//int flags = fcntl(fileno(f), F_GETFL, 0);
-		//fcntl(fileno(f), F_SETFL, flags | O_NONBLOCK);
 
-			if (f == NULL)
-				{
-					printf("Fail open usb!\n");
-					close(epfd);
-					return -1;
-				}
+			f = fopen(USB_PATH, "r");
+			//int flags = fcntl(fileno(f), F_GETFL, 0);
+			//fcntl(fileno(f), F_SETFL, flags | O_NONBLOCK);
 
-		ev.events = EPOLLIN | EPOLLPRI ;
-		ev.data.fd = fileno(f);
-		epoll_ctl(epfd, EPOLL_CTL_ADD, fileno(f), &ev);
+				if (f == NULL)
+					{
+						printf("Fail open usb!\n");
+						close(epfd);
+						return -1;
+					}
+		}
+			ev.events = EPOLLIN | EPOLLPRI ;
+			ev.data.fd = fileno(f);
+			epoll_ctl(epfd, EPOLL_CTL_ADD, fileno(f), &ev);
 
 		//tcflush(fileno(f), TCIOFLUSH);
 		nfds = epoll_wait(epfd, &ev, 1, timeout);
@@ -199,8 +203,8 @@ close_l:
 		}
 
 		close(epfd);
-		fclose(f);
-		return state;*/
+		//fclose(f);
+		return state;
 	}
 
 int USB_printf(char* buf, int timeout)
