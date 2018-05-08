@@ -45,6 +45,7 @@
 
 #define USB_MODEM_DESING "8A"
 #define UART_MODEM_DESING "8B"
+#define SIGNAL_CHECK_TIMEOUT 3000
 
 extern int fd_fb;
 
@@ -1665,6 +1666,11 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do)
 
 	switch (LaraErr) {
 		case 0:
+			cnt_byte = snprintf(buf, sizeof(buf), "&Test 8B: OK\n");
+			USB_printf(buf, 1000);
+
+			cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C&Test 8B: OK\n");
+			write(fd_fb, buf, cnt_byte);
 			break;
 		case -1:
 		case -2:
@@ -1886,6 +1892,11 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 
 	switch (SaraErr) {
 		case 0:
+			cnt_byte = snprintf(buf, sizeof(buf), "&Test 8A: OK\n");
+			USB_printf(buf, 1000);
+
+			cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C&Test 8A: OK\n");
+			write(fd_fb, buf, cnt_byte);
 			break;
 		case -1:
 		case -2:
@@ -2468,12 +2479,9 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 	char curr_modem[10] = { 0 };
 
 	char buf[200] = { 0 };
-	int cnt_byte;
+	int cnt_byte, timeout;
 
 	int isfirstStart = firststart;
-
-	tCSQtest signalTest = { 0 };
-	signalTest.minSnglLvl = 99;
 
 	port_id = OpenPort(port_name);
 	SetPort(port_id, port_speed);
@@ -2614,92 +2622,41 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
-	do {
-		ret = sendAndPreParse(port_id, "AT+CSQ\r", answr_buf, curr_modem);
-		if (ret)
-			goto error;
+	bool retry = true;
 
-		signalTest.currSnglLvl = getRSSIfromCSQ(answr_buf);
+	while (retry) {
+		ret = SignalCheck(port_id, isfirstStart, curr_modem);
+		if (!ret)
+			break;
 
-		if (isfirstStart &&
-				(signalTest.currSnglLvl <= 10 || signalTest.currSnglLvl == 99)) {
-			signalTest.timeout++;
+		cnt_byte = snprintf(buf, sizeof(buf), "&Test %s: Signal check failed, retry?\n", curr_modem);
+		USB_printf(buf, 1000);
 
-			if (signalTest.currSnglLvl == 99) {
-				signalTest.currSnglLvl = 0;
-			}
-
-			sprintf(out_buf, "@POLLED SIGNAL STRENGTH %d: %d#\n", signalTest.pollcnt, signalTest.currSnglLvl);
-			USB_printf(out_buf, 1000);
-			cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
-			write(fd_fb, buf, cnt_byte);
-
-			USB_printf(out_buf, 1000);
-			if (signalTest.timeout >= POLL_TIMEOUT_MAX) {
-				ret = -4;
-				goto error;
-			}
-			sleep(1);
-			continue;
-		}
-
-		isfirstStart = 0;
-
-		if (signalTest.currSnglLvl == 99) {
-			signalTest.currSnglLvl = 0;
-		}
-
-		if (signalTest.currSnglLvl > signalTest.maxSnglLvl) {
-			signalTest.maxSnglLvl = signalTest.currSnglLvl;
-		} else if (signalTest.currSnglLvl < signalTest.minSnglLvl) {
-			signalTest.minSnglLvl = signalTest.currSnglLvl;
-		}
-
-		signalTest.CSQsum += signalTest.currSnglLvl;
-
-		sprintf(out_buf, "@POLLED SIGNAL STRENGTH %d: %d#\n", signalTest.pollcnt, signalTest.currSnglLvl);
-		USB_printf(out_buf, 1000);
-		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: Signal check failed, retry?\n", curr_modem);
 		write(fd_fb, buf, cnt_byte);
-		signalTest.pollcnt++;
 
-		sleep(1);
-
-	} while (signalTest.pollcnt < POLL_MAX);
-
-	sprintf(out_buf, "@AVERAGE SIGNAL STRENGTH: %d#\n", signalTest.CSQsum / signalTest.pollcnt);
-	USB_printf(out_buf, 1000);
-	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
-	write(fd_fb, buf, cnt_byte);
-
-	sprintf(out_buf, "@DEVIATION RANGE: %d#\n", abs(signalTest.minSnglLvl - signalTest.maxSnglLvl));
-	USB_printf(out_buf, 1000);
-	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
-	write(fd_fb, buf, cnt_byte);
-
-	if ((signalTest.CSQsum / signalTest.pollcnt ) < 10) {
-		ret = -4;
-	} else if (abs(signalTest.minSnglLvl - signalTest.maxSnglLvl) > 3) {
-		ret = -4;
-	} else {
-		ret = 0;
+		while(timeout < SIGNAL_CHECK_TIMEOUT) {
+			get_line(answr_buf, sizeof(answr_buf));
+			if (strstr(answr_buf, "Y") != NULL || strstr(answr_buf, "y") != NULL) {
+				retry = true;
+				break;
+			}
+			if (strstr(answr_buf, "N") != NULL || strstr(answr_buf, "n") != NULL) {
+				retry = false;
+				break;
+			}
+			usleep(10000);
+			timeout++;
+		}
 	}
 	if (ret)
 		goto error;
-
-
 
 	if (!strcmp(curr_modem, UART_MODEM_DESING)) {
 		ret = sendAndPreParse(port_id, "AT+CPWROFF\r", answr_buf, curr_modem);
 		if (ret)
 			goto error;
 	}
-
-	cnt_byte = snprintf(buf, sizeof(buf), "&Test %s: OK\n", curr_modem);
-	USB_printf(buf, 1000);
-
-	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: OK\n", curr_modem);
-	write(fd_fb, buf, cnt_byte);
 
 	ret = 0;
 
@@ -2882,3 +2839,85 @@ void CapTouchTest_PostAsm(int Do)
 
 }
 
+int SignalCheck(int port_id, int isfirstStart, char* curr_modem) {
+
+	int ret = 0;
+	tCSQtest signalTest = { 0 };
+	signalTest.minSnglLvl = 99;
+	char answr_buf[200] = { 0 };
+	char out_buf[200] = { 0 };
+	char buf[200] = { 0 };
+	int cnt_byte = 0;
+
+	do {
+		ret = sendAndPreParse(port_id, "AT+CSQ\r", answr_buf, curr_modem);
+		if (ret)
+			return ret;
+
+		signalTest.currSnglLvl = getRSSIfromCSQ(answr_buf);
+
+		if (isfirstStart &&
+				(signalTest.currSnglLvl <= 10 || signalTest.currSnglLvl == 99)) {
+			signalTest.timeout++;
+
+			if (signalTest.currSnglLvl == 99) {
+				signalTest.currSnglLvl = 0;
+			}
+
+			sprintf(out_buf, "@POLLED SIGNAL STRENGTH %d: %d#\n", signalTest.pollcnt, signalTest.currSnglLvl);
+			USB_printf(out_buf, 1000);
+			cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+			write(fd_fb, buf, cnt_byte);
+
+			USB_printf(out_buf, 1000);
+			if (signalTest.timeout >= POLL_TIMEOUT_MAX) {
+				ret = -4;
+				return ret;
+			}
+			sleep(1);
+			continue;
+		}
+
+		isfirstStart = 0;
+
+		if (signalTest.currSnglLvl == 99) {
+			signalTest.currSnglLvl = 0;
+		}
+
+		if (signalTest.currSnglLvl > signalTest.maxSnglLvl) {
+			signalTest.maxSnglLvl = signalTest.currSnglLvl;
+		} else if (signalTest.currSnglLvl < signalTest.minSnglLvl) {
+			signalTest.minSnglLvl = signalTest.currSnglLvl;
+		}
+
+		signalTest.CSQsum += signalTest.currSnglLvl;
+
+		sprintf(out_buf, "@POLLED SIGNAL STRENGTH %d: %d#\n", signalTest.pollcnt, signalTest.currSnglLvl);
+		USB_printf(out_buf, 1000);
+		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+		write(fd_fb, buf, cnt_byte);
+		signalTest.pollcnt++;
+
+		sleep(1);
+
+	} while (signalTest.pollcnt < POLL_MAX);
+
+	sprintf(out_buf, "@AVERAGE SIGNAL STRENGTH: %d#\n", signalTest.CSQsum / signalTest.pollcnt);
+	USB_printf(out_buf, 1000);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	sprintf(out_buf, "@DEVIATION RANGE: %d#\n", abs(signalTest.minSnglLvl - signalTest.maxSnglLvl));
+	USB_printf(out_buf, 1000);
+	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	write(fd_fb, buf, cnt_byte);
+
+	if ((signalTest.CSQsum / signalTest.pollcnt ) < 10) {
+		ret = -4;
+	} else if (abs(signalTest.minSnglLvl - signalTest.maxSnglLvl) > 3) {
+		ret = -4;
+	} else {
+		ret = 0;
+	}
+	return ret;
+}

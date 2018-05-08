@@ -31,6 +31,8 @@
 #include "PreAsm.h"
 #include "PostAsm.h"
 
+void GPSTestPostAsmSubAct (void);
+
 Menu PreAsm;
 Menu FullTest;
 Menu PostAsm;
@@ -2147,7 +2149,7 @@ void FullTestPostAsmSubAct(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\n");
 	write(fd_fb, buf, cnt_byte);
 
-	NEO_Test_PostAsm(1);
+	GPSTestPostAsmSubAct();
 	sleep(2);
 
 	/*memset(buf, 0, 200);
@@ -2745,8 +2747,6 @@ void ModemTestPostAsmSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	USB_printf("\n", 500);
-
 	FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
 
 	USB_printf("\n", 500);
@@ -2757,20 +2757,21 @@ void ModemTestPostAsmSubAct (void)
 
 	FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
 
-	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\n\n");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
-	memset(buf, 0, 200);
+
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\n");
+	write(fd_fb, buf, cnt_byte);
+
 }
 
 void GPSTestPostAsmAct(void)
