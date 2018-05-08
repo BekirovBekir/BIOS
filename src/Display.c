@@ -324,7 +324,7 @@ void TestRun_PostAsm(char* test_num)
 		active_menu->menuaction();
 		}
 
-		if (strncmp(test_num, "12\n", 2)==0)
+		/*if (strncmp(test_num, "12\n", 2)==0)
 		{
 		active_menu=&DisplayTestPostAsmSub;
 		active_menu->menudisplay();
@@ -336,7 +336,7 @@ void TestRun_PostAsm(char* test_num)
 		active_menu=&CapTouchTestPostAsmSub;
 		active_menu->menudisplay();
 		active_menu->menuaction();
-		}
+		}*/
 
 	preasm_flag=1;
 }
@@ -1021,7 +1021,8 @@ void FullTestSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\n");
 	write(fd_fb, buf, cnt_byte);
 
-	Cameras_Test_Full(1);
+	//Cameras_Test_Full(1);
+	Cameras_Test_Full_PostAsm(1);
 	sleep(2);
 
 
@@ -1096,8 +1097,7 @@ void EEPROMTestSubAct (void)
 
 	USB_printf("\n", 500);
 
-	//EEPROM_SN();
-	EEPROM_SN_Read();
+	EEPROM_SN();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -1787,7 +1787,12 @@ void CamerasTestSubAct(void)
 
 	USB_printf("\n", 500);
 
-	Cameras_Test_Full(1);
+	//Cameras_Test_Full(1);
+	Cameras_Test_Full_PostAsm(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -1799,7 +1804,7 @@ void FullTestPostAsmDisp(void)
 	char buf[200];
 	char cnt_byte;
 
-		/*
+
 		USB_printf("\n========================== Post-Assembly Test =========================\n", 50);
 		USB_printf("	0. Run All Tests\n", 50);
 		USB_printf("	1. EEPROM Memory Integrity Check / Serial Number Burn-in\n", 50);
@@ -1817,7 +1822,7 @@ void FullTestPostAsmDisp(void)
 		USB_printf("	13. Cap touch detection test\n", 50);
 		USB_printf("======================================================================\n", 50);
 		USB_printf("Please enter number of the test (0-13) end press ENTER:\n", 50);
-		*/
+
 
 		//thread_flag=0;
 		memset(buf, 0, 200);
@@ -1924,6 +1929,7 @@ void FullTestPostAsmDisp(void)
 
 void FullTestPostAsmAct(void)
 {
+	/*
 	USB_printf("\n========================== Post-Assembly Test =========================\n", 50);
 	USB_printf("	0. Run All Tests\n", 50);
 	USB_printf("	1. EEPROM Memory Integrity Check / Serial Number Burn-in\n", 50);
@@ -1941,11 +1947,281 @@ void FullTestPostAsmAct(void)
 	USB_printf("	13. Cap touch detection test\n", 50);
 	USB_printf("======================================================================\n", 50);
 	USB_printf("Please enter number of the test (0-13) end press ENTER:\n", 50);
+	*/
 }
 
 void FullTestPostAsmSubAct(void)
 {
+	char buf[200];
+	char cnt_byte;
 
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	EEPROM_SN_Read();
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	TestMMC_PostAsm(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncSPI_32MBit_NOR_Flash_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncAccelerometer_Calibration_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncConfirm_PMIC_Communication_PostAsm(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncConfirm_Battery_Charger_Communication_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncAmbient_Light_Sensor_Functionality_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncBarometer_Functionality_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncEMMY_163_Connectivity_Check_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	NEO_Test_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	Audio_Codec_Test_PostAsm(1);
+	sleep(2);
+
+	/*memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);*/
+
+	USB_printf("\n", 500);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	Cameras_Test_Full_PostAsm(1);
+	sleep(2);
+
+	/*USB_printf("\n", 500);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	DisplayTest_PostAsm(1);
+	sleep(2);
+
+	USB_printf("\n", 500);
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	CapTouchTest_PostAsm(1);
+	sleep(2);*/
+
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\n\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
 }
 
 void FullTestPostAsmSubDisp(void)
@@ -1996,7 +2272,7 @@ void EEPROMTestPostAsmSubAct(void)
 
 	USB_printf("\n", 500);
 
-	EEPROM_SN();
+	EEPROM_SN_Read();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -2451,9 +2727,10 @@ void ModemTestPostAsmSubDisp (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
-	write(fd_fb, buf, cnt_byte);
+	//memset(buf, 0, 200);
+	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	//write(fd_fb, buf, cnt_byte);
+
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -2481,7 +2758,7 @@ void ModemTestPostAsmSubAct (void)
 	FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
@@ -2804,7 +3081,6 @@ void CamerasTestPostAsmSubAct(void)
 {
 	char buf[200];
 	char cnt_byte;
-	int res=1;
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
@@ -2812,13 +3088,11 @@ void CamerasTestPostAsmSubAct(void)
 
 	USB_printf("\n", 500);
 
-	res = Cameras_Test_Full_PostAsm(1);
+	Cameras_Test_Full_PostAsm(1);
 
-	if(res == 0){
-		active_menu=&FullTestPostAsm;
-		active_menu->menudisplay();
-		active_menu->menuaction();
-	}
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -2867,6 +3141,9 @@ void DisplayTestPostAsmSubAct(void)
 
 	DisplayTest_PostAsm(1);
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -2932,6 +3209,7 @@ void CapTouchTestPostAsmSubAct(void)
 
 	USB_printf("\n", 500);
 
+	CapTouchTest_PostAsm(1);
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -3315,7 +3593,7 @@ void MenuInit (void)
 
 	DisplayTestPostAsm.DOWN=&CapTouchTestPostAsm;
 	DisplayTestPostAsm.UP=&CamerasTestPostAsm;
-	DisplayTestPostAsm.ENTER=&DisplayTestPostAsmSub;
+	DisplayTestPostAsm.ENTER=&DisplayTestPostAsm;//&DisplayTestPostAsmSub;
 	DisplayTestPostAsm.ESC=&PreAsm;
 	DisplayTestPostAsm.menuaction=&DisplayTestPostAsmAct;
 	DisplayTestPostAsm.menudisplay=&DisplayTestPostAsmDisp;
@@ -3330,7 +3608,7 @@ void MenuInit (void)
 
 	CapTouchTestPostAsm.DOWN=&FullTestPostAsm;
 	CapTouchTestPostAsm.UP=&DisplayTestPostAsm;
-	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsmSub;
+	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsm;//&CapTouchTestPostAsmSub;
 	CapTouchTestPostAsm.ESC=&PreAsm;
 	CapTouchTestPostAsm.menuaction=&CapTouchTestPostAsmAct;
 	CapTouchTestPostAsm.menudisplay=&CapTouchTestPostAsmDisp;

@@ -946,8 +946,9 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 
 //**********************************************************************************************
 	int state_calib=0;
-	memset(dataBuffer, 0, 100);
-	if (Read_EEPROM(dataBuffer, 19, 14)==0)
+
+
+	if (Read_EEPROM(dataBuffer, 19, 14)<=0)
 	{
 		USB_printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n", 1000);
 		printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
@@ -956,22 +957,30 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
 		write(fd_fb, buf, cnt_byte);
 
-		return -1;
+		//return -1;
+		state_calib=-1;
 	}
 	else
-	{	if (dataBuffer[0]=='0') CalibX=0;
+	{
+		if (dataBuffer[0]=='*') state_calib=-1;
 		else
 		{
-		CalibX=atoi(dataBuffer);
-			if (CalibX==0) state_calib=-1;
-		}
-		char* buf_cal=strchr(dataBuffer, ' ');
-			if (buf_cal==NULL) state_calib=-1;
-			else CalibY=atoi(buf_cal+1);
-		buf_cal=strchr(buf_cal+1, ' ');
-			if (buf_cal==NULL) state_calib=-1;
-			else CalibZ=atoi(buf_cal+1);
+			//memset(dataBuffer, 0, 100);
+			//Read_EEPROM(dataBuffer, 19, 14);
 
+			if (dataBuffer[0]=='0') CalibX=0;
+			else
+			{
+			CalibX=atoi(dataBuffer);
+				if (CalibX==0) state_calib=-1;
+			}
+			char* buf_cal=strchr(dataBuffer, ' ');
+				if (buf_cal==NULL) state_calib=-1;
+				else CalibY=atoi(buf_cal+1);
+			buf_cal=strchr(buf_cal+1, ' ');
+				if (buf_cal==NULL) state_calib=-1;
+				else CalibZ=atoi(buf_cal+1);
+		}
 		if (state_calib==-1)
 		{
 			USB_printf("^Test 3: Fail, Calibration Trim Values are Not Saved\n", 1000);
@@ -2024,18 +2033,20 @@ int Cameras_Test_Full_PostAsm(int Do)
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
 
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+			write(fd_fb, buf, cnt_byte);
+
 			sleep(2);
 			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink &");
 			sleep(14);
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink");
 
+			Fill_Buffer(0, 0, 0);
+
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
-			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
 
 			sleep(2);
 
@@ -2044,20 +2055,22 @@ int Cameras_Test_Full_PostAsm(int Do)
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink");
 
 			sleep(1);
+			Fill_Buffer(0, 0, 0);
+
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J");
 			write(fd_fb, buf, cnt_byte);
+
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Cameras Test**\n");
 			write(fd_fb, buf, cnt_byte);
-			memset(buf, 0, 200);
 
 			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Parameters CAM1 f: %s res: %ix%i CAM2 f: %s res: %ix%i#\n\x1b[2C&Test 11: OK\n", cam1.description, cam1.widht, cam1.height,
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
 
-			sleep(2);
+			sleep(3);
 
 			return 0;
 		}
@@ -2716,6 +2729,12 @@ void DisplayTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Display testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	sleep(2);
+
 	Fill_Buffer(255, 0, 0);
 	sleep(2);
 	Fill_Buffer(0, 255, 0);
@@ -2727,7 +2746,11 @@ void DisplayTest_PostAsm(int Do)
 	USB_printf("**Display testing**\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[1;0H**Display testing**\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Display testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
 	USB_printf("@Confirm RGB color (Y/N):#", 1000);
@@ -2782,10 +2805,10 @@ void CapTouchTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Cap Touch Detection Testing**\n");
 	write(fd_fb, buf, cnt_byte);
 
-	USB_printf("@Touch and wait 1 second#\n", 1000);
+	USB_printf("@Touch detection is started. The test takes 10 sec#\n", 1000);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Touch detection is started#\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Touch detection is started. The test takes 10 sec#\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
@@ -2795,13 +2818,17 @@ void CapTouchTest_PostAsm(int Do)
 
 		for (int i=0; i<=50; i++)
 		{
-			Read_i2c(0x10, ts_buf, 31);
+			memset(ts_buf, 0, 32);
+			Read_i2c(0x10, ts_buf, 5);
 
-			x=((ts_buf[26]&0x3F)<<8)+ts_buf[27];
-			y=(ts_buf[28]<<8)+ts_buf[29];
+			x=(int)(ts_buf[1]);
+			y=(int)(ts_buf[3]);
+
+			x=((x & 0x3F)<<8)+ts_buf[2];
+			y=(y<<8)+ts_buf[4];
 
 			memset(buf, 0, 200);
-			sprintf(buf, "@Position: x=%i, y=%i#\n", x, y);
+			sprintf(buf, "@Last position: x=%i, y=%i#\n", x, y);
 
 			USB_printf(buf, 1000);
 
@@ -2810,14 +2837,20 @@ void CapTouchTest_PostAsm(int Do)
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Position: x=%i, y=%i#                                                              ", x, y);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Last position: x=%i, y=%i#\x1b[K", x, y);
 			write(fd_fb, buf, cnt_byte);
 
-			sleep(100);
+			usleep(200000);
 		}
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("@Confirm touch screen working (Y/N):#", 1000);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm touch screen working (Y/N):#\n");
 	write(fd_fb, buf, cnt_byte);
 
 	get_line(ch, 1);
