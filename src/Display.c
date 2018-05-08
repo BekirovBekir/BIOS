@@ -2769,9 +2769,6 @@ void ModemTestPostAsmSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	cnt_byte=snprintf(buf, sizeof(buf), "\n\n");
-	write(fd_fb, buf, cnt_byte);
-
 }
 
 void GPSTestPostAsmAct(void)
