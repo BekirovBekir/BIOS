@@ -324,7 +324,7 @@ void TestRun_PostAsm(char* test_num)
 		active_menu->menuaction();
 		}
 
-		if (strncmp(test_num, "12\n", 2)==0)
+		/*if (strncmp(test_num, "12\n", 2)==0)
 		{
 		active_menu=&DisplayTestPostAsmSub;
 		active_menu->menudisplay();
@@ -336,7 +336,7 @@ void TestRun_PostAsm(char* test_num)
 		active_menu=&CapTouchTestPostAsmSub;
 		active_menu->menudisplay();
 		active_menu->menuaction();
-		}
+		}*/
 
 	preasm_flag=1;
 }
@@ -2189,7 +2189,7 @@ void FullTestPostAsmSubAct(void)
 	Cameras_Test_Full_PostAsm(1);
 	sleep(2);
 
-	USB_printf("\n", 500);
+	/*USB_printf("\n", 500);
 
 
 	memset(buf, 0, 200);
@@ -2207,7 +2207,7 @@ void FullTestPostAsmSubAct(void)
 	write(fd_fb, buf, cnt_byte);
 
 	CapTouchTest_PostAsm(1);
-	sleep(2);
+	sleep(2);*/
 
 
 	memset(buf, 0, 200);
@@ -2727,9 +2727,10 @@ void ModemTestPostAsmSubDisp (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
-	write(fd_fb, buf, cnt_byte);
+	//memset(buf, 0, 200);
+	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	//write(fd_fb, buf, cnt_byte);
+
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -2757,7 +2758,7 @@ void ModemTestPostAsmSubAct (void)
 	FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
@@ -3566,7 +3567,7 @@ void MenuInit (void)
 
 	DisplayTestPostAsm.DOWN=&CapTouchTestPostAsm;
 	DisplayTestPostAsm.UP=&CamerasTestPostAsm;
-	DisplayTestPostAsm.ENTER=&DisplayTestPostAsmSub;
+	DisplayTestPostAsm.ENTER=&DisplayTestPostAsm;//&DisplayTestPostAsmSub;
 	DisplayTestPostAsm.ESC=&PreAsm;
 	DisplayTestPostAsm.menuaction=&DisplayTestPostAsmAct;
 	DisplayTestPostAsm.menudisplay=&DisplayTestPostAsmDisp;
@@ -3581,7 +3582,7 @@ void MenuInit (void)
 
 	CapTouchTestPostAsm.DOWN=&FullTestPostAsm;
 	CapTouchTestPostAsm.UP=&DisplayTestPostAsm;
-	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsmSub;
+	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsm;//&CapTouchTestPostAsmSub;
 	CapTouchTestPostAsm.ESC=&PreAsm;
 	CapTouchTestPostAsm.menuaction=&CapTouchTestPostAsmAct;
 	CapTouchTestPostAsm.menudisplay=&CapTouchTestPostAsmDisp;

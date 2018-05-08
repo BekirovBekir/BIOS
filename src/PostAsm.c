@@ -2058,6 +2058,10 @@ int Cameras_Test_Full_PostAsm(int Do)
 			Fill_Buffer(0, 0, 0);
 
 			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J");
+			write(fd_fb, buf, cnt_byte);
+
+			memset(buf, 0, 200);
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**Cameras Test**\n");
 			write(fd_fb, buf, cnt_byte);
 
