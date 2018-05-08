@@ -1097,8 +1097,7 @@ void EEPROMTestSubAct (void)
 
 	USB_printf("\n", 500);
 
-	//EEPROM_SN();
-	EEPROM_SN_Read();
+	EEPROM_SN();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
