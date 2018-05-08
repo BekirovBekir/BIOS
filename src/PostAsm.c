@@ -45,7 +45,7 @@
 
 #define USB_MODEM_DESING "8A"
 #define UART_MODEM_DESING "8B"
-#define SIGNAL_CHECK_TIMEOUT 3000
+#define SIGNAL_CHECK_TIMEOUT 300
 
 extern int fd_fb;
 
@@ -2636,7 +2636,7 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 		write(fd_fb, buf, cnt_byte);
 
 		while(timeout < SIGNAL_CHECK_TIMEOUT) {
-			get_line(answr_buf, sizeof(answr_buf));
+			answr_buf[0] = USB_getc(10);
 			if (strstr(answr_buf, "Y") != NULL || strstr(answr_buf, "y") != NULL) {
 				retry = true;
 				break;
@@ -2645,8 +2645,12 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 				retry = false;
 				break;
 			}
-			usleep(10000);
+			usleep(100000);
 			timeout++;
+		}
+		if (timeout > SIGNAL_CHECK_TIMEOUT) {
+			retry = false;
+			break;
 		}
 	}
 	if (ret)
