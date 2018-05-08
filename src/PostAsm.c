@@ -45,7 +45,7 @@
 
 #define USB_MODEM_DESING "8A"
 #define UART_MODEM_DESING "8B"
-#define SIGNAL_CHECK_TIMEOUT 300
+#define SIGNAL_CHECK_TIMEOUT 30
 
 extern int fd_fb;
 
@@ -2624,20 +2624,29 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 
 	bool retry = true;
 
+	unsigned long timestamp = time(NULL);
+	sleep(1);
+	printf("%u - %u", time(NULL), timestamp);
+
 	while (retry) {
 		ret = SignalCheck(port_id, isfirstStart, curr_modem);
 		if (!ret)
 			break;
 
-		cnt_byte = snprintf(buf, sizeof(buf), "&Test %s: Signal check failed, retry?\n", curr_modem);
+		timestamp = time(NULL);
+
+		cnt_byte = snprintf(buf, sizeof(buf), "Signal check failed, retry?\n", curr_modem);
 		USB_printf(buf, 1000);
 
-		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C&Test %s: Signal check failed, retry?\n", curr_modem);
+		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2CSignal check failed, retry?\n", curr_modem);
 		write(fd_fb, buf, cnt_byte);
 
-		while(timeout < SIGNAL_CHECK_TIMEOUT) {
-			answr_buf[0] = USB_getc(10);
+
+		while(((unsigned long)time(NULL) - timestamp) < SIGNAL_CHECK_TIMEOUT) {
+			memset(answr_buf, 0, sizeof(answr_buf));
+			get_line(answr_buf, sizeof(answr_buf));
 			if (strstr(answr_buf, "Y") != NULL || strstr(answr_buf, "y") != NULL) {
+				timestamp = time(NULL);
 				retry = true;
 				break;
 			}
@@ -2646,9 +2655,8 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 				break;
 			}
 			usleep(100000);
-			timeout++;
 		}
-		if (timeout > SIGNAL_CHECK_TIMEOUT) {
+		if (((unsigned long)time(NULL) - timestamp) >= SIGNAL_CHECK_TIMEOUT) {
 			retry = false;
 			break;
 		}
@@ -2873,7 +2881,6 @@ int SignalCheck(int port_id, int isfirstStart, char* curr_modem) {
 			cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 			write(fd_fb, buf, cnt_byte);
 
-			USB_printf(out_buf, 1000);
 			if (signalTest.timeout >= POLL_TIMEOUT_MAX) {
 				ret = -4;
 				return ret;
