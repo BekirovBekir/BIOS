@@ -2378,7 +2378,7 @@ int NEO_Test_PostAsm(int Do)
 								frame.longitude.value, frame.longitude.scale,
 								frame.speed.value, frame.speed.scale);
 						if (frame.valid) {
-							ret = 0;
+							ret = 1;
 							goto out;
 						}
 					}
@@ -2442,12 +2442,6 @@ out:
 	DeInit_GPIO("63");
 	Write_GPIO("57", "0");
 	DeInit_GPIO("57");
-
-	snprintf(buf, sizeof(buf), "\n");
-	USB_printf(buf, 1000);
-
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2\n");
-	write(fd_fb, buf, cnt_byte);
 
 	return ret;
 }

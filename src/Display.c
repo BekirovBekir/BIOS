@@ -2584,71 +2584,97 @@ void GPSTestPostAsmSubAct (void)
 		ret = NEO_Test_PostAsm(n);
 
 		switch (ret) {
-		case 0: {
-			snprintf(USBbuf, sizeof(USBbuf), "@Test 10%c: OK\n", alpha[n-1]);
+		case 1:
+			snprintf(USBbuf, sizeof(USBbuf), "\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+			snprintf(USBbuf, sizeof(USBbuf), "@GPS Fix Is Obtained#\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+
+			snprintf(USBbuf, sizeof(USBbuf), "&Test 10%c: OK\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
 
-		}
-		case -1: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO export error\n", alpha[n-1]);
+		case 0:
+			snprintf(USBbuf, sizeof(USBbuf), "@GPS Module is Responsive#\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+			snprintf(USBbuf, sizeof(USBbuf), "&Test 10%c: OK\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -2: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO set error\n", alpha[n-1]);
+
+		case -1:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO export error\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -3: {
-			snprintf(USBbuf, sizeof(buf), "^Test 10%c: File access error\n", alpha[n-1]);
+
+		case -2:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO set error\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -4: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS doesn't send messages\n", alpha[n-1]);
+
+		case -3:
+			snprintf(USBbuf, sizeof(buf), "^Test 10%c: File access error\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -5: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS Signal Not Obtained in 1 minute\n", alpha[n-1]);
+
+		case -4:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS Module isn't Responsive#\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		default: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, non-expected answer!!!\n", alpha[n-1]);
+
+		case -5:
+			snprintf(USBbuf, sizeof(USBbuf), "\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS Signal Not Obtained in 1 minute\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
+
+		default:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, non-expected answer!!!\n\n", alpha[n-1]);
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+			break;
+
 
 		}
-
-		snprintf(buf, sizeof(buf), "\n");
-		USB_printf(buf, 1000);
-
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2\n");
-		write(fd_fb, buf, cnt_byte);
 
 		if (ret < 0)
 			break;
