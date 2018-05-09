@@ -31,6 +31,8 @@
 #include "PreAsm.h"
 #include "PostAsm.h"
 
+void GPSTestPostAsmSubAct (void);
+
 Menu PreAsm;
 Menu FullTest;
 Menu PostAsm;
@@ -324,7 +326,7 @@ void TestRun_PostAsm(char* test_num)
 		active_menu->menuaction();
 		}
 
-		if (strncmp(test_num, "12\n", 2)==0)
+		/*if (strncmp(test_num, "12\n", 2)==0)
 		{
 		active_menu=&DisplayTestPostAsmSub;
 		active_menu->menudisplay();
@@ -336,7 +338,7 @@ void TestRun_PostAsm(char* test_num)
 		active_menu=&CapTouchTestPostAsmSub;
 		active_menu->menudisplay();
 		active_menu->menuaction();
-		}
+		}*/
 
 	preasm_flag=1;
 }
@@ -1097,8 +1099,7 @@ void EEPROMTestSubAct (void)
 
 	USB_printf("\n", 500);
 
-	//EEPROM_SN();
-	EEPROM_SN_Read();
+	EEPROM_SN();
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
@@ -2148,7 +2149,7 @@ void FullTestPostAsmSubAct(void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\n");
 	write(fd_fb, buf, cnt_byte);
 
-	NEO_Test_PostAsm(1);
+	GPSTestPostAsmSubAct();
 	sleep(2);
 
 	/*memset(buf, 0, 200);
@@ -2190,7 +2191,7 @@ void FullTestPostAsmSubAct(void)
 	Cameras_Test_Full_PostAsm(1);
 	sleep(2);
 
-	USB_printf("\n", 500);
+	/*USB_printf("\n", 500);
 
 
 	memset(buf, 0, 200);
@@ -2208,7 +2209,7 @@ void FullTestPostAsmSubAct(void)
 	write(fd_fb, buf, cnt_byte);
 
 	CapTouchTest_PostAsm(1);
-	sleep(2);
+	sleep(2);*/
 
 
 	memset(buf, 0, 200);
@@ -2728,9 +2729,10 @@ void ModemTestPostAsmSubDisp (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
-	write(fd_fb, buf, cnt_byte);
+	//memset(buf, 0, 200);
+	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	//write(fd_fb, buf, cnt_byte);
+
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
@@ -2745,8 +2747,6 @@ void ModemTestPostAsmSubAct (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	USB_printf("\n", 500);
-
 	FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
 
 	USB_printf("\n", 500);
@@ -2757,20 +2757,18 @@ void ModemTestPostAsmSubAct (void)
 
 	FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(1);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\n\n");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
 	write(fd_fb, buf, cnt_byte);
-	memset(buf, 0, 200);
+
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+
 }
 
 void GPSTestPostAsmAct(void)
@@ -2823,6 +2821,8 @@ void GPSTestPostAsmSubAct (void)
 	char USBbuf[200];
 	char cnt_byte;
 
+	int ret;
+
 	const char alpha[] = "AB";
 
 	memset(buf, 0, 200);
@@ -2856,71 +2856,103 @@ void GPSTestPostAsmSubAct (void)
 			write(fd_fb, buf, cnt_byte);
 		}
 
-		switch (NEO_Test_PostAsm(n)) {
-		case 0: {
-			snprintf(USBbuf, sizeof(USBbuf), "@Test 10%c: OK\n", alpha[n-1]);
+		ret = NEO_Test_PostAsm(n);
+
+		switch (ret) {
+		case 1:
+			snprintf(USBbuf, sizeof(USBbuf), "\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+			snprintf(USBbuf, sizeof(USBbuf), "@GPS Fix Is Obtained#\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+
+			snprintf(USBbuf, sizeof(USBbuf), "&Test 10%c: OK\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -1: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO export error\n", alpha[n-1]);
+
+		case 0:
+			snprintf(USBbuf, sizeof(USBbuf), "@GPS Module is Responsive#\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+			snprintf(USBbuf, sizeof(USBbuf), "&Test 10%c: OK\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -2: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO set error\n", alpha[n-1]);
+
+		case -1:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO export error\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -3: {
-			snprintf(USBbuf, sizeof(buf), "^Test 10%c: File access error\n", alpha[n-1]);
+
+		case -2:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: GPIO set error\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -4: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS doesn't send messages\n", alpha[n-1]);
+
+		case -3:
+			snprintf(USBbuf, sizeof(buf), "^Test 10%c: File access error\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		case -5: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS Signal Not Obtained in 1 minute\n", alpha[n-1]);
+
+		case -4:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS Module isn't Responsive#\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
-		default: {
-			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, non-expected answer!!!\n", alpha[n-1]);
+
+		case -5:
+			snprintf(USBbuf, sizeof(USBbuf), "\n");
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, GPS Signal Not Obtained in 1 minute\n\n", alpha[n-1]);
 			USB_printf(USBbuf, 1000);
 
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
 			write(fd_fb, buf, cnt_byte);
 			break;
-		}
+
+		default:
+			snprintf(USBbuf, sizeof(USBbuf), "^Test 10%c: Fail, non-expected answer!!!\n\n", alpha[n-1]);
+			USB_printf(USBbuf, 1000);
+
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", USBbuf);
+			write(fd_fb, buf, cnt_byte);
+			break;
+
 
 		}
 
-		snprintf(buf, sizeof(buf), "\n");
-		USB_printf(buf, 1000);
-
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2\n");
-		write(fd_fb, buf, cnt_byte);
+		if (ret < 0)
+			break;
 
 	}
 
@@ -3559,7 +3591,7 @@ void MenuInit (void)
 
 	DisplayTestPostAsm.DOWN=&CapTouchTestPostAsm;
 	DisplayTestPostAsm.UP=&CamerasTestPostAsm;
-	DisplayTestPostAsm.ENTER=&DisplayTestPostAsmSub;
+	DisplayTestPostAsm.ENTER=&DisplayTestPostAsm;//&DisplayTestPostAsmSub;
 	DisplayTestPostAsm.ESC=&PreAsm;
 	DisplayTestPostAsm.menuaction=&DisplayTestPostAsmAct;
 	DisplayTestPostAsm.menudisplay=&DisplayTestPostAsmDisp;
@@ -3574,7 +3606,7 @@ void MenuInit (void)
 
 	CapTouchTestPostAsm.DOWN=&FullTestPostAsm;
 	CapTouchTestPostAsm.UP=&DisplayTestPostAsm;
-	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsmSub;
+	CapTouchTestPostAsm.ENTER=&CapTouchTestPostAsm;//&CapTouchTestPostAsmSub;
 	CapTouchTestPostAsm.ESC=&PreAsm;
 	CapTouchTestPostAsm.menuaction=&CapTouchTestPostAsmAct;
 	CapTouchTestPostAsm.menudisplay=&CapTouchTestPostAsmDisp;
