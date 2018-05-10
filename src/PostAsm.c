@@ -2050,7 +2050,7 @@ int Cameras_Test_Full_PostAsm(int Do)
 
 			sleep(2);
 			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink &");
-			sleep(14);
+			sleep(10);
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video0 ! imxipuvideosink");
 
 			Fill_Buffer(0, 0, 0);
@@ -2062,7 +2062,7 @@ int Cameras_Test_Full_PostAsm(int Do)
 			sleep(2);
 
 			system("gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink &");
-			sleep(12);
+			sleep(10);
 			system("killall gst-launch-1.0 imxv4l2videosrc device=/dev/video1 ! imxipuvideosink");
 
 			sleep(1);
@@ -2081,7 +2081,7 @@ int Cameras_Test_Full_PostAsm(int Do)
 																																		cam2.description, cam2.widht, cam2.height);
 			write(fd_fb, buf, cnt_byte);
 
-			sleep(3);
+			sleep(1);
 
 			return 0;
 		}
