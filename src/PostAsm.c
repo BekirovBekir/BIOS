@@ -45,12 +45,13 @@
 
 #define USB_MODEM_DESING "8A"
 #define UART_MODEM_DESING "8B"
-#define SIGNAL_CHECK_TIMEOUT 30
+#define SIGNAL_CHECK_TIMEOUT 300
+#define USB_READ_TIMEOUT 30000
 
 extern int fd_fb;
 
 #define USB_PATH "/dev/ttyGS0"
-extern int get_line(char* str, int size);
+extern int get_line(char* str, int size, int timeout);
 
 #define POLL_MAX 20
 #define POLL_TIMEOUT_MAX 30
@@ -68,7 +69,9 @@ typedef struct {
 
 int getRSSIfromCSQ(char* inString);
 
-int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart);
+int Init_LARA_SARA_PostAsm(char* port_name, int port_speed);
+
+int SignalCheck(int port_id, int isfirstStart, char* curr_modem);
 
 extern int CX;
 extern int CY;
@@ -1521,9 +1524,9 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do)
 	int LaraErr=0;
 	memset(LaraBuffer, 0, sizeof(LaraBuffer));
 
-	static int firststart = 1;
-
 	if(!Do) return -1;
+
+
 
 	char buf[200];
 	int cnt_byte=0;
@@ -1660,9 +1663,7 @@ int FuncLARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do)
 
 	usleep(500000);
 
-	LaraErr = Init_LARA_SARA_PostAsm("/dev/ttymxc1", 115200, firststart);
-
-	firststart = 0;
+	LaraErr = Init_LARA_SARA_PostAsm("/dev/ttymxc1", 115200);
 
 	switch (LaraErr) {
 		case 0:
@@ -1795,10 +1796,9 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 	//Test toggling GPIO signal for RF antenna selection for USB modem versus UART modem
 
 	#define BUFF_SIZE 100
+	static int firststart = 1;
 	int SaraErr=0;
 	memset(SaraBuffer, 0, sizeof(SaraBuffer));
-
-	static int firststart = 1;
 
 	if(!Do) return -1;
 
@@ -1886,7 +1886,7 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 	//TODO: проверить появился ли порт ttyACM0
 	usleep(12000000);
 
-	SaraErr = Init_LARA_SARA_PostAsm("/dev/ttyACM0", 115200, firststart);
+	SaraErr = Init_LARA_SARA_PostAsm("/dev/ttyACM0", 115200);
 
 	firststart = 0;
 
@@ -2232,7 +2232,7 @@ int Audio_Codec_Test_PostAsm(int Do)
 					write(fd_fb, buf, cnt_byte);
 
 					//ch=USB_getc(10000);
-					get_line(ch, 1);
+					get_line(ch, 1, USB_READ_TIMEOUT);
 						if (ch[0]=='Y' || ch[0]=='y')
 						{
 							state_L=0;
@@ -2269,7 +2269,7 @@ int Audio_Codec_Test_PostAsm(int Do)
 						write(fd_fb, buf, cnt_byte);
 
 						//ch=USB_getc(10000);
-						get_line(ch, 1);
+						get_line(ch, 1, USB_READ_TIMEOUT);
 							if (ch[0]=='Y' || ch[0]=='y')
 							{
 								state_R=0;
@@ -2470,18 +2470,17 @@ out:
 	return ret;
 }
 
-int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
+int Init_LARA_SARA_PostAsm(char* port_name, int port_speed) {
 
 	int ret;
 	int port_id;
 	char answr_buf[1000] = { 0 };
 	char out_buf[1000] = { 0 };
 	char curr_modem[10] = { 0 };
+	int firststart = 1;
 
 	char buf[200] = { 0 };
-	int cnt_byte, timeout;
-
-	int isfirstStart = firststart;
+	int cnt_byte;
 
 	port_id = OpenPort(port_name);
 	SetPort(port_id, port_speed);
@@ -2622,45 +2621,49 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed, int firststart) {
 	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
-	bool retry = true;
+	bool retry;
 
-	unsigned long timestamp = time(NULL);
-	sleep(1);
-	printf("%u - %u", time(NULL), timestamp);
+	do {
+		ret = SignalCheck(port_id, firststart, curr_modem);
 
-	while (retry) {
-		ret = SignalCheck(port_id, isfirstStart, curr_modem);
+		firststart = 0;
+
 		if (!ret)
 			break;
 
-		timestamp = time(NULL);
-
-		cnt_byte = snprintf(buf, sizeof(buf), "Signal check failed, retry?\n", curr_modem);
+		cnt_byte = snprintf(buf, sizeof(buf), "Signal check failed, retry [y/n]?\n");
 		USB_printf(buf, 1000);
 
-		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2CSignal check failed, retry?\n", curr_modem);
+		cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2CSignal check failed, retry [y/n]?\n");
 		write(fd_fb, buf, cnt_byte);
 
+		memset(answr_buf, 0, sizeof(answr_buf));
 
-		while(((unsigned long)time(NULL) - timestamp) < SIGNAL_CHECK_TIMEOUT) {
-			memset(answr_buf, 0, sizeof(answr_buf));
-			get_line(answr_buf, sizeof(answr_buf));
-			if (strstr(answr_buf, "Y") != NULL || strstr(answr_buf, "y") != NULL) {
-				timestamp = time(NULL);
-				retry = true;
-				break;
-			}
-			if (strstr(answr_buf, "N") != NULL || strstr(answr_buf, "n") != NULL) {
+		int result;
+
+		do {
+			result = get_line(answr_buf, sizeof(answr_buf), 30000);
+			if (result >= 0){
+				if (strstr(answr_buf, "Y\n") != NULL || strstr(answr_buf, "y\n") != NULL) {
+					retry = true;
+					break;
+				} else if (strstr(answr_buf, "N\n") != NULL || strstr(answr_buf, "n\n") != NULL) {
+					retry = false;
+					break;
+				} else {
+					cnt_byte = snprintf(buf, sizeof(buf), "Please type y or n\n");
+					USB_printf(buf, 1000);
+
+					cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2CPlease type y or n\n");
+					write(fd_fb, buf, cnt_byte);
+				}
+			} else {
 				retry = false;
-				break;
 			}
-			usleep(100000);
-		}
-		if (((unsigned long)time(NULL) - timestamp) >= SIGNAL_CHECK_TIMEOUT) {
-			retry = false;
-			break;
-		}
-	}
+		} while (!result);
+
+	} while (retry);
+
 	if (ret)
 		goto error;
 
@@ -2728,7 +2731,7 @@ void DisplayTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm RGB color (Y/N):#\n");
 	write(fd_fb, buf, cnt_byte);
 
-	get_line(ch, 1);
+	get_line(ch, 1, USB_READ_TIMEOUT);
 		if (ch[0]=='Y' || ch[0]=='y')
 		{
 			state=0;
@@ -2822,7 +2825,7 @@ void CapTouchTest_PostAsm(int Do)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm touch screen working (Y/N):#\n");
 	write(fd_fb, buf, cnt_byte);
 
-	get_line(ch, 1);
+	get_line(ch, 1, USB_READ_TIMEOUT);
 		if (ch[0]=='Y' || ch[0]=='y')
 		{
 			state=0;

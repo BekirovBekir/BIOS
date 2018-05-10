@@ -13,9 +13,9 @@
 #define SERIAL_NUMBER_OFFSET 2
 #define EEPROM_PATH "/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom"
 #define ATTEMPTS 3
-#define TIMEOUT 30000
 #define USB_CON_PATH "/dev/ttyGS0"
 #define EEPROM_SIZE 512
+#define USB_READ_TIMEOUT 30000
 
 static unsigned char sernum[SERIAL_NUMBER_SIZE];
 static char sernum_str[SERIAL_NUMBER_SIZE * 2];
@@ -34,7 +34,7 @@ static int convert_SN(unsigned char* sn_str, unsigned char* sn);
 static int to_USB_console(unsigned char* fmt, ...);
 
 static int eeprom_integrity_check(void);
-int get_line(char* str, int size);
+extern int get_line(char* str, int size, int timeout);
 //-----------------------------------------------------------------------
 
 int EEPROM_SN_Read(void)
@@ -235,7 +235,7 @@ edit:
 
 			memset(sernum_str, 0, SERIAL_NUMBER_SIZE*2);
 
-			if( get_line(sernum_str, SERIAL_NUMBER_SIZE*2) != 0)
+			if( get_line(sernum_str, SERIAL_NUMBER_SIZE*2, USB_READ_TIMEOUT) != 0)
 			{
 						printf("\n");
 				to_USB_console("#\n");
@@ -294,7 +294,7 @@ edit:
 				while (1)
 				{
 					//scanf("%s", &prompt);
-					get_line(&prompt, 1);
+					get_line(&prompt, 1, USB_READ_TIMEOUT);
 
 					printf("typed %c\n", prompt);
 
@@ -640,7 +640,7 @@ close:
 }
 
 
-int get_line(char* str, int size)
+int get_line(char* str, int size, int timeout)
 	{
 	struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
 	FILE *usbcon;
@@ -669,7 +669,7 @@ int get_line(char* str, int size)
 	usbpoll.fd = fileno(usbcon);
 	usbpoll.events = POLLIN | POLLPRI;
 
-	if( poll(&usbpoll, 1, TIMEOUT) )
+	if( poll(&usbpoll, 1, timeout) )
 	{
 		fgets(line, len, usbcon);
 	}

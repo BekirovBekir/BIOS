@@ -42,5 +42,6 @@ int sendWOPreParse(int port_id, char* cmd_buf, char* ret_buf, char* type);
 
 void NFC(void);
 
+#define USB_READ_TIMEOUT 30000
 
 #endif /* INC_PREASM_H_ */

@@ -25,6 +25,8 @@
 
 extern int fd_fb;
 
+#define USB_READ_TIMEOUT 30000
+
 #define DEBUG 1
 
 #if (DEBUG > 0)
@@ -33,7 +35,7 @@ extern int fd_fb;
 	#define DBG(x)
 #endif
 
-extern int get_line(char* str, int size);
+extern int get_line(char* str, int size, int timeout);
 
 static struct v4l2_audio  audinfo;
 static struct  v4l2_audioout audinfoout;
@@ -98,7 +100,7 @@ int Play_Sound(void)
 		write(fd_fb, buf, cnt_byte);
 
 		//ch=USB_getc(10000);
-		get_line(ch, 1);
+		get_line(ch, 1, USB_READ_TIMEOUT);
 			if (ch[0]=='Y' || ch[0]=='y')
 			{
 				state=0;
@@ -130,7 +132,7 @@ int Play_Sound(void)
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Sound on Right Speaker (Y/N):#\n");
 			write(fd_fb, buf, cnt_byte);
 
-			get_line(ch, 1);
+			get_line(ch, 1, USB_READ_TIMEOUT);
 				if (ch[0]=='Y' || ch[0]=='y')
 				{
 					state=0;

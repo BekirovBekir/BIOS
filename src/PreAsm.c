@@ -44,12 +44,13 @@
 
 #define USB_MODEM_DESING "8A"
 #define UART_MODEM_DESING "8B"
+#define USB_READ_TIMEOUT 30000
 
 extern FILE *stdin;
 extern int fd_fb;
 
 #define USB_PATH "/dev/ttyGS0"
-extern int get_line(char* str, int size);
+extern int get_line(char* str, int size, int timeout);
 
 
 
@@ -2751,7 +2752,7 @@ int Audio_Codec_Test(int Do)
 					write(fd_fb, buf, cnt_byte);
 
 					//ch=USB_getc(10000);
-					get_line(ch, 1);
+					get_line(ch, 1, USB_READ_TIMEOUT);
 						if (ch[0]=='Y' || ch[0]=='y')
 						{
 							state_L=0;
@@ -2788,7 +2789,7 @@ int Audio_Codec_Test(int Do)
 						write(fd_fb, buf, cnt_byte);
 
 						//ch=USB_getc(10000);
-						get_line(ch, 1);
+						get_line(ch, 1, USB_READ_TIMEOUT);
 							if (ch[0]=='Y' || ch[0]=='y')
 							{
 								state_R=0;
