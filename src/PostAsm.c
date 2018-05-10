@@ -2106,219 +2106,234 @@ int Cameras_Test_Full_PostAsm(int Do)
 int Audio_Codec_Test_PostAsm(int Do)
 {
 	FILE * hiddenConsole;
-	char Answer[ANSWER_L];
-	int lastchar;
-	int result = 0;
-	memset(AudioCodecBuffer, 0, sizeof(AudioCodecBuffer));
+		char Answer[ANSWER_L];
+		int lastchar;
+		int result = 0;
+		memset(AudioCodecBuffer, 0, sizeof(AudioCodecBuffer));
 
-	if(!Do) return -1;
+		if(!Do) return -1;
 
-	char buf[200];
-	int cnt_byte=0;
-	char ch[10]={0};
-	int state_L=-1;
-	int state_R=-1;
-	int state=-1;
-	int repeat=0;
+		char buf[200];
+		int cnt_byte=0;
+		char ch[10]={0};
+		int state_L=-1;
+		int state_R=-1;
+		int state=-1;
+		int repeat=0;
 
-	USB_printf("**Audio output test**\n", 1000);
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Audio output test**\n");
-	write(fd_fb, buf, cnt_byte);
-
-	hiddenConsole = popen("cat /sys/class/i2c-dev/i2c-1/device/1-0038/uevent", "r");
-	lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
-	Answer[lastchar] = '\0';
-	pclose(hiddenConsole);
-	printf("hiddenConsole answer: \n%s", Answer);
-	if(lastchar == 0)
-	{
-		printf("\n");
-		sprintf (AudioCodecBuffer, "Audio codec not detected!");
-
-		USB_printf("^Test 10A: Fail, Audio Codec Not Detected\n", 1000);
+		USB_printf("**Audio output test**\n", 1000);
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@^Test 10A: Fail, Audio Codec Not Detected\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**Audio output test**\n");
 		write(fd_fb, buf, cnt_byte);
 
-		result=-1;
-	}
-	else
-	{
-		char* ptr1=NULL;
-		char* ptr2=NULL;
-		ptr1=strstr(Answer, "DRIVER");
-			if (ptr1!=NULL)
-			{
-				ptr2=strchr(Answer, '\n');
-				strncpy(AudioCodecBuffer, ptr1, (ptr2-ptr1));
-			}
-		ptr1=strstr(Answer, "OF_NAME");
-			if (ptr1!=NULL)
-			{
-				ptr2=strchr(ptr1, '\n');
-				strcat(AudioCodecBuffer, " ");
-				strncat(AudioCodecBuffer, ptr1, (ptr2-ptr1));
-			}
-	printf("Audio codec: %s \n", AudioCodecBuffer);
-	result=0;
-
-	}
-	if (result==0)
-	{
-
-		USB_printf("Audio Codec Detected\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec Detected\n");
-		write(fd_fb, buf, cnt_byte);
-
-		if (Play_Sound()==0)
+		hiddenConsole = popen("cat /sys/class/i2c-dev/i2c-1/device/1-0038/uevent", "r");
+		lastchar = fread(Answer, 1, ANSWER_L, hiddenConsole);
+		Answer[lastchar] = '\0';
+		pclose(hiddenConsole);
+		printf("hiddenConsole answer: \n%s", Answer);
+		if(lastchar == 0)
 		{
-			system("alsactl restore");
+			printf("\n");
+			sprintf (AudioCodecBuffer, "Audio codec not detected!");
 
-			USB_printf("\n**Audio Input Test**\n", 1000);
-
-			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Audio Input Test**\n");
-			write(fd_fb, buf, cnt_byte);
-
-			USB_printf("Press Enter to Start 10 second recording\n", 1000);
+			USB_printf("^Test 10A: Fail, Audio Codec Not Detected\n", 1000);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPress Enter to Start 10 second recording\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@^Test 10A: Fail, Audio Codec Not Detected\n");
 			write(fd_fb, buf, cnt_byte);
 
-			ch[0]=(char)(USB_getc(10000));
-				if (ch[0]=='\n')
+			result=-1;
+		}
+		else
+		{
+			char* ptr1=NULL;
+			char* ptr2=NULL;
+			ptr1=strstr(Answer, "DRIVER");
+				if (ptr1!=NULL)
 				{
-					state=0;
-					USB_printf("Recording start...\n", 1000);
-
-					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CRecording start...\n");
-					write(fd_fb, buf, cnt_byte);
+					ptr2=strchr(Answer, '\n');
+					strncpy(AudioCodecBuffer, ptr1, (ptr2-ptr1));
 				}
-				else
+			ptr1=strstr(Answer, "OF_NAME");
+				if (ptr1!=NULL)
 				{
-					state=-1;
+					ptr2=strchr(ptr1, '\n');
+					strcat(AudioCodecBuffer, " ");
+					strncat(AudioCodecBuffer, ptr1, (ptr2-ptr1));
 				}
+		printf("Audio codec: %s \n", AudioCodecBuffer);
+		result=0;
+
+		}
+		if (result==0)
+		{
+
+			USB_printf("Audio Codec Detected\n", 1000);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CAudio Codec Detected\n");
+			write(fd_fb, buf, cnt_byte);
+
+			if (Play_Sound()==0)
+			{
+				system("alsactl restore");
+
+				USB_printf("\n**Audio Input Test**\n", 1000);
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C**Audio Input Test**\n");
+				write(fd_fb, buf, cnt_byte);
+
+				USB_printf("Press Enter to Start 10 second recording\n", 1000);
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPress Enter to Start 10 second recording\n");
+				write(fd_fb, buf, cnt_byte);
+
+				ch[0]=(char)(USB_getc(10000));
+					if (ch[0]=='\n')
+					{
+						state=0;
+						USB_printf("Recording start...\n", 1000);
+
+						memset(buf, 0, 200);
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CRecording start...\n");
+						write(fd_fb, buf, cnt_byte);
+					}
+					else
+					{
+						state=-1;
+					}
 
 
-			system("arecord -f dat -d 10 test.wav");
-
-			repeat=0;
-				while (repeat<=2)
-				{
-
-					system("amixer sset 'Right Playback Mixer Right DAC' mute");
-					system("amixer sset 'Lineout' 100%");
-
-					USB_printf("Playing Left Mic Recording\n", 1000);
-
-					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPlaying Left Mic Recording\n");
-					write(fd_fb, buf, cnt_byte);
-
-					system ("aplay -f dat test.wav");
-					system("alsactl restore");
-
-					USB_printf("@Confirm Left Mic Recording (Y/N):#", 1000);
-
-					memset(buf, 0, 200);
-					cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Left Mic Recording (Y/N):#\n");
-					write(fd_fb, buf, cnt_byte);
-
-					//ch=USB_getc(10000);
-					get_line(ch, 1, USB_READ_TIMEOUT);
-						if (ch[0]=='Y' || ch[0]=='y')
-						{
-							state_L=0;
-							break;
-						}
-						else
-						{
-							state_L=-1;
-						}
-				repeat++;
-				}
+				system("arecord -f dat -d 10 test.wav");
 
 				repeat=0;
 					while (repeat<=2)
 					{
 
-						system("amixer sset 'Left Playback Mixer Left DAC' mute");
-						system("amixer sset 'Lineout' 100%");
+						system("amixer sset 'Right Playback Mixer Right DAC' mute");
 						system("amixer sset 'Lineout' 100%");
 
-						USB_printf("Playing Right Mic Recording\n", 1000);
+						USB_printf("Playing Left Mic Recording\n", 1000);
 
 						memset(buf, 0, 200);
-						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPlaying Right Mic Recording\n");
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPlaying Left Mic Recording\n");
 						write(fd_fb, buf, cnt_byte);
 
 						system ("aplay -f dat test.wav");
 						system("alsactl restore");
 
-						USB_printf("@Confirm Right Mic Recording (Y/N):#", 1000);
+						USB_printf("@Confirm Left Mic Recording (Y/N):#", 1000);
 
 						memset(buf, 0, 200);
-						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Right Mic Recording (Y/N):#\n");
+						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Left Mic Recording (Y/N):#\n");
 						write(fd_fb, buf, cnt_byte);
 
 						//ch=USB_getc(10000);
 						get_line(ch, 1, USB_READ_TIMEOUT);
 							if (ch[0]=='Y' || ch[0]=='y')
 							{
-								state_R=0;
+								state_L=0;
 								break;
 							}
 							else
 							{
-								state_R=-1;
+								state_L=-1;
 							}
+					USB_printf("\n", 1000);
 					repeat++;
 					}
 
-					if (state_R==0 && state_L==0)
-					{
-						USB_printf("&Test 10B: OK\n", 1000);
-
-						memset(buf, 0, 200);
-						cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 10B: OK\n");
-						write(fd_fb, buf, cnt_byte);
-					}
-					else
-					{
-						if (state_R==-1)
+					repeat=0;
+						while (repeat<=2)
 						{
-							USB_printf("^Test 10B: Fail, Right Mic Not Detected\n", 1000);
+
+							system("amixer sset 'Left Playback Mixer Left DAC' mute");
+							system("amixer sset 'Lineout' 100%");
+							system("amixer sset 'Lineout' 100%");
+
+							USB_printf("Playing Right Mic Recording\n", 1000);
 
 							memset(buf, 0, 200);
-							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Right Mic Not Detected\n");
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CPlaying Right Mic Recording\n");
 							write(fd_fb, buf, cnt_byte);
-						}
 
-						if (state_L==-1)
-						{
-							USB_printf("^Test 10B: Fail, Left Mic Not Detected\n", 1000);
+							system ("aplay -f dat test.wav");
+							system("alsactl restore");
+
+							USB_printf("@Confirm Right Mic Recording (Y/N):#", 1000);
 
 							memset(buf, 0, 200);
-							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left Mic Not Detected\n");
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C@Confirm Right Mic Recording (Y/N):#\n");
 							write(fd_fb, buf, cnt_byte);
+
+							//ch=USB_getc(10000);
+							get_line(ch, 1, USB_READ_TIMEOUT);
+								if (ch[0]=='Y' || ch[0]=='y')
+								{
+									state_R=0;
+									break;
+								}
+								else
+								{
+									state_R=-1;
+								}
+						USB_printf("\n", 1000);
+						repeat++;
 						}
 
-						if (state_L==-1 && state_R==-1)
+						if (state_R==0 && state_L==0)
 						{
-							USB_printf("^Test 10B: Fail, Left and Right Mic Not Detected\n", 1000);
+							USB_printf("&Test 10B: OK\n", 1000);
 
 							memset(buf, 0, 200);
-							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left and Right Mic Not Detected\n");
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 10B: OK\n");
 							write(fd_fb, buf, cnt_byte);
 						}
-					}
+						else
+						{
+							if (state_L==-1 && state_R==-1)
+							{
+								USB_printf("^Test 10B: Fail, Left and Right Mic Not Detected\n", 1000);
+
+								memset(buf, 0, 200);
+								cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left and Right Mic Not Detected\n");
+								write(fd_fb, buf, cnt_byte);
+								return -1;
+							}
+
+							if (state_R==-1)
+							{
+								USB_printf("^Test 10B: Fail, Right Mic Not Detected\n", 1000);
+
+								memset(buf, 0, 200);
+								cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Right Mic Not Detected\n");
+								write(fd_fb, buf, cnt_byte);
+								return -1;
+							}
+
+							if (state_L==-1)
+							{
+								USB_printf("^Test 10B: Fail, Left Mic Not Detected\n", 1000);
+
+								memset(buf, 0, 200);
+								cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left Mic Not Detected\n");
+								write(fd_fb, buf, cnt_byte);
+								return -1;
+							}
+						}
+			}
+			else
+			{
+				USB_printf("^Test 10A: Fail, Audio Codec Not Detected\n", 1000);
+
+				memset(buf, 0, 200);
+				cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10A: Fail, Audio Codec Not Detected\n");
+				write(fd_fb, buf, cnt_byte);
+			}
+
 		}
 		else
 		{
@@ -2329,17 +2344,7 @@ int Audio_Codec_Test_PostAsm(int Do)
 			write(fd_fb, buf, cnt_byte);
 		}
 
-	}
-	else
-	{
-		USB_printf("^Test 10A: Fail, Audio Codec Not Detected\n", 1000);
-
-		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10A: Fail, Audio Codec Not Detected\n");
-		write(fd_fb, buf, cnt_byte);
-	}
-
-return result;
+	return result;
 }
 
 int NEO_Test_PostAsm(int Do)

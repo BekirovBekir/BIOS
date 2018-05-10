@@ -110,6 +110,7 @@ int Play_Sound(void)
 			{
 				state=-1;
 			}
+	USB_printf("\n", 1000);
 	repeat++;
 	}
 
@@ -142,6 +143,7 @@ int Play_Sound(void)
 				{
 					state=-1;
 				}
+		USB_printf("\n", 1000);
 		repeat++;
 		}
 	}

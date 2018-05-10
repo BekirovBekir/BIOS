@@ -2762,6 +2762,7 @@ int Audio_Codec_Test(int Do)
 						{
 							state_L=-1;
 						}
+				USB_printf("\n", 1000);
 				repeat++;
 				}
 
@@ -2799,6 +2800,7 @@ int Audio_Codec_Test(int Do)
 							{
 								state_R=-1;
 							}
+					USB_printf("\n", 1000);
 					repeat++;
 					}
 
@@ -2812,6 +2814,16 @@ int Audio_Codec_Test(int Do)
 					}
 					else
 					{
+						if (state_L==-1 && state_R==-1)
+						{
+							USB_printf("^Test 10B: Fail, Left and Right Mic Not Detected\n", 1000);
+
+							memset(buf, 0, 200);
+							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left and Right Mic Not Detected\n");
+							write(fd_fb, buf, cnt_byte);
+							return -1;
+						}
+
 						if (state_R==-1)
 						{
 							USB_printf("^Test 10B: Fail, Right Mic Not Detected\n", 1000);
@@ -2819,6 +2831,7 @@ int Audio_Codec_Test(int Do)
 							memset(buf, 0, 200);
 							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Right Mic Not Detected\n");
 							write(fd_fb, buf, cnt_byte);
+							return -1;
 						}
 
 						if (state_L==-1)
@@ -2828,15 +2841,7 @@ int Audio_Codec_Test(int Do)
 							memset(buf, 0, 200);
 							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left Mic Not Detected\n");
 							write(fd_fb, buf, cnt_byte);
-						}
-
-						if (state_L==-1 && state_R==-1)
-						{
-							USB_printf("^Test 10B: Fail, Left and Right Mic Not Detected\n", 1000);
-
-							memset(buf, 0, 200);
-							cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 10B: Fail, Left and Right Mic Not Detected\n");
-							write(fd_fb, buf, cnt_byte);
+							return -1;
 						}
 					}
 		}

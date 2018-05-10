@@ -53,7 +53,7 @@ static ilitek_key_info key={0,0,0,0};
 		key=Scan_TS_Key();
 		FSM_TS(&key);
 		timer_tick++;
-			if (timer_tick>=20000)
+			if (timer_tick>=40000)
 			{
 				Write_EEPROM("2", 0);	// write eeprom 2, after reboot android will be srart
 				pthread_exit(0);
