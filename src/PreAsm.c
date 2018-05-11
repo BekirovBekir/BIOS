@@ -1486,8 +1486,8 @@ int FuncAccelerometer_Calibration(int Do)
 		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CReading Accelerometer Values: x = %d, y = %d, z = %d\n", ValueX,ValueY,ValueZ);
 		write(fd_fb, buf, cnt_byte);
 
-		if ((ValueX<40) && (ValueX>-40) &&\
-			(ValueY<40) && (ValueY>-40) &&\
+		if ((ValueX<50) && (ValueX>-50) &&\
+			(ValueY<50) && (ValueY>-50) &&\
 			(ValueZ>1000) && (ValueZ<1048)) {
 
 			CalibX=-ValueX/2;
