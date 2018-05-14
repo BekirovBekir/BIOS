@@ -159,7 +159,7 @@ close_l:
 
 	return ret;*/
 
-		FILE *f;
+		static FILE *f;
 		char state;
 		int epfd;
 		int nfds;
@@ -182,6 +182,7 @@ close_l:
 						close(epfd);
 						return -1;
 					}
+		flag=1;
 		}
 			ev.events = EPOLLIN | EPOLLPRI ;
 			ev.data.fd = fileno(f);

@@ -75,7 +75,7 @@ void* test_sel_thread_func(void* thread_data)
 			//printf("enter to thread\n");
 
 			memset(str, 0, sizeof(str));
-			USB_getline(str, 4, 2000);
+			USB_getline(str, 4, 500);
 
 			if(isActiveFullTesetMenu())
 			{
