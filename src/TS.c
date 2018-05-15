@@ -39,6 +39,7 @@
 extern Menu* active_menu;
 extern Menu FullTest;
 extern Menu FullTestPostAsm;
+extern Menu CellTestUART;
 extern int timer_tick;
 extern pthread_mutex_t mutex;
 
@@ -131,6 +132,7 @@ void FSM_TS (ilitek_key_info* key)
 
 									if (active_menu==&FullTest) test_run_flag=1;
 									if (active_menu==&FullTestPostAsm) test_run_flag=2;
+									if (active_menu==&CellTestUART) test_run_flag=3;
 
 								pthread_mutex_lock(&mutex);
 								preasm_flag=((active_menu==&FullTest) ? 1 : 0);
@@ -151,6 +153,7 @@ void FSM_TS (ilitek_key_info* key)
 
 									if (active_menu==&FullTest) test_run_flag=1;
 									if (active_menu==&FullTestPostAsm) test_run_flag=2;
+									if (active_menu==&CellTestUART) test_run_flag=3;
 
 									//if (active_menu!=NULL) active_menu->menudisplay();
 									active_menu->menudisplay();

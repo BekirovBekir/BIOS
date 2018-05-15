@@ -40,6 +40,13 @@ Menu GI;
 Menu ShipMode;
 Menu Exit;
 Menu Download;
+Menu CellTest;
+
+Menu CellTestUART;
+Menu CellTestUSB;
+
+Menu CellTestUARTSub;
+Menu CellTestUSBSub;
 
 Menu FullTest;
 Menu EEPROMTest;
@@ -343,6 +350,27 @@ void TestRun_PostAsm(char* test_num)
 	preasm_flag=1;
 }
 
+void TestRun_Modems(char* test_num)
+{
+	preasm_flag=0;
+
+		if (strncmp(test_num, "1\n", 2)==0)
+		{
+		active_menu=&CellTestUARTSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+		if (strncmp(test_num, "2\n", 2)==0)
+		{
+		active_menu=&CellTestUSBSub;
+		active_menu->menudisplay();
+		active_menu->menuaction();
+		}
+
+	preasm_flag=1;
+}
+
 
 int DisplayOut(char* buf)
 {
@@ -379,13 +407,13 @@ void PreAsmDisp (void)
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[13;22H***************************************************************\n");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;22H*\x1b[12;22H*\x1b[13;22H*\x1b[21;22H*\x1b[14;22H*\x1b[15;22H*\x1b[16;22H*\x1b[17;22H*\x1b[18;22H*\x1b[19;22H*\x1b[20;22H*\x1b[21;22H*\x1b[22;22H*\x1b[23;22H*\x1b[24;22H*\x1b[25;22H*\x1b[26;22H*");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;22H*\x1b[12;22H*\x1b[13;22H*\x1b[21;22H*\x1b[14;22H*\x1b[15;22H*\x1b[16;22H*\x1b[17;22H*\x1b[18;22H*\x1b[19;22H*\x1b[20;22H*\x1b[21;22H*\x1b[22;22H*\x1b[23;22H*\x1b[24;22H*\x1b[25;22H*\x1b[26;22H*\x1b[27;22H*\x1b[28;22H*");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;84H*\x1b[12;84H*\x1b[13;84H*\x1b[14;84H*\x1b[15;84H*\x1b[16;84H*\x1b[17;84H*\x1b[18;84H*\x1b[19;84H*\x1b[20;84H*\x1b[21;84H*\x1b[22;84H*\x1b[23;84H*\x1b[24;84H*\x1b[25;84H*\x1b[26;84H*");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[11;84H*\x1b[12;84H*\x1b[13;84H*\x1b[14;84H*\x1b[15;84H*\x1b[16;84H*\x1b[17;84H*\x1b[18;84H*\x1b[19;84H*\x1b[20;84H*\x1b[21;84H*\x1b[22;84H*\x1b[23;84H*\x1b[24;84H*\x1b[25;84H*\x1b[26;84H*\x1b[27;84H*\x1b[28;84H*");
 	write(fd_fb, buf, cnt_byte);
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[27;22H***************************************************************\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[29;22H***************************************************************\n");
 	write(fd_fb, buf, cnt_byte);
 
 
@@ -413,7 +441,11 @@ void PreAsmDisp (void)
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C6. Enter Into Download Mode OS\n");
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C6. Enter Into Download Mode OS\n\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[41C7. Cellular Modem Passthrough Testing\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 200);
@@ -592,12 +624,16 @@ void DownloadDisp (void)
 	char buf[50];
 	char cnt_byte;
 
-	memset(buf, 0, 50);
+	/*memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;41H \n\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;41H \n\n");
+	write(fd_fb, buf, cnt_byte);*/
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[27;41H \n\n");
 	write(fd_fb, buf, cnt_byte);
 
 	memset(buf, 0, 50);
@@ -631,6 +667,205 @@ void DownloadAct (void)
 
 	//system("reboot");
 	pthread_exit(0);
+}
+
+void CellTestDisp (void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[15;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[25;41H \n\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[40C>\n\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CellTestAct (void)
+{
+
+}
+
+void CellTestUARTDisp(void)
+{
+	char buf[200];
+		char cnt_byte;
+
+
+		USB_printf("\n===================== Cellular Modem Passthrough Testing ====================\n", 50);
+		USB_printf("	1. UART Modem Test\n", 50);
+		USB_printf("	2. USB Modem Test\n", 50);
+		USB_printf("======================================================================\n", 50);
+		USB_printf("Please enter number of the test (1-2) end press ENTER:\n", 50);
+
+
+		//thread_flag=0;
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37m;40\x1b[0;0H*********************************************************************************************************");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[1;0H*\x1b[2;0H*\x1b[3;0H*\x1b[4;0H*\x1b[5;0H*\x1b[6;0H*\x1b[7;0H*\x1b[8;0H*\x1b[9;0H*\x1b[1;0H*\x1b[10;0H*\x1b[11;0H*\x1b[12;0H*\x1b[13;0H*\x1b[14;0H*\x1b[15;0H*\x1b[16;0H*\x1b[17;0H*");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[18;0H*\x1b[19;0H*\x1b[20;0H*\x1b[21;0H*\x1b[22;0H*\x1b[23;0H*\x1b[24;0H*\x1b[25;0H*\x1b[26;0H*\x1b[27;0H*\x1b[28;0H*\x1b[29;0H*\x1b[30;0H*\x1b[31;0H*\x1b[32;0H*\x1b[33;0H*\x1b[34;0H*\x1b[35;0H*\x1b[36;0H*");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[1;106H*\x1b[2;106H*\x1b[3;106H*\x1b[4;106H*\x1b[5;106H*\x1b[6;106H*\x1b[7;106H*\x1b[8;106H*\x1b[9;106H*\x1b[1;106H*\x1b[10;106H*\x1b[11;106H*\x1b[12;106H*\x1b[13;106H*\x1b[14;106H*\x1b[15;106H*\x1b[16;106H*\x1b[17;106H*");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[18;106H*\x1b[19;106H*\x1b[20;106H*\x1b[21;106H*\x1b[22;106H*\x1b[23;106H*\x1b[24;106H*\x1b[25;106H*\x1b[26;106H*\x1b[27;106H*\x1b[28;106H*\x1b[29;106H*\x1b[30;106H*\x1b[31;106H*\x1b[32;106H*\x1b[33;106H*\x1b[34;106H*\x1b[35;106H*\x1b[36;106H*");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[36;0H*********************************************************************************************************");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[4;0H*********************************************************************************************************");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[2;32H===== Cellular Modem Passthrough Testing =====\x1b[0m");
+		write(fd_fb, buf, cnt_byte);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;45H \n\n");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[16;45H>1. UART Modem Test\n");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[45C2. USB Modem Test\n");
+		write(fd_fb, buf, cnt_byte);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+		write(fd_fb, buf, cnt_byte);
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+		write(fd_fb, buf, cnt_byte);
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+		write(fd_fb, buf, cnt_byte);
+}
+
+void CellTestUARTAct(void)
+{
+
+}
+
+void CellTestUARTSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncBarometer_Functionality(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CellTestUARTSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CellTestUSBDisp(void)
+{
+	char buf[50];
+	char cnt_byte;
+
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;45H>\n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[16;45H \n");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 50);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CellTestUSBAct(void)
+{
+
+}
+
+void CellTestUSBSubAct(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	USB_printf("\n", 500);
+
+	FuncBarometer_Functionality(1);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
+}
+
+void CellTestUSBSubDisp(void)
+{
+	char buf[200];
+	char cnt_byte;
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+	write(fd_fb, buf, cnt_byte);
+
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+	write(fd_fb, buf, cnt_byte);
+	memset(buf, 0, 200);
+	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+	write(fd_fb, buf, cnt_byte);
 }
 
 void PreAsmTestDisp(void)
@@ -3237,7 +3472,7 @@ void CapTouchTestPostAsmSubDisp(void)
 void MenuInit (void)
 {
 	PreAsm.DOWN=&PostAsm;
-	PreAsm.UP=&Download;
+	PreAsm.UP=&CellTest;
 	PreAsm.ENTER=&FullTest;//&PreAsm;
 	PreAsm.ESC=NULL;
 	PreAsm.menudisplay=&PreAsmDisp;
@@ -3645,12 +3880,48 @@ void MenuInit (void)
 	//PreAsmTest.menuaction=&PreAsmTestDisp;
 	//PreAsmTest.menuaction=&PreAsmTestAct;
 
-	Download.DOWN=&PreAsm;
+	Download.DOWN=&CellTest;
 	Download.UP=&Exit;
 	Download.ENTER=&Download;
 	Download.ESC=NULL;
 	Download.menudisplay=&DownloadDisp;
 	Download.menuaction=&DownloadAct;
+
+	CellTest.DOWN=&PreAsm;
+	CellTest.UP=&Download;
+	CellTest.ENTER=&CellTestUART;
+	CellTest.ESC=NULL;
+	CellTest.menuaction=&CellTestAct;
+	CellTest.menudisplay=&CellTestDisp;
+
+	CellTestUART.DOWN=&CellTestUSB;
+	CellTestUART.UP=&CellTestUSB;
+	CellTestUART.ENTER=&CellTestUARTSub;
+	CellTestUART.ESC=&PreAsm;
+	CellTestUART.menuaction=&CellTestUARTAct;
+	CellTestUART.menudisplay=&CellTestUARTDisp;
+
+	CellTestUARTSub.DOWN=NULL;
+	CellTestUARTSub.UP=NULL;
+	CellTestUARTSub.ESC=&CellTestUART;
+	CellTestUARTSub.ENTER=&CellTestUARTSub;
+	CellTestUARTSub.menuaction=&CellTestUARTSubAct;
+	CellTestUARTSub.menudisplay=&CellTestUARTSubDisp;
+
+	CellTestUSB.DOWN=&CellTestUART;
+	CellTestUSB.UP=&CellTestUART;
+	CellTestUSB.ENTER=&CellTestUSBSub;
+	CellTestUSB.ESC=&PreAsm;
+	CellTestUSB.menuaction=&CellTestUSBAct;
+	CellTestUSB.menudisplay=&CellTestUSBDisp;
+
+	CellTestUSBSub.DOWN=NULL;
+	CellTestUSBSub.UP=NULL;
+	CellTestUSBSub.ESC=&CellTestUART;
+	CellTestUSBSub.ENTER=&CellTestUSBSub;
+	CellTestUSBSub.menuaction=&CellTestUSBSubAct;
+	CellTestUSBSub.menudisplay=&CellTestUSBSubDisp;
+
 
 	char buf[200];
 	char cnt_byte;

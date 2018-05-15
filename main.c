@@ -83,6 +83,8 @@ void* test_sel_thread_func(void* thread_data)
 				//printf("str = %s %i \n", str, str[0]);
 				if (test_run_flag==1) TestRun(str);
 				if (test_run_flag==2) TestRun_PostAsm(str);
+				if (test_run_flag==3) TestRun_Modems(str);
+
 			}
 			else
 			{
