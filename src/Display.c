@@ -822,6 +822,7 @@ void CellTestUARTSubDisp(void)
 
 void CellTestUSBDisp(void)
 {
+	/*
 	char buf[50];
 	char cnt_byte;
 
@@ -834,6 +835,73 @@ void CellTestUSBDisp(void)
 	memset(buf, 0, 50);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
 	write(fd_fb, buf, cnt_byte);
+	*/
+
+	char buf[200];
+	char cnt_byte;
+
+
+			USB_printf("\n===================== Cellular Modem Passthrough Testing ====================\n", 50);
+			USB_printf("	1. UART Modem Test\n", 50);
+			USB_printf("	2. USB Modem Test\n", 50);
+			USB_printf("======================================================================\n", 50);
+			USB_printf("Please enter number of the test (1-2) end press ENTER:\n", 50);
+
+
+			//thread_flag=0;
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[0;0H");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37m;40\x1b[0;0H*********************************************************************************************************");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[1;0H*\x1b[2;0H*\x1b[3;0H*\x1b[4;0H*\x1b[5;0H*\x1b[6;0H*\x1b[7;0H*\x1b[8;0H*\x1b[9;0H*\x1b[1;0H*\x1b[10;0H*\x1b[11;0H*\x1b[12;0H*\x1b[13;0H*\x1b[14;0H*\x1b[15;0H*\x1b[16;0H*\x1b[17;0H*");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[18;0H*\x1b[19;0H*\x1b[20;0H*\x1b[21;0H*\x1b[22;0H*\x1b[23;0H*\x1b[24;0H*\x1b[25;0H*\x1b[26;0H*\x1b[27;0H*\x1b[28;0H*\x1b[29;0H*\x1b[30;0H*\x1b[31;0H*\x1b[32;0H*\x1b[33;0H*\x1b[34;0H*\x1b[35;0H*\x1b[36;0H*");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[1;106H*\x1b[2;106H*\x1b[3;106H*\x1b[4;106H*\x1b[5;106H*\x1b[6;106H*\x1b[7;106H*\x1b[8;106H*\x1b[9;106H*\x1b[1;106H*\x1b[10;106H*\x1b[11;106H*\x1b[12;106H*\x1b[13;106H*\x1b[14;106H*\x1b[15;106H*\x1b[16;106H*\x1b[17;106H*");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[18;106H*\x1b[19;106H*\x1b[20;106H*\x1b[21;106H*\x1b[22;106H*\x1b[23;106H*\x1b[24;106H*\x1b[25;106H*\x1b[26;106H*\x1b[27;106H*\x1b[28;106H*\x1b[29;106H*\x1b[30;106H*\x1b[31;106H*\x1b[32;106H*\x1b[33;106H*\x1b[34;106H*\x1b[35;106H*\x1b[36;106H*");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[36;0H*********************************************************************************************************");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[4;0H*********************************************************************************************************");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[2;32H===== Cellular Modem Passthrough Testing =====\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;45H \n\n");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[16;45H 1. UART Modem Test\n");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[45C>2. USB Modem Test\n");
+			write(fd_fb, buf, cnt_byte);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+			write(fd_fb, buf, cnt_byte);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[35;34H\x1b[33mVOL BUTTON - ESC CENTRAL BUTTON - ENTER\x1b[0m");
+			write(fd_fb, buf, cnt_byte);
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
+			write(fd_fb, buf, cnt_byte);
+
 }
 
 void CellTestUSBAct(void)
