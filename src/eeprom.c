@@ -62,10 +62,18 @@ unsigned int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt)
 			perror("\r\nError while opening eeprom");
 			return -1;
 		}
-		lseek(fd, pos, SEEK_SET);
-		if (read(fd, ptr_buf, cnt)!=cnt)
+		if (lseek(fd, pos, SEEK_SET)!=-1)
 		{
-			perror("\r\nError while writing eeprom");
+			if (read(fd, ptr_buf, cnt)!=cnt)
+			{
+				perror("\r\nError while writing eeprom");
+				close(fd);
+				return -1;
+			}
+		}
+		else
+		{
+			close(fd);
 			return -1;
 		}
 	close(fd);
