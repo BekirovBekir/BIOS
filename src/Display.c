@@ -112,6 +112,11 @@ extern int EEPROM_SN(void);
 extern int EEPROM_SN_Read(void);
 extern pthread_mutex_t mutex;
 extern int preasm_flag;
+extern int suspend_menu_flag;
+
+extern pthread_t cell_passthrough_thread;	// thread for select test from USB port
+extern int id_cell_passthrough_thread;
+extern void* cell_passthrough_func(void* thread_data);
 
 /*
 extern unsigned char flag_for_pre_asm;
@@ -775,18 +780,24 @@ void CellTestUARTSubAct(void)
 {
 	char buf[200];
 	char cnt_byte;
+	int thread_state;
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
 	write(fd_fb, buf, cnt_byte);
 
-	USB_printf("\n", 500);
+	pthread_mutex_lock(&mutex);
+	suspend_menu_flag = 2;
+	pthread_mutex_unlock(&mutex);
 
-	FuncBarometer_Functionality(1);
+	thread_state = pthread_create(&cell_passthrough_thread, NULL, cell_passthrough_func,
+			&id_cell_passthrough_thread);
+	if (thread_state == 0) {
+		printf("\nPassthrough thread started\n");
+	} else {
+		perror("\nPassthrough thread fail\n");
+	}
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
 }
 
 void CellTestUARTSubDisp(void)
@@ -834,6 +845,7 @@ void CellTestUSBSubAct(void)
 {
 	char buf[200];
 	char cnt_byte;
+	int thread_state;
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;0H");
@@ -841,11 +853,19 @@ void CellTestUSBSubAct(void)
 
 	USB_printf("\n", 500);
 
-	FuncBarometer_Functionality(1);
+	pthread_mutex_lock(&mutex);
+	suspend_menu_flag = 1;
+	pthread_mutex_unlock(&mutex);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[36;0H");
-	write(fd_fb, buf, cnt_byte);
+	thread_state = pthread_create(&cell_passthrough_thread, NULL, cell_passthrough_func,
+			&id_cell_passthrough_thread);
+	if (thread_state == 0) {
+		printf("\nPassthrough thread started\n");
+	} else {
+		perror("\nPassthrough thread fail\n");
+	}
+
+
 }
 
 void CellTestUSBSubDisp(void)
@@ -3917,7 +3937,7 @@ void MenuInit (void)
 
 	CellTestUSBSub.DOWN=NULL;
 	CellTestUSBSub.UP=NULL;
-	CellTestUSBSub.ESC=&CellTestUART;
+	CellTestUSBSub.ESC=&CellTestUSB;
 	CellTestUSBSub.ENTER=&CellTestUSBSub;
 	CellTestUSBSub.menuaction=&CellTestUSBSubAct;
 	CellTestUSBSub.menudisplay=&CellTestUSBSubDisp;

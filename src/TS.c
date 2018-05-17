@@ -27,6 +27,7 @@
 #include "ComPort.h"
 #include "FrameBuffer.h"
 #include "Display.h"
+#include "CellTest.h"
 
 #define DEBUG 1
 
@@ -40,8 +41,13 @@ extern Menu* active_menu;
 extern Menu FullTest;
 extern Menu FullTestPostAsm;
 extern Menu CellTestUART;
+extern Menu CellTestUSB;
+extern Menu CellTestUARTSub;
+extern Menu CellTestUSBSub;
 extern int timer_tick;
+
 extern pthread_mutex_t mutex;
+extern pthread_t cell_passthrough_thread;	// thread for select test from USB port
 
 int preasm_flag=0;
 extern int test_run_flag;
@@ -154,6 +160,13 @@ void FSM_TS (ilitek_key_info* key)
 									if (active_menu==&FullTest) test_run_flag=1;
 									if (active_menu==&FullTestPostAsm) test_run_flag=2;
 									if (active_menu==&CellTestUART) test_run_flag=3;
+
+									if (active_menu == &CellTestUART || active_menu == &CellTestUSB) {
+										pthread_mutex_lock(&mutex);
+										termState = false;
+										pthread_mutex_unlock(&mutex);
+										pthread_join(cell_passthrough_thread, NULL);
+									}
 
 									//if (active_menu!=NULL) active_menu->menudisplay();
 									active_menu->menudisplay();
