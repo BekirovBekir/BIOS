@@ -343,20 +343,6 @@ int UART_Module_Passthrought(int Do) {
 
 	usleep(1000000);
 
-	if (Write_GPIO("49", "1") != 1) {
-
-		USB_printf("@Error write pins#\n^Test 8A: Fail, error write pins\n",
-				1000);
-
-		memset(buf, 0, 200);
-		cntByte =
-				snprintf(buf, sizeof(buf),
-						"\x1b[2C@Error write pins#\n\x1b[2C^Test 8A: Fail, error write pins\n");
-		write(fd_fb, buf, cntByte);
-
-		return -1;
-	}
-
 	portId = OpenPort(UART_PORT_NAME);
 	SetPort(portId, PORT_SPEED);
 	usleep(1000000);
