@@ -641,13 +641,15 @@ close:
 
 
 int get_line(char* str, int size, int timeout)
-	{
+{
 	struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
 	FILE *usbcon;
 	char *line;
 	ssize_t read;
 	int ret = 0;
 	int len;
+
+	char* fgetsret;
 
 	len = size+1;
 	line = (void *)malloc(len);
@@ -671,7 +673,7 @@ int get_line(char* str, int size, int timeout)
 
 	if( poll(&usbpoll, 1, timeout) )
 	{
-		fgets(line, len, usbcon);
+		fgetsret = fgets(line, len, usbcon);
 	}
 	else
 	{
@@ -682,19 +684,79 @@ int get_line(char* str, int size, int timeout)
 
 	if(ret == 0 )
 	{
-		if(len != NULL)
+		if(fgetsret != NULL)
 			strncpy(str, line, size);
+		else
+			ret = -1;
 		printf("Enter - %s\n", str);
 	}
 
-close_l:
+	close_l:
 	if(usbcon)
 		fclose(usbcon);
 	if(line)
 		free(line);
 
 	return ret;
+}
+
+
+int get_line_wo_clean(char* str, int size, int timeout)
+{
+	struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
+	FILE *usbcon;
+	char *line;
+	ssize_t read;
+	int ret = 0;
+	int len;
+
+	char* fgetsret;
+
+	len = size+1;
+	line = (void *)malloc(len);
+	memset(line, 0, len);
+
+
+
+	usbcon = fopen(USB_CON_PATH, "r");
+	if (usbcon == NULL)
+	{
+		ret = -1;
+		printf("Error not opened\n");
+		goto close_l;
 	}
 
 
+	//tcflush(fileno(usbcon), TCIOFLUSH);
 
+	usbpoll.fd = fileno(usbcon);
+	usbpoll.events = POLLIN | POLLPRI;
+
+	if( poll(&usbpoll, 1, timeout) )
+	{
+		fgetsret = fgets(line, len, usbcon);
+	}
+	else
+	{
+		//Timeout
+		//printf("Error timeout\n");
+		ret = -1;
+	}
+
+	if(ret == 0 )
+	{
+		if(fgetsret != NULL)
+			strncpy(str, line, size);
+		else
+			ret = -1;
+		printf("Enter - %s\n", str);
+	}
+
+	close_l:
+	if(usbcon)
+		fclose(usbcon);
+	if(line)
+		free(line);
+
+	return ret;
+}

@@ -73,9 +73,6 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed);
 
 int SignalCheck(int port_id, int isfirstStart, char* curr_modem);
 
-extern int CX;
-extern int CY;
-extern int CZ;
 extern char LightDataBuffer[100];
 extern float temperature;
 extern float pressure;
@@ -1796,7 +1793,6 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 	//Test toggling GPIO signal for RF antenna selection for USB modem versus UART modem
 
 	#define BUFF_SIZE 100
-	static int firststart = 1;
 	int SaraErr=0;
 	memset(SaraBuffer, 0, sizeof(SaraBuffer));
 
@@ -1887,8 +1883,6 @@ int FuncSARA_Module_Testing_Power_Antenna_Permission_PostAsm(int Do) //
 	usleep(12000000);
 
 	SaraErr = Init_LARA_SARA_PostAsm("/dev/ttyACM0", 115200);
-
-	firststart = 0;
 
 	switch (SaraErr) {
 		case 0:
