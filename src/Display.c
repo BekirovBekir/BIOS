@@ -888,7 +888,7 @@ void CellTestUSBDisp(void)
 			write(fd_fb, buf, cnt_byte);
 			memset(buf, 0, 200);
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[45C>2. USB Modem Test\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[37;40m\x1b[44C>2. USB Modem Test\n");
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
