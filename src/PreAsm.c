@@ -1921,7 +1921,7 @@ int FuncEMMY_163_Connectivity_Check(int Do)
 
 
 	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "/root/NFC_test %s, %i", USB_PATH, fd_fb);
+	cnt_byte=snprintf(buf, sizeof(buf), "/mnt/NFC_test %s, %i", USB_PATH, fd_fb);
 	system(buf);
 
 	if(result == 0){
