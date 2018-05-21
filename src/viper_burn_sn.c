@@ -17,8 +17,10 @@
 #define EEPROM_SIZE 512
 #define USB_READ_TIMEOUT 30000
 
+#define MAX_SIZE_SN 100
+
 static unsigned char sernum[SERIAL_NUMBER_SIZE];
-static char sernum_str[SERIAL_NUMBER_SIZE * 2];
+static char sernum_str[MAX_SIZE_SN * 2];	//SERIAL_NUMBER_SIZE * 2
 //-----------------------------------------------------------------------
 //static struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
 static struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
@@ -233,9 +235,9 @@ edit:
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEnter Device Serial Number (16 character Hex value):");
 			write(fd_fb, buf, cnt_byte);
 
-			memset(sernum_str, 0, SERIAL_NUMBER_SIZE*2);
+			memset(sernum_str, 0, MAX_SIZE_SN * 2);	//SERIAL_NUMBER_SIZE*2
 
-			if( get_line(sernum_str, SERIAL_NUMBER_SIZE*2, USB_READ_TIMEOUT) != 0)
+			if( get_line(sernum_str, MAX_SIZE_SN*2, USB_READ_TIMEOUT) != 0)	//SERIAL_NUMBER_SIZE*2
 			{
 						printf("\n");
 				to_USB_console("#\n");
@@ -258,7 +260,7 @@ edit:
 			to_USB_console("\n^Test 1B: FAIL, User Failed to Proper Enter Value\n");
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 1B: FAIL, User Failed to Proper Enter Value\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C^Test 1B: FAIL, User Failed to Proper Enter Value\n");
 			write(fd_fb, buf, cnt_byte);
 			return -1;
 		}
@@ -444,17 +446,21 @@ int validate_input_string(char* str)
 	unsigned char i;
 	int err = 0;
 
-	for(i=0; i< (SERIAL_NUMBER_SIZE*2); i++)
+	int cnt=strlen(str)-1;
+	if(cnt<=(SERIAL_NUMBER_SIZE*2))
 	{
-		if( (str[i] >= '0' && str[i] <= '9') ||
-			(str[i] >= 'a' && str[i] <= 'f') ||
-			(str[i] >= 'A' && str[i] <= 'F'))
+		for(i=0; i< (SERIAL_NUMBER_SIZE*2); i++)
 		{
-			continue;
+			if( (str[i] >= '0' && str[i] <= '9') ||
+				(str[i] >= 'a' && str[i] <= 'f') ||
+				(str[i] >= 'A' && str[i] <= 'F'))
+			{
+				continue;
+			}
+			err++;
 		}
-		err++;
 	}
-
+	else err++;
 	return err;
 }
 
