@@ -17,8 +17,10 @@
 #define EEPROM_SIZE 512
 #define USB_READ_TIMEOUT 30000
 
+#define MAX_SIZE_SN 100
+
 static unsigned char sernum[SERIAL_NUMBER_SIZE];
-static char sernum_str[SERIAL_NUMBER_SIZE * 2];
+static char sernum_str[MAX_SIZE_SN * 2];	//SERIAL_NUMBER_SIZE * 2
 //-----------------------------------------------------------------------
 //static struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
 static struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
@@ -233,9 +235,9 @@ edit:
 			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CEnter Device Serial Number (16 character Hex value):");
 			write(fd_fb, buf, cnt_byte);
 
-			memset(sernum_str, 0, SERIAL_NUMBER_SIZE*2);
+			memset(sernum_str, 0, MAX_SIZE_SN * 2);	//SERIAL_NUMBER_SIZE*2
 
-			if( get_line(sernum_str, SERIAL_NUMBER_SIZE*2, USB_READ_TIMEOUT) != 0)
+			if( get_line(sernum_str, MAX_SIZE_SN*2, USB_READ_TIMEOUT) != 0)	//SERIAL_NUMBER_SIZE*2
 			{
 						printf("\n");
 				to_USB_console("#\n");
@@ -258,7 +260,7 @@ edit:
 			to_USB_console("\n^Test 1B: FAIL, User Failed to Proper Enter Value\n");
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 1B: FAIL, User Failed to Proper Enter Value\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\n\x1b[2C^Test 1B: FAIL, User Failed to Proper Enter Value\n");
 			write(fd_fb, buf, cnt_byte);
 			return -1;
 		}
@@ -444,17 +446,21 @@ int validate_input_string(char* str)
 	unsigned char i;
 	int err = 0;
 
-	for(i=0; i< (SERIAL_NUMBER_SIZE*2); i++)
+	int cnt=strlen(str)-1;
+	if(cnt<=(SERIAL_NUMBER_SIZE*2))
 	{
-		if( (str[i] >= '0' && str[i] <= '9') ||
-			(str[i] >= 'a' && str[i] <= 'f') ||
-			(str[i] >= 'A' && str[i] <= 'F'))
+		for(i=0; i< (SERIAL_NUMBER_SIZE*2); i++)
 		{
-			continue;
+			if( (str[i] >= '0' && str[i] <= '9') ||
+				(str[i] >= 'a' && str[i] <= 'f') ||
+				(str[i] >= 'A' && str[i] <= 'F'))
+			{
+				continue;
+			}
+			err++;
 		}
-		err++;
 	}
-
+	else err++;
 	return err;
 }
 
@@ -641,13 +647,15 @@ close:
 
 
 int get_line(char* str, int size, int timeout)
-	{
+{
 	struct pollfd usbpoll = { STDIN_FILENO, POLLIN|POLLPRI };
 	FILE *usbcon;
 	char *line;
 	ssize_t read;
 	int ret = 0;
 	int len;
+
+	char* fgetsret;
 
 	len = size+1;
 	line = (void *)malloc(len);
@@ -671,7 +679,7 @@ int get_line(char* str, int size, int timeout)
 
 	if( poll(&usbpoll, 1, timeout) )
 	{
-		fgets(line, len, usbcon);
+		fgetsret = fgets(line, len, usbcon);
 	}
 	else
 	{
@@ -682,19 +690,18 @@ int get_line(char* str, int size, int timeout)
 
 	if(ret == 0 )
 	{
-		if(len != NULL)
+		if(fgetsret != NULL)
 			strncpy(str, line, size);
+		else
+			ret = -1;
 		printf("Enter - %s\n", str);
 	}
 
-close_l:
+	close_l:
 	if(usbcon)
 		fclose(usbcon);
 	if(line)
 		free(line);
 
 	return ret;
-	}
-
-
-
+}
