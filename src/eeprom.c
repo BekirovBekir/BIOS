@@ -21,6 +21,7 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
+#include <sys/stat.h>
 
 #include "../inc/eeprom.h"
 
@@ -62,6 +63,16 @@ unsigned int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt)
 			perror("\r\nError while opening eeprom");
 			return -1;
 		}
+
+		struct stat fd_stat;
+		stat(EEPROM_PATH, &fd_stat);
+
+		if (fd_stat.st_size<=0)
+		{
+			close(fd);
+			return -1;
+		}
+
 		if (lseek(fd, pos, SEEK_SET)!=-1)
 		{
 			if (read(fd, ptr_buf, cnt)!=cnt)

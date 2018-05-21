@@ -25,7 +25,6 @@
 #include <stdio_ext.h>
 #include <termios.h>
 
-
 #include "PostAsm.h"
 #include "PreAsm.h"
 #include "eeprom.h"
