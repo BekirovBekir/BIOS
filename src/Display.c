@@ -118,6 +118,9 @@ extern pthread_t cell_passthrough_thread;	// thread for select test from USB por
 extern int id_cell_passthrough_thread;
 extern void* cell_passthrough_func(void* thread_data);
 
+int flush_flag=0;
+pthread_mutex_t flush_mutex=PTHREAD_MUTEX_INITIALIZER;
+
 /*
 extern unsigned char flag_for_pre_asm;
 
@@ -1087,7 +1090,9 @@ void FullTestDisp(void)
 
 void FullTestAct(void)
 {
-
+	pthread_mutex_lock(&flush_mutex);
+	flush_flag=1;
+	pthread_mutex_unlock(&flush_mutex);
 }
 
 void FullTestSubDisp (void)
@@ -2273,6 +2278,10 @@ void FullTestPostAsmAct(void)
 	USB_printf("======================================================================\n", 50);
 	USB_printf("Please enter number of the test (0-13) end press ENTER:\n", 50);
 	*/
+
+	pthread_mutex_lock(&flush_mutex);
+	flush_flag=1;
+	pthread_mutex_unlock(&flush_mutex);
 }
 
 void FullTestPostAsmSubAct(void)

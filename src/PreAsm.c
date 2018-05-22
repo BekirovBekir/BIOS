@@ -49,6 +49,9 @@
 extern FILE *stdin;
 extern int fd_fb;
 
+extern int flush_flag;
+extern pthread_mutex_t flush_mutex;
+
 #define USB_PATH "/dev/ttyGS0"
 extern int get_line(char* str, int size, int timeout);
 
@@ -177,16 +180,26 @@ close_l:
 			//fcntl(fileno(f), F_SETFL, flags | O_NONBLOCK);
 
 				if (f == NULL)
-					{
-						printf("Fail open usb!\n");
-						close(epfd);
-						return -1;
-					}
+				{
+					printf("Fail open usb!\n");
+					close(epfd);
+					return -1;
+				}
+		tcflush(fileno(f), TCIOFLUSH);
 		flag=1;
 		}
-			ev.events = EPOLLIN | EPOLLPRI ;
-			ev.data.fd = fileno(f);
-			epoll_ctl(epfd, EPOLL_CTL_ADD, fileno(f), &ev);
+
+		pthread_mutex_lock(&flush_mutex);
+			if (flush_flag==1)
+			{
+				tcflush(fileno(f), TCIOFLUSH);
+				flush_flag=0;
+			}
+		pthread_mutex_unlock(&flush_mutex);
+
+		ev.events = EPOLLIN | EPOLLPRI ;
+		ev.data.fd = fileno(f);
+		epoll_ctl(epfd, EPOLL_CTL_ADD, fileno(f), &ev);
 
 		//tcflush(fileno(f), TCIOFLUSH);
 		nfds = epoll_wait(epfd, &ev, 1, timeout);

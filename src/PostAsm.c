@@ -962,7 +962,7 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 	}
 	else
 	{
-		if (dataBuffer[0]=='*') state_calib=-1;
+		if ((dataBuffer[0]=='*') || (dataBuffer[0]==0)) state_calib=-1;
 		else
 		{
 			//memset(dataBuffer, 0, 100);

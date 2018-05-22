@@ -27,7 +27,7 @@
 
 #define EEPROM_PATH "/sys/class/i2c-dev/i2c-1/device/1-0054/eeprom"
 
-unsigned int Write_EEPROM(char* ptr_buf, unsigned int pos)
+int Write_EEPROM(char* ptr_buf, unsigned int pos)
 {
 	int fd;
 	char buf[50]={0};
@@ -51,25 +51,25 @@ unsigned int Write_EEPROM(char* ptr_buf, unsigned int pos)
 	return cnt;
 }
 
-unsigned int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt)
+int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt)
 {
 	int fd;
 	char buf[50]={0};
+
+	/*struct stat fd_stat;
+
+	if (stat(EEPROM_PATH, &fd_stat)!=0) return -1;
+
+	if (fd_stat.st_blocks<=0)
+	{
+		return -1;
+	}*/
 
 	snprintf(buf, sizeof(buf), EEPROM_PATH);
 	fd=open(buf, O_RDONLY);
 		if (fd<0)
 		{
 			perror("\r\nError while opening eeprom");
-			return -1;
-		}
-
-		struct stat fd_stat;
-		stat(EEPROM_PATH, &fd_stat);
-
-		if (fd_stat.st_size<=0)
-		{
-			close(fd);
 			return -1;
 		}
 
