@@ -3123,23 +3123,25 @@ int Init_LARA_SARA(char* port_name, int port_speed) {
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
-	memset(answr_buf, 0, sizeof(answr_buf));
-	ret = sendAndPreParse(port_id, "AT+CIMI\r", answr_buf, curr_modem);
-	if (ret) {
-		ret = -3; // IMSI read error;
-		goto error;
-	}
+	/*
+	 memset(answr_buf, 0, sizeof(answr_buf));
+	 ret = sendAndPreParse(port_id, "AT+CIMI\r", answr_buf, curr_modem);
+	 if (ret) {
+	 ret = -3; // IMSI read error;
+	 goto error;
+	 }
 
-	memset(out_buf, 0, sizeof(out_buf));
-	sprintf(out_buf, "@IMSI = ");
-	strncat(out_buf, answr_buf, strcspn(answr_buf, "\n\n"));
-	strcat(out_buf, "#\n");
+	 memset(out_buf, 0, sizeof(out_buf));
+	 sprintf(out_buf, "@IMSI = ");
+	 strncat(out_buf, answr_buf, strcspn(answr_buf, "\n\n"));
+	 strcat(out_buf, "#\n");
 
-	USB_printf(out_buf, 1000);
+	 USB_printf(out_buf, 1000);
 
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
-	write(fd_fb, buf, cnt_byte);
+	 memset(buf, 0, 200);
+	 cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
+	 write(fd_fb, buf, cnt_byte);
+	 */
 
 	memset(answr_buf, 0, sizeof(answr_buf));
 	ret = sendAndPreParse(port_id, "ATI9\r", answr_buf, curr_modem);

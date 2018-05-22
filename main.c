@@ -122,10 +122,10 @@ void* cell_passthrough_func(void* thread_data) {
 	case 0:
 		break;
 	case 1:
-		USB_Module_Passthrought(1);
+		USB_Module_Passthrough(1);
 		break;
 	case 2:
-		UART_Module_Passthrought(1);
+		UART_Module_Passthrough(1);
 		break;
 	default:
 		printf("Unexpected state!!!");
