@@ -30,7 +30,7 @@ int id_test_passthrough = 3;
 
 extern pthread_mutex_t mutex;
 
-int USB_Module_Passthrought(int Do) {
+int USB_Module_Passthrough(int Do) {
 	//Sending power on to device on USB port
 	//Toggling GPIO signal for RF antenna selection for USB modem versus UART modem
 	//Resume terminal task, route terminal to the USB device
@@ -211,7 +211,7 @@ int USB_Module_Passthrought(int Do) {
 	return 0;
 }
 
-int UART_Module_Passthrought(int Do) {
+int UART_Module_Passthrough(int Do) {
 
 	//Sending power on to device on USB port
 	//Toggling GPIO signal for RF antenna selection for USB modem versus UART modem

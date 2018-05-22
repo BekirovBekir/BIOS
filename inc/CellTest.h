@@ -12,7 +12,7 @@
 
 bool termState;
 
-int USB_Module_Passthrought(int Do);
-int UART_Module_Passthrought(int Do);
+int USB_Module_Passthrough(int Do);
+int UART_Module_Passthrough(int Do);
 
 #endif //INC_CELLTEST_H_
