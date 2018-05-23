@@ -776,7 +776,9 @@ void CellTestUARTDisp(void)
 
 void CellTestUARTAct(void)
 {
-
+	pthread_mutex_lock(&flush_mutex);
+	flush_flag=1;
+	pthread_mutex_unlock(&flush_mutex);
 }
 
 void CellTestUARTSubAct(void)
@@ -909,7 +911,9 @@ void CellTestUSBDisp(void)
 
 void CellTestUSBAct(void)
 {
-
+	pthread_mutex_lock(&flush_mutex);
+	flush_flag=1;
+	pthread_mutex_unlock(&flush_mutex);
 }
 
 void CellTestUSBSubAct(void)
