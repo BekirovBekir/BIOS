@@ -48,12 +48,14 @@
 
 extern FILE *stdin;
 extern int fd_fb;
+extern FILE* f_desc_usb;
 
 extern int flush_flag;
 extern pthread_mutex_t flush_mutex;
 
 #define USB_PATH "/dev/ttyGS0"
 extern int get_line(char* str, int size, int timeout);
+
 
 
 
@@ -185,6 +187,7 @@ close_l:
 					close(epfd);
 					return -1;
 				}
+		f_desc_usb=f;
 		tcflush(fileno(f), TCIOFLUSH);
 		flag=1;
 		}

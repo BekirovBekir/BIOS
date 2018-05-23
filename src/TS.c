@@ -21,6 +21,9 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <linux/i2c.h>
+#include <stdio_ext.h>
+#include <termios.h>
+#include <sys/epoll.h>
 
 #include "i2c.h"
 #include "TS.h"
@@ -54,6 +57,8 @@ extern int test_run_flag;
 
 unsigned char pre_asm_active=0;
 unsigned char flag_for_pre_asm=0;
+
+FILE* f_desc_usb=NULL;
 
 // Function scanning TS and return struct with key parameters
 ilitek_key_info Scan_TS_Key(void)
@@ -145,6 +150,7 @@ void FSM_TS (ilitek_key_info* key)
 								//printf("PreAsm flag = %i\n", preasm_flag);
 								pthread_mutex_unlock(&mutex);
 
+								if (f_desc_usb!=NULL) tcflush(fileno(f_desc_usb), TCIOFLUSH);
 								active_menu->menudisplay();
 								active_menu->menuaction();
 
