@@ -51,6 +51,29 @@ unsigned int Write_EEPROM(char* ptr_buf, unsigned int pos)
 	return cnt;
 }
 
+unsigned int Write_EEPROM_1(char* ptr_buf, unsigned int pos, unsigned int len)
+{
+	int fd;
+	char buf[50]={0};
+	int cnt=0;
+
+	snprintf(buf, sizeof(buf), EEPROM_PATH);
+	fd=open(buf, O_WRONLY);
+		if (fd<0)
+		{
+			//perror("\r\nError while opening eeprom");
+			return -1;
+		}
+		lseek(fd, pos, SEEK_SET);
+		if (write(fd, ptr_buf, len)!=cnt)
+		{
+			perror("\r\nError while writing eeprom");
+			return -1;
+		}
+	close(fd);
+	return cnt;
+}
+
 unsigned int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt)
 {
 	int fd;
