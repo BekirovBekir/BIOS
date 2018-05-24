@@ -964,7 +964,7 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 	else
 	{
 		unsigned short crc_calc=CRC16(buf_calib_value, 3);
-		unsigned short crc=((unsigned short)(buf_calib_value[4])<<8)|buf_calib_value[3];
+		unsigned short crc=(((unsigned short)(buf_calib_value[4]))<<8)|buf_calib_value[3];
 		if (crc_calc==crc)
 		{
 			CalibX=(signed char)(buf_calib_value[0]); CalibY=(signed char)(buf_calib_value[1]); CalibZ=(signed char)(buf_calib_value[2]);
