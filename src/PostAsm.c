@@ -34,6 +34,7 @@
 #include "FrameBuffer.h"
 #include "AudioCodec.h"
 #include "minmea.h"
+#include "CRC16.h"
 
 
 #define BUF_SIZE_DISP 200
@@ -947,8 +948,8 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 //**********************************************************************************************
 	int state_calib=0;
 
-
-	if (Read_EEPROM(dataBuffer, 19, 14)<=0)
+	unsigned char buf_calib_value[5];
+	if (Read_EEPROM(buf_calib_value, 19, 5)<=0)
 	{
 		USB_printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n", 1000);
 		printf("^Test 3: Fail, Error while reading calibration values from EEPROM!\n");
@@ -962,25 +963,18 @@ int FuncAccelerometer_Calibration_PostAsm(int Do)
 	}
 	else
 	{
-		if ((dataBuffer[0]=='*') || (dataBuffer[0]==0)) state_calib=-1;
+		unsigned short crc_calc=CRC16(buf_calib_value, 3);
+		unsigned short crc=(((unsigned short)(buf_calib_value[4]))<<8)|buf_calib_value[3];
+		if (crc_calc==crc)
+		{
+			CalibX=(signed char)(buf_calib_value[0]); CalibY=(signed char)(buf_calib_value[1]); CalibZ=(signed char)(buf_calib_value[2]);
+		}
 		else
 		{
-			//memset(dataBuffer, 0, 100);
-			//Read_EEPROM(dataBuffer, 19, 14);
-
-			if (dataBuffer[0]=='0') CalibX=0;
-			else
-			{
-			CalibX=atoi(dataBuffer);
-				if (CalibX==0) state_calib=-1;
-			}
-			char* buf_cal=strchr(dataBuffer, ' ');
-				if (buf_cal==NULL) state_calib=-1;
-				else CalibY=atoi(buf_cal+1);
-			buf_cal=strchr(buf_cal+1, ' ');
-				if (buf_cal==NULL) state_calib=-1;
-				else CalibZ=atoi(buf_cal+1);
+			state_calib=-1;
 		}
+
+
 		if (state_calib==-1)
 		{
 			USB_printf("^Test 3: Fail, Calibration Trim Values are Not Saved\n", 1000);

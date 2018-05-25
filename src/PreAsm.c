@@ -35,6 +35,7 @@
 #include "GPIO.h"
 #include "FrameBuffer.h"
 #include "AudioCodec.h"
+#include "CRC16.h"
 
 #define BUF_SIZE_DISP 200
 
@@ -1601,8 +1602,13 @@ int FuncAccelerometer_Calibration(int Do)
 	write(fd_fb, buf, cnt_byte);
 
 
-	sprintf(dataBuffer, "%i %i %i ",CalibX,CalibY,CalibZ);
-	if (Write_EEPROM(dataBuffer, 19)==0)
+	//sprintf(dataBuffer, "%i %i %i ",CalibX,CalibY,CalibZ);
+	unsigned char buf_calib_value[5];
+	buf_calib_value[0]=(unsigned char)(CalibX); buf_calib_value[1]=(unsigned char)(CalibY); buf_calib_value[2]=(unsigned char)(CalibZ);
+	unsigned short crc=CRC16(buf_calib_value, 3);
+	buf_calib_value[3]=(unsigned char)(crc & 0xFF);
+	buf_calib_value[4]=(unsigned char)(crc>>8);
+	if (Write_EEPROM_1(dataBuffer, 19, 5)==0)
 	{
 		USB_printf("^Test 3: Fail, Error while writing calibration values to EEPROM!\n", 1000);
 		printf("^Test 3: Fail, Error while writing calibration values to EEPROM!\n");
