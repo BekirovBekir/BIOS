@@ -1608,7 +1608,7 @@ int FuncAccelerometer_Calibration(int Do)
 	unsigned short crc=CRC16(buf_calib_value, 3);
 	buf_calib_value[3]=(unsigned char)(crc & 0xFF);
 	buf_calib_value[4]=(unsigned char)(crc>>8);
-	if (Write_EEPROM_1(dataBuffer, 19, 5)==0)
+	if (Write_EEPROM_1(buf_calib_value, 19, 5)!=5)
 	{
 		USB_printf("^Test 3: Fail, Error while writing calibration values to EEPROM!\n", 1000);
 		printf("^Test 3: Fail, Error while writing calibration values to EEPROM!\n");

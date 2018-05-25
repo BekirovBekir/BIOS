@@ -8,9 +8,9 @@
 #ifndef INC_EEPROM_H_
 #define INC_EEPROM_H_
 
-unsigned int Write_EEPROM(char* ptr_buf, unsigned int pos);
+int Write_EEPROM(char* ptr_buf, unsigned int pos);
 
-unsigned int Write_EEPROM_1(char* ptr_buf, unsigned int pos, unsigned int len);
+int Write_EEPROM_1(char* ptr_buf, unsigned int pos, unsigned int len);
 
 unsigned int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt);
 

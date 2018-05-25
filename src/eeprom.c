@@ -51,7 +51,7 @@ int Write_EEPROM(char* ptr_buf, unsigned int pos)
 	return cnt;
 }
 
-unsigned int Write_EEPROM_1(char* ptr_buf, unsigned int pos, unsigned int len)
+int Write_EEPROM_1(char* ptr_buf, unsigned int pos, unsigned int len)
 {
 	int fd;
 	char buf[50]={0};
@@ -65,13 +65,13 @@ unsigned int Write_EEPROM_1(char* ptr_buf, unsigned int pos, unsigned int len)
 			return -1;
 		}
 		lseek(fd, pos, SEEK_SET);
-		if (write(fd, ptr_buf, len)!=cnt)
+		if (write(fd, ptr_buf, len)!=len)
 		{
 			perror("\r\nError while writing eeprom");
 			return -1;
 		}
 	close(fd);
-	return cnt;
+	return len;
 }
 
 unsigned int Read_EEPROM(char* ptr_buf, unsigned int pos, unsigned int cnt)
