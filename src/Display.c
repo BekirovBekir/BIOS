@@ -585,7 +585,7 @@ void GISubDisp (void)
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30H To start restore process press ENTER\n\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;25H To start restore process press central button - ENTER\n\n");
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
@@ -718,7 +718,7 @@ void ShipModeSubDisp (void)
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;30H To activate ship mode press ENTER\n\n");
+			cnt_byte=snprintf(buf, sizeof(buf), "\x1b[17;27H To activate ship mode press central button - ENTER\n\n");
 			write(fd_fb, buf, cnt_byte);
 
 			memset(buf, 0, 200);
@@ -4254,7 +4254,7 @@ void MenuInit (void)
 
 	GI.DOWN=&ShipMode;
 	GI.UP=&PostAsm;
-	GI.ENTER=&GI;
+	GI.ENTER=&GISub;
 	GI.ESC=NULL;
 	GI.menudisplay=&GIDisp;
 	GI.menuaction=&GIAct;
@@ -4262,20 +4262,20 @@ void MenuInit (void)
 	GISub.DOWN=NULL;
 	GISub.UP=NULL;
 	GISub.ENTER=&GISubLast;
-	GISub.ESC=&GI;
+	GISub.ESC=&PreAsm;
 	GISub.menudisplay=&GISubDisp;
-	GISub.menudisplay=&GISubAct;
+	GISub.menuaction=&GISubAct;
 
 	GISubLast.DOWN=NULL;
 	GISubLast.UP=NULL;
 	GISubLast.ENTER=&GISubLast;
 	GISubLast.ESC=&GISub;
 	GISubLast.menudisplay=&GISubLastDisp;
-	GISubLast.menudisplay=&GISubLastAct;
+	GISubLast.menuaction=&GISubLastAct;
 
 	ShipMode.DOWN=&Exit;
 	ShipMode.UP=&GI;
-	ShipMode.ENTER=&ShipMode;
+	ShipMode.ENTER=&ShipModeSub;
 	ShipMode.ESC=NULL;
 	ShipMode.menudisplay=&ShipModeDisp;
 	ShipMode.menuaction=&ShipModeAct;
@@ -4283,7 +4283,7 @@ void MenuInit (void)
 	ShipModeSub.DOWN=NULL;
 	ShipModeSub.UP=NULL;
 	ShipModeSub.ENTER=&ShipModeSubLast;
-	ShipModeSub.ESC=&ShipMode;
+	ShipModeSub.ESC=&PreAsm;
 	ShipModeSub.menudisplay=&ShipModeSubDisp;
 	ShipModeSub.menuaction=&ShipModeSubAct;
 
