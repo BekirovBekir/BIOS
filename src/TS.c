@@ -41,6 +41,7 @@
 #endif
 
 extern Menu* active_menu;
+extern Menu PreAsm;
 extern Menu FullTest;
 extern Menu FullTestPostAsm;
 extern Menu CellTestUART;
@@ -144,6 +145,7 @@ void FSM_TS (ilitek_key_info* key)
 									if (active_menu==&FullTest) test_run_flag=1;
 									if (active_menu==&FullTestPostAsm) test_run_flag=2;
 									if (active_menu==&CellTestUART) test_run_flag=3;
+									if (active_menu==&PreAsm) test_run_flag=4;
 
 								pthread_mutex_lock(&mutex);
 								preasm_flag=((active_menu==&FullTest) ? 1 : 0);
@@ -166,6 +168,7 @@ void FSM_TS (ilitek_key_info* key)
 									if (active_menu==&FullTest) test_run_flag=1;
 									if (active_menu==&FullTestPostAsm) test_run_flag=2;
 									if (active_menu==&CellTestUART) test_run_flag=3;
+									if (active_menu==&PreAsm) test_run_flag=4;
 
 									if (active_menu == &CellTestUART || active_menu == &CellTestUSB) {
 										pthread_mutex_lock(&mutex);
@@ -182,6 +185,8 @@ void FSM_TS (ilitek_key_info* key)
 									preasm_flag=((active_menu==&FullTest) ? 1 : 0);
 									//printf("PreAsm flag = %i\n", preasm_flag);
 									pthread_mutex_unlock(&mutex);
+
+									preasm_flag=1; // !!!!!!!!!! if need delete !!!!!!!!!!!
 								}
 
 							}

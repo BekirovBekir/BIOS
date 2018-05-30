@@ -43,6 +43,7 @@ void MenuInit (void);
 
 int DisplayOut(char* buf);
 
+void MainTestRun(char* test_num);
 void TestRun(char* test_num);
 void TestRun_PostAsm(char* test_num);
 

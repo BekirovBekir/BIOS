@@ -95,14 +95,15 @@ void* test_sel_thread_func(void* thread_data) {
 					TestRun_PostAsm(str);
 				if (test_run_flag == 3)
 					TestRun_Modems(str);
+				if (test_run_flag == 4)
+					MainTestRun(str);
 
 			} else {
 				if (str[0] == '\n') {
-					//printf("str = %c %i\n", str[0], str[0]);
 					gotoParentMenu();
 				}
 			}
-			//printf("exit from thread\n");
+
 		} else {
 			usleep(100000);
 		}

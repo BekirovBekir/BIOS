@@ -121,6 +121,7 @@ extern int EEPROM_SN_Read(void);
 extern pthread_mutex_t mutex;
 extern int preasm_flag;
 extern int suspend_menu_flag;
+int test_run_flag;
 
 extern pthread_t cell_passthrough_thread;	// thread for select test from USB port
 extern int id_cell_passthrough_thread;
@@ -159,13 +160,45 @@ unsigned char thread_flag=0;
 
 unsigned char isActiveFullTesetMenu(void)
 {
-	return (&PreAsm == active_menu->ESC);
+	return (&PreAsm == active_menu->ESC) || (active_menu->ESC == NULL);
 }
 
 void gotoParentMenu(void)
 {
 	active_menu=active_menu->ESC;
-	if (active_menu!=NULL) active_menu->menudisplay();
+	//if (active_menu!=NULL) active_menu->menudisplay();
+	active_menu->menudisplay();
+}
+
+void MainTestRun(char* test_num)
+{
+	preasm_flag=0;
+
+	if (strncmp(test_num, "1\n", 2)==0)
+	{
+	active_menu=&FullTest;
+	test_run_flag=1;
+	active_menu->menudisplay();
+	active_menu->menuaction();
+	}
+
+	if (strncmp(test_num, "2\n", 2)==0)
+	{
+	active_menu=&FullTestPostAsm;
+	test_run_flag=2;
+	active_menu->menudisplay();
+	active_menu->menuaction();
+	}
+
+	if (strncmp(test_num, "3\n", 2)==0)
+	{
+	active_menu=&CellTestUART;
+	test_run_flag=3;
+	active_menu->menudisplay();
+	active_menu->menuaction();
+	}
+
+	preasm_flag=1;
 }
 
 void TestRun(char* test_num)
@@ -404,6 +437,14 @@ void PreAsmDisp (void)
 {
 	char buf[200];
 	char cnt_byte;
+
+	USB_printf("\n========================= BIOS PROGRAM =========================\n", 50);
+	USB_printf("	1. PreAsm Test\n", 50);
+	USB_printf("	2. PostAsm Test\n", 50);
+	USB_printf("	3. Cellular Modem Passthrough Testing\n", 50);
+	USB_printf("================================================================\n", 50);
+	USB_printf("Please enter number of the test (1-3) end press ENTER:\n", 50);
+
 
 	memset(buf, 0, 200);
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2J\x1b[37;40m");
@@ -4381,6 +4422,9 @@ void MenuInit (void)
 	write(fd_fb, buf, cnt_byte);
 	active_menu=&PreAsm;
 	active_menu->menudisplay();
+
+	preasm_flag=1;
+	test_run_flag=4;
 }
 
 /*
