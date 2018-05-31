@@ -98,11 +98,11 @@ void* test_sel_thread_func(void* thread_data) {
 				if (test_run_flag == 4)
 					MainTestRun(str);
 
-			} else {
+			} //else {
 				if (str[0] == '\n') {
 					gotoParentMenu();
 				}
-			}
+			//}
 
 		} else {
 			usleep(100000);

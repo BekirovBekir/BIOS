@@ -167,6 +167,8 @@ void gotoParentMenu(void)
 {
 	active_menu=active_menu->ESC;
 	//if (active_menu!=NULL) active_menu->menudisplay();
+		if (active_menu==&PreAsm) test_run_flag=4;
+		if (active_menu==NULL) active_menu=&PreAsm;
 	active_menu->menudisplay();
 }
 
@@ -938,7 +940,7 @@ void CellTestUARTDisp(void)
 		USB_printf("\n===================== Cellular Modem Passthrough Testing ====================\n", 50);
 		USB_printf("	1. UART Modem Test\n", 50);
 		USB_printf("	2. USB Modem Test\n", 50);
-		USB_printf("======================================================================\n", 50);
+		USB_printf("===============================================================================\n", 50);
 		USB_printf("Please enter number of the test (1-2) end press ENTER:\n", 50);
 
 
