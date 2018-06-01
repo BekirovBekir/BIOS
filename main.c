@@ -62,7 +62,8 @@ void* fsm_ts_thread_func(void* thread_data) {
 		timer_tick++;
 		if (timer_tick >= 40000) {
 			Write_EEPROM("2", 0);// write eeprom 2, after reboot android will be srart
-			pthread_exit(0);
+			//pthread_exit(0);
+			system("reboot");
 		}
 		usleep(30000);
 	}
