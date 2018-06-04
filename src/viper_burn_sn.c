@@ -532,6 +532,7 @@ int eeprom_integrity_check(void)
 	int ret = 0;
 	int count = 0;
 	int i = 0;
+	int first_fail_pos=-1;
 	unsigned char backup_buffer[EEPROM_SIZE];
 	unsigned char bufferA[EEPROM_SIZE];
 	unsigned char bufferB[EEPROM_SIZE];
@@ -545,13 +546,6 @@ int eeprom_integrity_check(void)
 	memset(buf, 0, 200);
 	//cnt_byte=snprintf(buf, sizeof(buf), "\x1b[1;3H**EEPROM Integrity Check**\n");
 	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C**EEPROM Integrity Check**\n");
-	write(fd_fb, buf, cnt_byte);
-
-			printf("&Test 1A: ");
-	to_USB_console("&Test 1A: ");
-
-	memset(buf, 0, 200);
-	cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 1A: ");
 	write(fd_fb, buf, cnt_byte);
 
 	f = fopen(EEPROM_PATH, "r+");
@@ -599,12 +593,13 @@ int eeprom_integrity_check(void)
 		goto restore;
 	}
 
-
+	first_fail_pos=-1;
 	for(i=0; i<EEPROM_SIZE; i++)
 	{
 		if(bufferA[i] != bufferB[i])
 		{
 			ret = -1;
+			first_fail_pos=i;
 			goto restore;
 		}
 	}
@@ -626,20 +621,46 @@ close:
 
 	if(ret != 0)
 	{
-				printf("Fail, EEPROM Corrupted or Inaccessible\n");
-		to_USB_console("Fail, EEPROM Corrupted or Inaccessible\n");
+		printf("^Test 1A: ");
+		to_USB_console("^Test 1A: ");
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2CFail, EEPROM Corrupted or Inaccessible\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C^Test 1A: ");
 		write(fd_fb, buf, cnt_byte);
+
+		if (first_fail_pos!=-1)
+		{
+					printf("Fail, EEPROM Corrupted or Inaccessible, first corrupted cell is %i\n", first_fail_pos);
+			to_USB_console("Fail, EEPROM Corrupted or Inaccessible, first corrupted cell is %i\n", first_fail_pos);
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "Fail, EEPROM Corrupted or Inaccessible, first corrupted cell is %i\n", first_fail_pos);
+			write(fd_fb, buf, cnt_byte);
+		}
+		else
+		{
+				printf("Fail, EEPROM Corrupted or Inaccessible\n");
+			to_USB_console("Fail, EEPROM Corrupted or Inaccessible\n");
+
+			memset(buf, 0, 200);
+			cnt_byte=snprintf(buf, sizeof(buf), "Fail, EEPROM Corrupted or Inaccessible\n");
+			write(fd_fb, buf, cnt_byte);
+		}
 	}
 	else
 	{
+		printf("&Test 1A: ");
+		to_USB_console("&Test 1A: ");
+
+		memset(buf, 0, 200);
+		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2C&Test 1A: ");
+		write(fd_fb, buf, cnt_byte);
+
 				printf("OK\n");
 		to_USB_console("OK\n");
 
 		memset(buf, 0, 200);
-		cnt_byte=snprintf(buf, sizeof(buf), "\x1b[2COK\n");
+		cnt_byte=snprintf(buf, sizeof(buf), "OK\n");
 		write(fd_fb, buf, cnt_byte);
 	}
 	return ret;
