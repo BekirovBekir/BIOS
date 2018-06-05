@@ -597,6 +597,12 @@ int eeprom_integrity_check(void)
 
 	fail_flag=-1;
 	index_fail=0;
+	/*bufferA[100]=0;
+	bufferA[101]=0;
+	bufferA[102]=0;
+	bufferA[99]=0;
+	bufferA[35]=0;
+	bufferA[41]=0;*/
 	for(i=0; i<EEPROM_SIZE; i++)
 	{
 		if(bufferA[i] != bufferB[i])
@@ -604,10 +610,9 @@ int eeprom_integrity_check(void)
 			ret = -1;
 			fail_flag=i;
 			buffer_fail[index_fail++]=i;
-			goto restore;
+
 		}
 	}
-
 
 restore:
 
@@ -631,7 +636,7 @@ close:
 		{
 				for (int i=0; i<index_fail; i++)
 				{
-					printf("Fail byte --> #%i\n", buffer_fail[index_fail]);
+					printf("Byte #%i is corrupted\n", buffer_fail[i]);
 				}
 
 			memset(buf, 0, 200);
@@ -641,11 +646,11 @@ close:
 					printf("^Test 1A: ");
 			to_USB_console("^Test 1A: ");
 
-					printf("Fail, EEPROM Corrupted or Inaccessible, number of corrupted cells is %i\n", index_fail-1);
-			to_USB_console("Fail, EEPROM Corrupted or Inaccessible, number of corrupted cells is %i\n", index_fail-1);
+					printf("Fail, EEPROM Corrupted or Inaccessible, number of corrupted cells is %i\n", index_fail);
+			to_USB_console("Fail, EEPROM Corrupted or Inaccessible, number of corrupted cells is %i\n", index_fail);
 
 			memset(buf, 0, 200);
-			cnt_byte=snprintf(buf, sizeof(buf), "Fail, EEPROM Corrupted or Inaccessible, number of corrupted cells is %i\n", index_fail-1);
+			cnt_byte=snprintf(buf, sizeof(buf), "Fail, EEPROM Corrupted or Inaccessible, number of corrupted cells is %i\n", index_fail);
 			write(fd_fb, buf, cnt_byte);
 		}
 		else

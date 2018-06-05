@@ -150,6 +150,8 @@ int main(int argc, char* argv[]) {
 	Fill_Buffer(0x00, 0x00, 0x00);
 	MenuInit();
 
+	printf("========== BIOS v1.2.0 ==========");
+
 	int trhread_state = pthread_create(&fsm_ts_thread, NULL, fsm_ts_thread_func,
 			&id_fsm_ts_thread);
 	if (trhread_state == 0) {

@@ -1506,7 +1506,7 @@ int FuncAccelerometer_Calibration(int Do)
 
 		if ((ValueX<50) && (ValueX>-50) &&\
 			(ValueY<50) && (ValueY>-50) &&\
-			(ValueZ>1000) && (ValueZ<1048)) {
+			(ValueZ>=990) && (ValueZ<1040)) {
 
 			CalibX=-ValueX/2;
 			CalibY=-ValueY/2;
