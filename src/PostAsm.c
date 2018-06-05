@@ -2615,6 +2615,11 @@ int Init_LARA_SARA_PostAsm(char* port_name, int port_speed) {
 	cnt_byte = snprintf(buf, sizeof(buf), "\x1b[2C%s", out_buf);
 	write(fd_fb, buf, cnt_byte);
 
+	memset(answr_buf, 0, sizeof(answr_buf));
+	ret = sendAndPreParse(port_id, "AT+CFUN=1\r", answr_buf, curr_modem);
+	if (ret)
+		goto error;
+
 	bool retry;
 
 	do {
